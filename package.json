@@ -1,0 +1,40 @@
+{
+  "name": "seventyhost-bot",
+  "version": "1.0.0",
+  "description": "Bot da SeventyHost, só que agora de código aberto e feito em TypeScript.",
+  "main": "app.ts",
+  "scripts": {
+    "dev": "nodemon",
+    "build": "tsc src/app.js",
+    "start": "tsc src/app.js && node ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Ashu11-A/SeventyHost-Bot.git"
+  },
+  "keywords": [
+    "Bot",
+    "Payment",
+    "Bot",
+    "Discord"
+  ],
+  "author": "Ashu11-a",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Ashu11-A/SeventyHost-Bot/issues"
+  },
+  "homepage": "https://github.com/Ashu11-A/SeventyHost-Bot#readme",
+  "dependencies": {
+    "colors": "^1.4.0",
+    "discord.js": "^14.12.1",
+    "dotenv": "^16.3.1",
+    "necord": "^6.0.0",
+    "nodemon": "^3.0.1",
+    "ts-lib": "^0.0.5"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.1",
+    "tsconfig-paths": "^4.2.0",
+    "typescript": "^5.1.6"
+  }
+}
