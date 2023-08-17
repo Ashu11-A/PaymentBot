@@ -1,21 +1,13 @@
-import { ExtendedClient } from "@/structs/types/ExtendedClient"
+import { ExtendedClient } from "@/structs/ExtendedClient"
 export * from "colors"
+import fs from "fs"
+import path from "path"
+/* import config from "config.json" */
+
+import { color } from "@/structs/types/Colors"
 
 const client = new ExtendedClient()
 
 client.start()
 
-export { client }
-
-client.on("ready", () => {
-    console.log("Bot online".green)
-})
-
-client.on("messageCreate", (message) => {
-    if (message.author.id == client.user?.id) return
-
-    message.reply({
-        content: `Olá, ${message.author.username}`
-    })
-
-})
+export { client, color }
