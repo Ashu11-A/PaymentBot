@@ -1,5 +1,5 @@
 import { Router } from "express"
-import { Root } from "../routers/home"
+import { Root } from "../routes/home"
 
 const router: Router = Router()
 
