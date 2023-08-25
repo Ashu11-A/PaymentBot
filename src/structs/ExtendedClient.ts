@@ -12,7 +12,7 @@ export class ExtendedClient extends Client {
     public buttons: ComponentsButton = new Collection();
     public selects: ComponentsSelect = new Collection();
     public modals: ComponentsModal = new Collection();
-    constructor(){
+    constructor() {
         super({
             intents: Object.keys(IntentsBitField.Flags) as BitFieldResolvable<GatewayIntentsString, number>,
             partials: [
@@ -21,21 +21,21 @@ export class ExtendedClient extends Client {
             ]
         })
     }
-    public start(){
+    public start() {
         this.registerModules();
         this.registerEvents();
         this.login(process.env.BOT_TOKEN);
     }
-    private registerCommands(commands: Array<ApplicationCommandDataResolvable>){
+    private registerCommands(commands: Array<ApplicationCommandDataResolvable>) {
         this.application?.commands.set(commands)
-        .then(() => {
-            console.log("✅ Slash Commands (/) definidos".green)
-        })
-        .catch(error => {
-            console.log(`❌ Um erro ocorreu quando tentava definir os Slash Commands (/): \n${error}`.red)
-        })
+            .then(() => {
+                console.log("✅ Slash Commands (/) definidos".green)
+            })
+            .catch(error => {
+                console.log(`❌ Um erro ocorreu quando tentava definir os Slash Commands (/): \n${error}`.red)
+            })
     }
-    private registerModules(){
+    private registerModules() {
         const slashCommands: Array<ApplicationCommandDataResolvable> = new Array();
 
         const commandsPath = path.join(__dirname, "..", "commands");
@@ -60,22 +60,22 @@ export class ExtendedClient extends Client {
 
         this.on("ready", () => this.registerCommands(slashCommands))
     }
-    private registerEvents(){
+    private registerEvents() {
         const eventsPath = path.join(__dirname, "..", "events");
 
 
         fs.readdirSync(eventsPath).forEach(local => {
 
             fs.readdirSync(`${eventsPath}/${local}`).filter(fileCondition)
-            .forEach(async fileName => {
-                const { name, once, run }: EventType<keyof ClientEvents> = (await import(`../events/${local}/${fileName}`))?.default
-            
-                try {
-                    if (name) (once) ? this.once(name, run) : this.on(name, run);
-                } catch (error) {
-                    console.log(`Ocorreu um erro no evento: ${name} \n${error}`.red);
-                }
-            })
+                .forEach(async fileName => {
+                    const { name, once, run }: EventType<keyof ClientEvents> = (await import(`../events/${local}/${fileName}`))?.default
+
+                    try {
+                        if (name) (once) ? this.once(name, run) : this.on(name, run);
+                    } catch (error) {
+                        console.log(`Ocorreu um erro no evento: ${name} \n${error}`.red);
+                    }
+                })
 
         })
     }

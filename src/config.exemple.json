@@ -1,0 +1,16 @@
+{
+    "Express": {
+        "Port": 3005
+    },
+    "URLs": {
+        "Ptero": "https://panel.exemple.net",
+        "CtrlPanel": "https://dash.exemple.net",
+        "Site": "https://exemple.net"
+    },
+    "Slash": {
+        "Info": {
+            "Owner": "I'm number",
+            "Desc": "I'm description"
+        }
+    }
+}

@@ -3,7 +3,7 @@ import { Command } from "@/structs/types/Command";
 import { ApplicationCommandType, ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection } from "discord.js";
 
 export default new Command({
-    name: "ping",
+    name: "exemple",
     description: "Responde com o ping do Bot",
     type: ApplicationCommandType.ChatInput,
     run({ interaction, client }) {
