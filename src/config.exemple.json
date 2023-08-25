@@ -1,6 +1,7 @@
 {
     "Express": {
-        "Port": 3005
+        "Port": 3005,
+        "encryptionKey": "i am something very precious and i have to have 32 characters"
     },
     "URLs": {
         "Ptero": "https://panel.exemple.net",
