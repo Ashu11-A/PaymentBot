@@ -13,5 +13,9 @@
             "Owner": "I'm number",
             "Desc": "I'm description"
         }
+    },
+    "Logs": {
+        "configPATH": "./src/config",
+        "loggingsPATH": "./storage/logs"
     }
 }

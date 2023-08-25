@@ -1,6 +1,6 @@
 import { EmbedBuilder } from 'discord.js'
 
-export default function userInfo(member: any) {
+export default function userInfo (member: any): object {
   const user = member.user
   const embed = new EmbedBuilder()
     .setTitle('Informações do usuário')
@@ -24,7 +24,7 @@ export default function userInfo(member: any) {
         })
       }
     )
-    .setColor("Aqua")
+    .setColor('Aqua')
     .setThumbnail(user.avatarURL({ dynamic: true }))
     .setTimestamp()
 
