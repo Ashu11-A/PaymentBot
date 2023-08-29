@@ -1,0 +1,21 @@
+{
+    "Express": {
+        "Port": 3005,
+        "encryptionKey": "i am something very precious and i have to have 32 characters"
+    },
+    "URLs": {
+        "Ptero": "https://panel.exemple.net",
+        "CtrlPanel": "https://dash.exemple.net",
+        "Site": "https://exemple.net"
+    },
+    "Slash": {
+        "Info": {
+            "Owner": "I'm number",
+            "Desc": "I'm description"
+        }
+    },
+    "Logs": {
+        "configPATH": "./src/config",
+        "loggingsPATH": "./storage/logs"
+    }
+}
