@@ -61,10 +61,10 @@ export default new Command({
     }
   ],
   async run ({ interaction, options }) {
-    const title = options.getString('título')
-    const description = options.getString('descrição')
+    const title = options.getString('título', true)
+    const description = options.getString('descrição', true)
+    const channel = options.getChannel('canal', true)
     const color = options.getString('cor') ?? null
-    const channel = options.getChannel('canal')
     const image = options.getString('imagem') ?? 'false'
     const cargo = options.getRole('marcar') ?? null
     const { guild } = interaction
