@@ -18,7 +18,7 @@ export default new Event({
         'Usou o contexto de mensagem:'
       ]
       const embed = new EmbedBuilder()
-        .setTitle(`Usuário <@${user.username}>`)
+        .setTitle(`Usuário ${user.username}`)
         .addFields(
           {
             name: `**⚙️ ${text[commandType - 1]}**`,
@@ -29,8 +29,12 @@ export default new Event({
             name: `**${emojis[commandType - 1]} há:**`,
             value: `${time(createdAt, 'R')}`,
             inline: false
+          },
+          {
+            name: '**🆔:**',
+            value: `${user.id}`,
+            inline: false
           }
-
         )
         .setColor('White')
 
