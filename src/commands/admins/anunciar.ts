@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder } from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { LogsDiscord } from '@/app'
 import { brBuilder } from '@/utils/Format'
@@ -154,7 +154,21 @@ export default new Command({
         await sendChannel.send(msg)
           .then(async msg => await subInteraction.update({
             ...clearData,
-            content: `Mensagem enviada: ${msg.url}`
+            embeds: [
+              new EmbedBuilder()
+              .setDescription(`✅ | Mensagem enviada com sucesso ao chat: ${sendChannel}`)
+              .setColor('Green')
+            ],
+            components: [
+              new ActionRowBuilder<any>().addComponents(
+              new ButtonBuilder()
+              .setLabel('Clique para ir ao canal')
+              .setURL(
+                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
+              )
+              .setStyle(ButtonStyle.Link)
+              )
+            ]
           }))
           .catch(async err => await subInteraction.update({
             ...clearData,
