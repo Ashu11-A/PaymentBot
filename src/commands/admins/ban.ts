@@ -21,17 +21,13 @@ export default new Command({
   ],
   async run ({ interaction, options }) {
     const user: any = options.getUser('usuário')
-    const reason = options.getString('motivo') || 'Nenhum motivo especificado'
+    const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
     const { guild } = interaction
     const logsChannel = guild?.channels.cache.find(
       (channel: { name: string }) => channel.name === 'logs'
     ) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === true) {
-      console.log(
-        'BAN',
-        `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o banir sem ter permissão.`
-      )
+    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       await interaction.reply({
         content: 'Você não tem permissão para banir usuários!',
         ephemeral: true

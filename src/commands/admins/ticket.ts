@@ -57,25 +57,25 @@ export default new Command({
 
       if (sendChannel !== undefined) {
         await sendChannel.send({ embeds: [embed], components: [botao] })
-        .then(async () => {
-          await interaction.editReply({ 
-            embeds: [
-              new EmbedBuilder()
-              .setDescription(`✅ | Mensagem enviada com sucesso ao chat: ${sendChannel}`)
-              .setColor('Green')
-            ],
-            components: [
-              new ActionRowBuilder<any>().addComponents(
-              new ButtonBuilder()
-              .setLabel('Clique para ir ao canal')
-              .setURL(
+          .then(async () => {
+            await interaction.editReply({
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription(`✅ | Mensagem enviada com sucesso ao chat: <#${sendChannel.id}>`)
+                  .setColor('Green')
+              ],
+              components: [
+                new ActionRowBuilder<any>().addComponents(
+                  new ButtonBuilder()
+                    .setLabel('Clique para ir ao canal')
+                    .setURL(
                 `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-              )
-              .setStyle(ButtonStyle.Link)
-              )
-            ]
+                    )
+                    .setStyle(ButtonStyle.Link)
+                )
+              ]
+            })
           })
-        })
       }
     } catch (error) {
       console.error(error)

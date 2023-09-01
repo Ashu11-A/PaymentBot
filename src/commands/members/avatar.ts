@@ -31,8 +31,8 @@ export default new Command({
 
     try {
       const user = options.getUser('usuário')
-      const size: any = Number(options.getString('tamanho')) || 2048
-      const img = user?.avatarURL({ size }) || interaction.user.avatarURL({ size })
+      const size: any = Number(options.getString('tamanho')) ?? 2048
+      const img = user?.avatarURL({ size }) ?? interaction.user.avatarURL({ size })
       const tamanho = await calculateImageSize(String(img))
 
       const embed = new EmbedBuilder()

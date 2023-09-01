@@ -24,13 +24,13 @@ export default new Command({
     await interaction.deferReply()
 
     try {
-      const size: any = Number(options.getString('tamanho')) || 4096
+      const size: any = Number(options.getString('tamanho')) ?? 4096
       const img = interaction.guild?.iconURL({ size })
       const tamanho = await calculateImageSize(String(img))
 
       const embed = new EmbedBuilder()
         .setColor('Blue')
-        .setAuthor({ name: String(interaction.guild?.name), iconURL: String(interaction.guild?.iconURL({ size: 64})) })
+        .setAuthor({ name: String(interaction.guild?.name), iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
         .setDescription(`**Click [aqui](${String(img)}) para baixar a imagem**\n**Tamanho: ${formatBytes(tamanho)}**`)
         .setImage(String(img))
 

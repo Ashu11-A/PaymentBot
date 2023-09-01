@@ -47,8 +47,7 @@ export default new Command({
       description: 'Habilitar logo na Embed',
       type: ApplicationCommandOptionType.String,
       choices: [
-        { name: 'Habilitar', value: 'true' },
-        { name: 'Desabilitar', value: 'false' }
+        { name: 'Habilitar', value: 'true' }
       ],
       required: false
     },
@@ -64,9 +63,9 @@ export default new Command({
     const title = options.getString('título', true)
     const description = options.getString('descrição', true)
     const channel = options.getChannel('canal', true)
-    const color = options.getString('cor') || null
-    const image = options.getString('imagem') || 'false'
-    const cargo = options.getRole('marcar') || null
+    const color = options.getString('cor')
+    const image = options.getString('imagem')
+    const cargo = options.getRole('marcar')
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
 
@@ -156,17 +155,17 @@ export default new Command({
             ...clearData,
             embeds: [
               new EmbedBuilder()
-              .setDescription(`✅ | Mensagem enviada com sucesso ao chat: ${sendChannel}`)
-              .setColor('Green')
+                .setDescription(`✅ | Mensagem enviada com sucesso ao chat: <#${sendChannel.id}>`)
+                .setColor('Green')
             ],
             components: [
               new ActionRowBuilder<any>().addComponents(
-              new ButtonBuilder()
-              .setLabel('Clique para ir ao canal')
-              .setURL(
+                new ButtonBuilder()
+                  .setLabel('Clique para ir ao canal')
+                  .setURL(
                 `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-              )
-              .setStyle(ButtonStyle.Link)
+                  )
+                  .setStyle(ButtonStyle.Link)
               )
             ]
           }))
