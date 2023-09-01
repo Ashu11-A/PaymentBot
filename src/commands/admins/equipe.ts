@@ -42,9 +42,6 @@ export default new Command({
     ) as TextChannel
 
     if ((interaction?.memberPermissions?.has('ManageRoles')) === false) {
-      console.log(
-        `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o comando /equipe sem ter permissão.`
-      )
       await interaction.reply({
         content: 'Você não tem permissão para usar esse comando!',
         ephemeral: true
@@ -100,7 +97,7 @@ export default new Command({
         .setTimestamp()
 
       if (sendChannel !== undefined) {
-        void sendChannel.send({ embeds: [embed] })
+        await sendChannel.send({ embeds: [embed] })
       }
 
       return await interaction.reply({ embeds: [embed], ephemeral: true })

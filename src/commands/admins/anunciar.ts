@@ -73,9 +73,6 @@ export default new Command({
     await interaction.deferReply({ ephemeral: true })
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
-      console.log(
-        `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o comando /anunciar sem ter permissão.`
-      )
       await interaction.editReply({
         content: 'Você não tem permissão para usar esse comando!'
       })

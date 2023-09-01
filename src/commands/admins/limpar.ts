@@ -53,9 +53,6 @@ export default new Command({
     await interaction.deferReply({ ephemeral: true })
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
-      console.log(
-        `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou limpar o ${channel?.id} sem ter permissão.`
-      )
       if (channel?.isTextBased() === false) {
         await interaction.reply({
           content: 'Você não tem permissão para usar esse comando!',

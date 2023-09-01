@@ -6,7 +6,7 @@ export default new Command({
   name: 'info',
   description: 'Mostra informações sobre o servidor',
   type: ApplicationCommandType.ChatInput,
-  run ({ interaction }) {
+  async run ({ interaction }) {
     const embed = new EmbedBuilder()
       .setColor('Blurple')
       .setTitle(`Essas são as informações da ${interaction.guild?.name}`)
@@ -38,7 +38,7 @@ export default new Command({
           )
         }
       )
-    void interaction.reply({
+    await interaction.reply({
       ephemeral: true,
       embeds: [embed]
     })
