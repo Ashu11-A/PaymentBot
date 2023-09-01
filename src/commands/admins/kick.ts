@@ -38,9 +38,10 @@ export default new Command({
       })
       void LogsDiscord(
         interaction,
-        '⚠️ Aviso', 'Usuário sem permissão tentou executar um comando',
-        `<@${interaction.user.id}> Tentou expulsar o usuário <@${user.id}>\nMotivo: ${reason}`,
-        'Orange'
+        'warn',
+        'noPermissionBanKick',
+        'Orange',
+        [{ userID: user.id, reason, actionType: 'expulsar' }]
       )
       return
     }

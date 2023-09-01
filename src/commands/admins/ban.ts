@@ -27,7 +27,7 @@ export default new Command({
       (channel: { name: string }) => channel.name === 'logs'
     ) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if ((interaction?.memberPermissions?.has('Administrator')) === true) {
       console.log(
         'BAN',
         `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o banir sem ter permissão.`
@@ -38,9 +38,10 @@ export default new Command({
       })
       void LogsDiscord(
         interaction,
-        '⚠️ Aviso', 'Usuário sem permissão tentou executar um comando',
-        `<@${interaction.user.id}> Tentou banir o usuário <@${user.id}>\nMotivo: ${reason}`,
-        'Orange'
+        'warn',
+        'noPermissionBanKick',
+        'Orange',
+        [{ userID: user.id, reason, actionType: 'banir' }]
       )
       return
     }

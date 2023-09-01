@@ -51,9 +51,10 @@ export default new Command({
       })
       void LogsDiscord(
         interaction,
-        '⚠️ Aviso', 'Usuário sem permissão tentou executar um comando',
-        `<@${interaction.user.id}> Tentou usar o comando /equipe`,
-        'Orange'
+        'warn',
+        'noPermission',
+        'Orange',
+        []
       )
       return
     }
