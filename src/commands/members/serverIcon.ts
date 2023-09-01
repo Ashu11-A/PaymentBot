@@ -8,16 +8,10 @@ const tamanhoChoices = arrayTamanho.map(size => ({
   value: String(size)
 }))
 export default new Command({
-  name: 'avatar',
-  description: 'Mostra o avatar do usuário selecionado',
+  name: 'servericon',
+  description: 'Mostra o icone do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
-    {
-      name: 'usuário',
-      description: 'Selecionar usuário',
-      type: ApplicationCommandOptionType.User,
-      required: false
-    },
     {
       name: 'tamanho',
       description: 'Tamanho da Imagem',
@@ -30,17 +24,15 @@ export default new Command({
     await interaction.deferReply()
 
     try {
-      const user = options.getUser('usuário')
-      const size: any = Number(options.getString('tamanho')) || 2048
-      const img = user?.avatarURL({ size }) || interaction.user.avatarURL({ size })
+      const size: any = Number(options.getString('tamanho')) || 4096
+      const img = interaction.guild?.iconURL({ size })
       const tamanho = await calculateImageSize(String(img))
 
       const embed = new EmbedBuilder()
-        .setColor('Random')
-        .setTitle('Click aqui para baixar')
-        .setDescription(`Tamanho da imagem: ${formatBytes(tamanho)}`)
+        .setColor('Blue')
+        .setAuthor({ name: String(interaction.guild?.name), iconURL: String(interaction.guild?.iconURL({ size: 64})) })
+        .setDescription(`**Click [aqui](${String(img)}) para baixar a imagem**\n**Tamanho: ${formatBytes(tamanho)}**`)
         .setImage(String(img))
-        .setURL(String(img))
 
       await interaction.editReply({
         embeds: [embed]

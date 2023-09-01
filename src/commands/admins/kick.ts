@@ -21,7 +21,7 @@ export default new Command({
   ],
   async run ({ interaction, options }) {
     const user: any = options.getUser('usuário')
-    const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
+    const reason = options.getString('motivo') || 'Nenhum motivo especificado'
     const { guild } = interaction
     const logsChannel = guild?.channels.cache.find(
       (channel: { name: string }) => channel.name === 'logs'

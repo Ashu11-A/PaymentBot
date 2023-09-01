@@ -35,7 +35,7 @@ export default new Command({
     const user = options.getUser('usuário')
     const member = interaction.guild?.members.cache.get(String(user?.id))
     const cargo = options.getRole('cargo')
-    const type = options.getString('tipo') ?? 'add'
+    const type = options.getString('tipo') || 'add'
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.find(
       (channel: { name: string }) => channel.name === 'equipe'

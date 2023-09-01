@@ -4,11 +4,13 @@ import { type TextChannel, time, EmbedBuilder } from 'discord.js'
 
 export default new Event({
   name: 'interactionCreate',
-  async run (interaction) {
+  async run(interaction) {
     if (!interaction.inCachedGuild()) return
 
     if (interaction.isCommand()) {
-      const logsChannel = interaction.guild.channels.cache.get(config.Logs.channel)
+      const logsChannel = interaction.guild.channels.cache.find(
+        (channel: { name: string }) => channel.name === 'logs'
+      )
       if ((logsChannel?.isTextBased()) === false) return
       const { channel, user, commandName, createdAt, commandType } = interaction
       const emojis = ['⌨️', '👤', '✉️']

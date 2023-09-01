@@ -64,9 +64,9 @@ export default new Command({
     const title = options.getString('título', true)
     const description = options.getString('descrição', true)
     const channel = options.getChannel('canal', true)
-    const color = options.getString('cor') ?? null
-    const image = options.getString('imagem') ?? 'false'
-    const cargo = options.getRole('marcar') ?? null
+    const color = options.getString('cor') || null
+    const image = options.getString('imagem') || 'false'
+    const cargo = options.getRole('marcar') || null
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
 
