@@ -1,16 +1,17 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { LogsDiscord } from '@/app'
+import createTicket from '@/events/commands/utils/createTicket'
 
 export default new Command({
   name: 'ticket',
-  description: 'Cria a embed do ticket no canal especificado',
+  description: 'Abrir Ticket',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
       name: 'canal',
-      description: 'Canal onde será enviada a embed',
-      required: true,
+      description: '[ADM] Canal onde será enviada a embed',
+      required: false,
       type: ApplicationCommandOptionType.Channel
     }
   ],
@@ -18,6 +19,11 @@ export default new Command({
     const channel = options.getChannel('canal')
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
+
+    if (channel === null) {
+      await createTicket(interaction)
+      return
+    }
 
     await interaction.deferReply({ ephemeral: true })
 

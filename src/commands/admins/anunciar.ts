@@ -152,7 +152,7 @@ export default new Command({
           msg = { embeds: [embed] }
         }
         await sendChannel.send(msg)
-          .then(async msg => await subInteraction.update({
+          .then(async () => await subInteraction.update({
             ...clearData,
             embeds: [
               new EmbedBuilder()
