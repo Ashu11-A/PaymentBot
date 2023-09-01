@@ -37,7 +37,7 @@ export default new Command({
     try {
       const embed = new EmbedBuilder()
         .setTitle('Pegue Seu Ticket!')
-        .setDescription('Basta abrir seu ticket e esperar para dalar com nosso suporte.')
+        .setDescription('Basta abrir seu ticket e esperar para falar com nosso suporte.')
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
         .setColor('Green')
 
@@ -51,6 +51,25 @@ export default new Command({
 
       if (sendChannel !== undefined) {
         await sendChannel.send({ embeds: [embed], components: [botao] })
+        .then(async () => {
+          await interaction.editReply({ 
+            embeds: [
+              new EmbedBuilder()
+              .setDescription(`✅ | Mensagem enviada com sucesso ao chat: ${sendChannel}`)
+              .setColor('Green')
+            ],
+            components: [
+              new ActionRowBuilder<any>().addComponents(
+              new ButtonBuilder()
+              .setLabel('Clique para ir ao canal')
+              .setURL(
+                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
+              )
+              .setStyle(ButtonStyle.Link)
+              )
+            ]
+          })
+        })
       }
     } catch (error) {
       console.error(error)

@@ -12,6 +12,10 @@
         "Info": {
             "Owner": "I'm number",
             "Desc": "I'm description"
+        },
+        "Ticket": {
+            "ID": "I am the id of a category",
+            "Role": "I am the role of TicketHelper"
         }
     },
     "Logs": {

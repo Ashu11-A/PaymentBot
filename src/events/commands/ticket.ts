@@ -1,27 +1,33 @@
 import { Event } from '@/structs/types/Event'
 import { config } from '@/app'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ComponentType, EmbedBuilder, PermissionsBitField, type TextChannel } from 'discord.js'
+import { createRow } from '@/utils/Discord'
 export default new Event({
   name: 'interactionCreate',
-  async run (interaction) {
+  async run(interaction) {
     if (interaction.isButton()) {
       if (interaction.customId === 'ticket') {
         const { guild } = interaction
-        const nome = `🎫-${interaction.user.id}`
+        const nome = `🎫-${interaction.user.username}`
         const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
         if (sendChannel != null) {
-          const channel = new ActionRowBuilder<any>().addComponents(
+          const buttonChannel = new ActionRowBuilder<any>().addComponents(
             new ButtonBuilder()
               .setLabel('Clique para ir ao seu ticket')
               .setURL(
-                    `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
+                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
               )
               .setStyle(ButtonStyle.Link)
           )
 
           await interaction.reply({
-            content: `Olá ${interaction.user.username}\n❌ | Você já possui um ticket aberto!`,
-            components: [channel],
+            embeds: [
+              new EmbedBuilder()
+                .setTitle(`Olá ${interaction.user.username}`,)
+                .setDescription('❌ | Você já possui um ticket aberto!')
+                .setColor('Red')
+            ],
+            components: [buttonChannel],
             ephemeral: true
           })
         } else {
@@ -41,19 +47,23 @@ export default new Event({
                   allow: [PermissionsBitField.Flags.ViewChannel]
                 }
               ],
-              parent: config.Slash.Ticket.ID
+              parent: config.Slash.Ticket.idCategoryChannel
             })
-
             const channel = new ActionRowBuilder<any>().addComponents(
               new ButtonBuilder()
                 .setLabel('Clique para ir ao seu Ticket')
                 .setURL(
-                      `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`
+                  `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`
                 )
                 .setStyle(ButtonStyle.Link)
             )
             await interaction.editReply({
-              content: `Olá ${interaction.user.username}\n✅ | Seu ticket foi criado com sucesso!`,
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(`Olá ${interaction.user.username}`,)
+                  .setDescription('✅ | Seu ticket foi criado com sucesso!')
+                  .setColor('Green')
+              ],
               components: [channel]
             })
             const embed = new EmbedBuilder()
@@ -76,7 +86,8 @@ export default new Event({
                   })
                 }
               )
-              .setFooter({ text: 'Caso ninguém responda seu ticket em 10 minutos marque algum staff' })
+              .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
+              .setTimestamp()
 
             const botao = new ActionRowBuilder<any>().addComponents(
               new ButtonBuilder()
@@ -85,7 +96,7 @@ export default new Event({
                 .setLabel('Fechar Ticket')
                 .setStyle(ButtonStyle.Danger)
             )
-            await ch?.send({ embeds: [embed], components: [botao] }).catch(console.error)
+            await ch?.send({ content: `<@&${config.Slash.Ticket.idRole}>`, embeds: [embed], components: [botao] }).catch(console.error)
           } catch (all) {
             console.error(all)
             await interaction.editReply({
@@ -94,14 +105,48 @@ export default new Event({
           }
         }
       } else if (interaction.customId === 'del-ticket') {
-        await interaction.reply({
-          content: `Olá ${interaction.user.username}\n❗️ | Seu ticket será excluído em 5 segundos.`,
-          ephemeral: true
+        await interaction.deferReply({ ephemeral: true })
+        const message = await interaction.editReply({
+          embeds: [
+            new EmbedBuilder()
+              .setDescription('Tem certeza que deseja fechar o Ticket?')
+              .setColor('Gold')
+          ],
+          components: [createRow(
+            new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+            new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+          )]
         })
+        const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })
+        collector.on('collect', async subInteraction => {
+          collector.stop()
+          const clearData = { components: [], embeds: [] }
 
-        setTimeout(() => {
-          interaction?.channel?.delete().catch(console.error)
-        }, 5000)
+          if (subInteraction.customId === 'embed-cancel-button') {
+            await subInteraction.update({
+              ...clearData,
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription('Você cancelou a ação')
+                  .setColor("Green")
+              ]
+            })
+            return
+          } else if (subInteraction.customId === 'embed-confirm-button') {
+            await subInteraction.update({
+              ...clearData,
+              embeds: [
+                new EmbedBuilder()
+                  .setTitle(`👋 | Olá ${interaction.user.username}`)
+                  .setDescription('❗️ | Seu ticket será excluído em 5 segundos.')
+                  .setColor('Red')
+              ]
+            })
+            setTimeout(() => {
+              subInteraction?.channel?.delete().catch(console.error)
+            }, 5000)
+          }
+        })
       }
     }
   }
