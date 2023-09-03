@@ -9,7 +9,7 @@ const tamanhoChoices = arrayTamanho.map(size => ({
 }))
 export default new Command({
   name: 'avatar',
-  description: 'Mostra o avatar do usuário selecionado',
+  description: '[ 🪄 Utilidades ] Mostra o avatar do usuário selecionado',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

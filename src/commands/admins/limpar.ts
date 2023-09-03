@@ -5,7 +5,7 @@ import { ApplicationCommandOptionType, codeBlock, type TextChannel } from 'disco
 
 export default new Command({
   name: 'limpar',
-  description: '[⭐ Moderação ] Comando de limpar mensagens',
+  description: '[ ⭐ Moderação ] Comando de limpar mensagens',
   options: [
     {
       name: 'quantidade',

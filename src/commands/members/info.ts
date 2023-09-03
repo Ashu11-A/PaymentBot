@@ -4,7 +4,7 @@ import { ApplicationCommandType, EmbedBuilder } from 'discord.js'
 
 export default new Command({
   name: 'info',
-  description: 'Mostra informações sobre o servidor',
+  description: '[ 🪄 Utilidades ] Mostra informações sobre o servidor',
   type: ApplicationCommandType.ChatInput,
   async run ({ interaction }) {
     const embed = new EmbedBuilder()

@@ -5,7 +5,7 @@ import userInfo from './embeds/userInfo'
 
 export default new Command({
   name: 'userinfo',
-  description: 'Exibe informações do usuário.',
+  description: '[ 🪄 Utilidades ] Exibe informações do usuário.',
   options: [
     {
       name: 'usuário',

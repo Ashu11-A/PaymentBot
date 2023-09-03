@@ -6,7 +6,7 @@ import { createRow } from '@/utils/Discord'
 
 export default new Command({
   name: 'anunciar',
-  description: '[⭐ Moderação ] Enviar uma mensagem ao chat especificado.',
+  description: '[ ⭐ Moderação ] Enviar uma mensagem ao chat especificado.',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

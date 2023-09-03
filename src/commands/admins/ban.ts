@@ -4,7 +4,7 @@ import { LogsDiscord, client, db } from '@/app'
 
 export default new Command({
   name: 'ban',
-  description: '[⭐ Moderação ] Bane um usuário do servidor',
+  description: '[ ⭐ Moderação ] Bane um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

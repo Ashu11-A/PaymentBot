@@ -9,7 +9,7 @@ const tamanhoChoices = arrayTamanho.map(size => ({
 }))
 export default new Command({
   name: 'servericon',
-  description: 'Mostra o icone do servidor',
+  description: '[ 🪄 Utilidades ] Mostra o icone do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

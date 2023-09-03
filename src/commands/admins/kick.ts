@@ -4,7 +4,7 @@ import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, typ
 
 export default new Command({
   name: 'kick',
-  description: '[⭐ Moderação ] Expulsa um usuário do servidor',
+  description: '[ ⭐ Moderação ] Expulsa um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

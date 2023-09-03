@@ -3,7 +3,7 @@ import { ApplicationCommandType, EmbedBuilder } from 'discord.js'
 
 export default new Command({
   name: 'uptime',
-  description: 'Mostra o tempo de execução do bot',
+  description: '[ 🪄 Utilidades ] Mostra o tempo de execução do bot',
   type: ApplicationCommandType.ChatInput,
   async run ({ interaction }) {
     await interaction.deferReply({ ephemeral: true })

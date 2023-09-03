@@ -5,7 +5,7 @@ import { brBuilder } from '@/utils/Format'
 
 export default new Command({
   name: 'unban',
-  description: '[⭐ Moderação ] Desbane um usuário do servidor',
+  description: '[ ⭐ Moderação ] Desbane um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {

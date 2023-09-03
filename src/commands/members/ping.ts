@@ -3,7 +3,7 @@ import { ApplicationCommandType, EmbedBuilder } from 'discord.js'
 
 export default new Command({
   name: 'ping',
-  description: 'Mostra o ping do bot',
+  description: '[ 🪄 Utilidades ] Mostra o ping do bot',
   type: ApplicationCommandType.ChatInput,
   async run ({ interaction, client }) {
     const apiLatency = client.ws.ping
