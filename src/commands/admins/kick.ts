@@ -1,10 +1,10 @@
-import { LogsDiscord } from '@/app'
+import { LogsDiscord, db } from '@/app'
 import { Command } from '@/structs/types/Command'
 import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, type TextChannel } from 'discord.js'
 
 export default new Command({
   name: 'kick',
-  description: 'Expulsa um usuário do servidor',
+  description: '[⭐ Moderação ] Expulsa um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -21,11 +21,10 @@ export default new Command({
   ],
   async run ({ interaction, options }) {
     const user: any = options.getUser('usuário')
-    const reason = options.getString('motivo') || 'Nenhum motivo especificado'
+    const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
     const { guild } = interaction
-    const logsChannel = guild?.channels.cache.find(
-      (channel: { name: string }) => channel.name === 'logs'
-    ) as TextChannel
+    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+    const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       console.log(
@@ -33,7 +32,7 @@ export default new Command({
         `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o banir sem ter permissão.`
       )
       await interaction.reply({
-        content: 'Você não tem permissão para expulsar usuários!',
+        content: '❌ - Você não tem permissão para expulsar usuários!',
         ephemeral: true
       })
       void LogsDiscord(
@@ -49,7 +48,7 @@ export default new Command({
     if (user.id === interaction.user.id) {
       const embed = new EmbedBuilder()
         .setColor('Yellow')
-        .setDescription('Você não pode se expulsar do servidor.')
+        .setDescription('❌ - Você não pode se expulsar do servidor.')
       return await interaction.reply({ embeds: [embed], ephemeral: true })
     }
 

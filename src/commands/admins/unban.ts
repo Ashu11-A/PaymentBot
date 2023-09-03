@@ -1,11 +1,11 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, codeBlock } from 'discord.js'
 import { Command } from '@/structs/types/Command'
-import { LogsDiscord } from '@/app'
+import { LogsDiscord, db } from '@/app'
 import { brBuilder } from '@/utils/Format'
 
 export default new Command({
   name: 'unban',
-  description: 'Desbane um usuário do servidor',
+  description: '[⭐ Moderação ] Desbane um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -25,13 +25,12 @@ export default new Command({
     const userID: any = options.getString('usuário')
     const reason: string = options.getString('motivo') ?? 'Nenhum motivo especificado'
     const { guild } = interaction
-    const logsChannel = guild?.channels.cache.find(
-      (channel: { name: string }) => channel.name === 'logs'
-    ) as TextChannel
+    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+    const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('BanMembers')) === false) {
       await interaction.editReply({
-        content: 'Você não tem permissão para desbanir usuários!'
+        content: '❌ - Você não tem permissão para desbanir usuários!'
       })
       void LogsDiscord(
         interaction,

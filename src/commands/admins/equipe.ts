@@ -4,7 +4,7 @@ import { LogsDiscord } from '@/app'
 
 export default new Command({
   name: 'equipe',
-  description: 'Add/Rem alguem da equipe',
+  description: '[⭐ Moderação ] Add/Rem alguem da equipe',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -35,7 +35,7 @@ export default new Command({
     const user = options.getUser('usuário')
     const member = interaction.guild?.members.cache.get(String(user?.id))
     const cargo = options.getRole('cargo')
-    const type = options.getString('tipo') || 'add'
+    const type = options.getString('tipo') ?? 'add'
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.find(
       (channel: { name: string }) => channel.name === 'equipe'
@@ -43,7 +43,7 @@ export default new Command({
 
     if ((interaction?.memberPermissions?.has('ManageRoles')) === false) {
       await interaction.reply({
-        content: 'Você não tem permissão para usar esse comando!',
+        content: '**❌ - Você não possui permissão para utilizar este comando.**',
         ephemeral: true
       })
       void LogsDiscord(
@@ -59,7 +59,7 @@ export default new Command({
     if (user?.id === interaction.user.id) {
       const embed = new EmbedBuilder()
         .setColor('Yellow')
-        .setDescription('Você não pode utilizar este comando em sí mesmo.')
+        .setDescription('❌ - Você não pode utilizar este comando em sí mesmo.')
       return await interaction.reply({ embeds: [embed], ephemeral: true })
     }
     let message: string = ''

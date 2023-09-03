@@ -5,7 +5,7 @@ import createTicket from '@/events/commands/utils/createTicket'
 
 export default new Command({
   name: 'ticket',
-  description: 'Abrir Ticket',
+  description: '[ 🎫 Ticket ] Abrir Ticket',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -29,7 +29,7 @@ export default new Command({
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       await interaction.editReply({
-        content: 'Você não tem permissão para usar esse comando!'
+        content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
       void LogsDiscord(
         interaction,

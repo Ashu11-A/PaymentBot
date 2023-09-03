@@ -5,7 +5,7 @@ import { ApplicationCommandOptionType, codeBlock, type TextChannel } from 'disco
 
 export default new Command({
   name: 'limpar',
-  description: 'Comando de limpar mensagens',
+  description: '[⭐ Moderação ] Comando de limpar mensagens',
   options: [
     {
       name: 'quantidade',
@@ -55,7 +55,7 @@ export default new Command({
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       if (channel?.isTextBased() === false) {
         await interaction.reply({
-          content: 'Você não tem permissão para usar esse comando!',
+          content: '**❌ - Você não possui permissão para utilizar este comando.**',
           ephemeral: true
         })
       }

@@ -1,10 +1,10 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, GuildMember } from 'discord.js'
 import { Command } from '@/structs/types/Command'
-import { LogsDiscord } from '@/app'
+import { LogsDiscord, client, db } from '@/app'
 
 export default new Command({
   name: 'ban',
-  description: 'Bane um usuário do servidor',
+  description: '[⭐ Moderação ] Bane um usuário do servidor',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -14,22 +14,39 @@ export default new Command({
       type: ApplicationCommandOptionType.User
     },
     {
+      name: 'deletar-mensagens',
+      description: 'Excluir mensagens a quantos dias?',
+      type: ApplicationCommandOptionType.Number,
+      choices: [
+        { name: 'Deletar mensagens de até 7d atrás', value: 7 },
+        { name: 'Deletar mensagens de até 6d atrás', value: 6 },
+        { name: 'Deletar mensagens de até 5d atrás', value: 5 },
+        { name: 'Deletar mensagens de até 4d atrás', value: 4 },
+        { name: 'Deletar mensagens de até 3d atrás', value: 3 },
+        { name: 'Deletar mensagens de até 2d atrás', value: 2 },
+        { name: 'Deletar mensagens de até 1d atrás', value: 1 },
+        { name: 'Deletar nenhuma mensagem', value: 0 }
+      ],
+      required: false
+    },
+    {
       name: 'motivo',
       description: 'Motivo do banimento',
       type: ApplicationCommandOptionType.String
     }
   ],
   async run ({ interaction, options }) {
-    const user: any = options.getUser('usuário')
+    const user = options.getUser('usuário', true)
+    const member = options.getMember('usuário')
+    const deleteMSG = options.getNumber('deletar-mensagens') ?? 0
     const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
-    const { guild } = interaction
-    const logsChannel = guild?.channels.cache.find(
-      (channel: { name: string }) => channel.name === 'logs'
-    ) as TextChannel
+
+    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+    const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       await interaction.reply({
-        content: 'Você não tem permissão para banir usuários!',
+        content: '❌ - Você não tem permissão para banir usuários!',
         ephemeral: true
       })
       void LogsDiscord(
@@ -43,15 +60,26 @@ export default new Command({
     }
 
     if (user.id === interaction.user.id) {
-      const embed = new EmbedBuilder()
+      const unauthorizedEmbed = new EmbedBuilder()
         .setColor('Yellow')
-        .setDescription('Você não pode se banir do servidor.')
-      return await interaction.reply({ embeds: [embed], ephemeral: true })
+        .setTitle('Não permitido!')
+        .setDescription('❌ - Você não pode se banir do servidor.')
+      return await interaction.reply({ embeds: [unauthorizedEmbed], ephemeral: true })
+    }
+
+    if (user.id === client?.user?.id) {
+      const unauthorizedEmbed = new EmbedBuilder()
+        .setColor('Red')
+        .setTitle('Não permitido!')
+        .setDescription('Você quer me banir? tá marcado!')
+      return await interaction.reply({ embeds: [unauthorizedEmbed], ephemeral: true })
     }
 
     // Tenta banir o usuário
     try {
-      await guild?.members.ban(user, { reason })
+      if (member instanceof GuildMember) {
+        await member?.ban({ reason, deleteMessageSeconds: deleteMSG })
+      }
       // Adiciona o log de warning após o comando ter sido executado
       console.log(
         'BAN',
@@ -61,7 +89,7 @@ export default new Command({
         .setColor('Green')
         .setTitle('Usuário banido com sucesso!')
         .setDescription(
-          `${user?.username}#${user?.id} foi banido do servidor.`
+          `User: ${user?.username}, de ID: ${user?.id} foi banido do servidor.`
         )
         .addFields(
           {

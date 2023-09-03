@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder } from 'discord.js'
+import { AttachmentBuilder, EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder } from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { LogsDiscord } from '@/app'
 import { brBuilder } from '@/utils/Format'
@@ -6,7 +6,7 @@ import { createRow } from '@/utils/Discord'
 
 export default new Command({
   name: 'anunciar',
-  description: 'Enviar uma mensagem ao chat especificado.',
+  description: '[⭐ Moderação ] Enviar uma mensagem ao chat especificado.',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -43,8 +43,14 @@ export default new Command({
       required: false
     },
     {
-      name: 'imagem',
-      description: 'Habilitar logo na Embed',
+      name: 'imagem-enviar',
+      description: 'Possibilita o envio personalizado de uma imagem a embed',
+      type: ApplicationCommandOptionType.Attachment,
+      required: false
+    },
+    {
+      name: 'imagem-servidor',
+      description: 'Habilitar icon do servidor na Embed',
       type: ApplicationCommandOptionType.String,
       choices: [
         { name: 'Habilitar', value: 'true' }
@@ -64,7 +70,8 @@ export default new Command({
     const description = options.getString('descrição', true)
     const channel = options.getChannel('canal', true)
     const color = options.getString('cor')
-    const image = options.getString('imagem')
+    const image = options.getString('imagem-servidor')
+    const imageAttach = options.getAttachment('imagem-enviar')
     const cargo = options.getRole('marcar')
     const { guild } = interaction
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
@@ -73,7 +80,7 @@ export default new Command({
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       await interaction.editReply({
-        content: 'Você não tem permissão para usar esse comando!'
+        content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
       void LogsDiscord(
         interaction,
@@ -115,8 +122,12 @@ export default new Command({
     } else {
       embed.setColor('Random')
     }
+    let file: any[] = []
     if (image === 'true') {
       embed.setThumbnail(String(interaction.guild?.iconURL({ size: 1024 })))
+    } else if (imageAttach !== null) {
+      file = [new AttachmentBuilder(imageAttach.url, { name: 'image.png', description: `${interaction.user.id}` })]
+      embed.setThumbnail('attachment://image.png')
     }
 
     const message = await interaction.editReply({
@@ -126,12 +137,13 @@ export default new Command({
       components: [createRow(
         new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
         new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
-      )]
+      )],
+      files: file
     })
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })
     collector.on('collect', async subInteraction => {
       collector.stop()
-      const clearData = { components: [], embeds: [] }
+      const clearData = { components: [], embeds: [], files: [] }
 
       if (subInteraction.customId === 'embed-cancel-button') {
         void subInteraction.update({
@@ -146,9 +158,9 @@ export default new Command({
       if (sendChannel !== undefined) {
         let msg = {}
         if (cargo !== null) {
-          msg = { content: `<@&${cargo?.id}>`, embeds: [embed] }
+          msg = { content: `<@&${cargo?.id}>`, embeds: [embed], files: file }
         } else {
-          msg = { embeds: [embed] }
+          msg = { embeds: [embed], files: file }
         }
         await sendChannel.send(msg)
           .then(async () => await subInteraction.update({

@@ -12,7 +12,7 @@ export default new Command({
     const embed = new EmbedBuilder()
       .setTitle('Pong!')
       .setColor('DarkGold')
-      .setDescription(`Latencia da API: ${apiLatency} \nLatencia do Bot: ${botLatency}`)
+      .setDescription(`Latencia da API: ${apiLatency}ms \nLatencia do Bot: ${botLatency}ms`)
 
     await interaction.reply({
       ephemeral: true,

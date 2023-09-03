@@ -1,10 +1,10 @@
+import { db } from '@/app'
 import { type ColorResolvable, type TextChannel, type CommandInteraction, type CacheType, EmbedBuilder } from 'discord.js'
 
 export async function LogsDiscord (interaction: CommandInteraction<CacheType>, type: string, cause: string, color: ColorResolvable, infos: any): Promise<void> {
-  const { guild, commandName, user } = interaction
-  const logsChannel = guild?.channels.cache.find(
-    (channel: { name: string }) => channel.name === 'logs'
-  ) as TextChannel
+  const { commandName, user } = interaction
+  const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+  const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
   let title: string = ''
   let name: string = ''

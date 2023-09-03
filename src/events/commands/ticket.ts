@@ -1,15 +1,13 @@
 import { Event } from '@/structs/types/Event'
-import { config } from '@/app'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, ComponentType, EmbedBuilder, PermissionsBitField, type TextChannel } from 'discord.js'
+import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from 'discord.js'
 import { createRow } from '@/utils/Discord'
 import createTicket from './utils/createTicket'
 export default new Event({
   name: 'interactionCreate',
-  async run(interaction) {
+  async run (interaction) {
     if (interaction.isButton()) {
       if (interaction.customId === 'ticket') {
         await createTicket(interaction)
-        return
       } else if (interaction.customId === 'del-ticket') {
         await interaction.deferReply({ ephemeral: true })
         const message = await interaction.editReply({
@@ -34,10 +32,9 @@ export default new Event({
               embeds: [
                 new EmbedBuilder()
                   .setDescription('Você cancelou a ação')
-                  .setColor("Green")
+                  .setColor('Green')
               ]
             })
-            return
           } else if (subInteraction.customId === 'embed-confirm-button') {
             await subInteraction.update({
               ...clearData,
