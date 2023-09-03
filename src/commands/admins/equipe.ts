@@ -4,7 +4,7 @@ import { LogsDiscord } from '@/app'
 
 export default new Command({
   name: 'equipe',
-  description: '[ ⭐ Moderação ] Add/Rem alguem da equipe',
+  description: '[ 💎 Moderação ] Add/Rem alguem da equipe',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
