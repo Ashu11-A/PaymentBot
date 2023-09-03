@@ -8,7 +8,7 @@ export default new Event({
   once: true,
   async run () {
     const pass = randomstring.generate({ length: 128 })
-    await db.token.set('token', pass)
+    await db.tokens.set('token', pass)
 
     Express()
   }

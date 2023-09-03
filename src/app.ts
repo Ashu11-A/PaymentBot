@@ -20,7 +20,8 @@ if (!fs.existsSync(`${rootDir}/database`)) {
 
 const db = {
   guilds: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'guilds' }),
-  token: new QuickDB<any>({ filePath: join(rootDir, 'database/token.sqlite'), table: 'token' })
+  messages: new QuickDB<any>({ filePath: join(rootDir, 'database/messages.sqlite'), table: 'messages' }),
+  tokens: new QuickDB<any>({ filePath: join(rootDir, 'database/tokens.sqlite'), table: 'tokens' })
 }
 
 export { client, config, color, core, LogsDiscord, db }

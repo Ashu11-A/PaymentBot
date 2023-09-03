@@ -8,14 +8,13 @@
         "CtrlPanel": "https://dash.exemple.net",
         "Site": "https://exemple.net"
     },
+    "Guild": {
+        "ID": "I'm number"
+    },
     "Slash": {
         "Info": {
             "Owner": "I'm number",
             "Desc": "I'm description"
-        },
-        "Ticket": {
-            "ID": "I am the id of a category",
-            "Role": "I am the role of TicketHelper"
         }
     },
     "Logs": {

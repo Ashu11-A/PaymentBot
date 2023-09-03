@@ -1,5 +1,5 @@
 import { ActionRowBuilder, ButtonBuilder, type ButtonInteraction, ButtonStyle, type CacheType, ChannelType, type ChatInputCommandInteraction, type CommandInteraction, EmbedBuilder, type MessageContextMenuCommandInteraction, PermissionsBitField, type TextChannel, type UserContextMenuCommandInteraction } from 'discord.js'
-import { config, db } from '@/app'
+import { db } from '@/app'
 
 export default async function createTicket (interaction: ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<any> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>): Promise<void> {
   const { guild } = interaction
@@ -27,6 +27,7 @@ export default async function createTicket (interaction: ChatInputCommandInterac
     })
   } else {
     await interaction.deferReply({ ephemeral: true })
+    const roleDB = await db.guilds.get(`${interaction.guild?.id}.ticket_role`)
     try {
       const ch = await guild?.channels.create({
         name: `🎫-${interaction.user.username}`,
@@ -91,7 +92,7 @@ export default async function createTicket (interaction: ChatInputCommandInterac
           .setLabel('Fechar Ticket')
           .setStyle(ButtonStyle.Danger)
       )
-      await ch?.send({ content: `<@&${config.Slash.Ticket.idRole}>`, embeds: [embed], components: [botao] }).catch(console.error)
+      await ch?.send({ content: `<@&${roleDB}>`, embeds: [embed], components: [botao] }).catch(console.error)
     } catch (all) {
       console.error(all)
       await interaction.editReply({

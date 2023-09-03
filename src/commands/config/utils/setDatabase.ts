@@ -1,7 +1,7 @@
 import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { db } from '@/app'
 
-export default async function setChannelDatabase (interaction: CommandInteraction<CacheType>, typeChannel: TextChannel | CategoryChannel, typeData: string, typeString: string, text: string): Promise<void> {
+export async function setDatabase (interaction: CommandInteraction<CacheType>, typeChannel: TextChannel | CategoryChannel, typeData: string, typeString: string, text: string): Promise<void> {
   const { user, guild, channel } = interaction
 
   await db.guilds.set(`${guild?.id}.${typeData}_${typeString}`, typeChannel?.id)
@@ -22,6 +22,25 @@ export default async function setChannelDatabase (interaction: CommandInteractio
     }
 
     await channel?.send({ embeds: [embedCategoriaSet], components: [button] })
+  } catch (error) {
+    console.log(error)
+    await channel?.send({
+      content: 'Ocorreu um erro!'
+    })
+  }
+}
+
+export async function setDatabaseString (interaction: CommandInteraction<CacheType>, data: string, typeData: string, typeString: string, text: string): Promise<void> {
+  const { user, guild, channel } = interaction
+  await db.guilds.set(`${guild?.id}.${typeData}_${typeString}`, data)
+
+  try {
+    const embedCategoriaSet = new EmbedBuilder()
+      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${text} ${typeData}_${typeString}!**`)
+      .setColor('Green')
+      .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
+
+    await channel?.send({ embeds: [embedCategoriaSet] })
   } catch (error) {
     console.log(error)
     await channel?.send({
