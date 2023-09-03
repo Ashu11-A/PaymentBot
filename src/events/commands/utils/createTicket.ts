@@ -47,7 +47,7 @@ export default async function createTicket (interaction: ChatInputCommandInterac
       })
       const channel = new ActionRowBuilder<any>().addComponents(
         new ButtonBuilder()
-          .setLabel('Clique para ir ao seu Ticket')
+          .setLabel('Clique para ir ao seu ticket')
           .setURL(
               `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`
           )
@@ -64,13 +64,9 @@ export default async function createTicket (interaction: ChatInputCommandInterac
       })
       const embed = new EmbedBuilder()
         .setColor('Green')
-        .setTitle('📃・Detalhes do Ticket')
+        .setTitle('❤️ | Obrigado por entrar em contato com o suporte.')
+        .setDescription('Descreva seu problema e aguarde uma resposta.\n \n**📃・Detalhes do Ticket:**')
         .addFields(
-          {
-            name: '❤️ | Obrigado por entrar em contato com o suporte.',
-            value: 'Descreva seu problema e aguarde uma resposta.',
-            inline: false
-          },
           {
             name: '👤 | User:',
             value: `<@${interaction.user.id}>`
@@ -83,7 +79,6 @@ export default async function createTicket (interaction: ChatInputCommandInterac
           }
         )
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
-        .setTimestamp()
 
       const botao = new ActionRowBuilder<any>().addComponents(
         new ButtonBuilder()

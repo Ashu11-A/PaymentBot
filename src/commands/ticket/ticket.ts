@@ -42,8 +42,8 @@ export default new Command({
     }
     try {
       const embed = new EmbedBuilder()
-        .setTitle('Pegue Seu Ticket!')
-        .setDescription('Basta abrir seu ticket e esperar para falar com nosso suporte.')
+        .setTitle('Pegue seu ticket!')
+        .setDescription('Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.')
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
         .setColor('Green')
 
@@ -51,7 +51,7 @@ export default new Command({
         new ButtonBuilder()
           .setCustomId('ticket')
           .setEmoji({ name: '📩' })
-          .setLabel('Abra seu Ticket')
+          .setLabel('Abra seu ticket')
           .setStyle(ButtonStyle.Success)
       )
 

@@ -41,7 +41,7 @@ export default new Event({
               embeds: [
                 new EmbedBuilder()
                   .setTitle(`👋 | Olá ${interaction.user.username}`)
-                  .setDescription('❗️ | Seu ticket será excluído em 5 segundos.')
+                  .setDescription('❗️ | Esse ticket será excluído em 5 segundos.')
                   .setColor('Red')
               ]
             })

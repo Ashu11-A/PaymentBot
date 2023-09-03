@@ -16,18 +16,18 @@ export default new Event({
     const channel = guild?.channels.cache.get(channelDB) as TextChannel
 
     const embed = new EmbedBuilder()
-      .setTitle('Pegue Seu Ticket!')
-      .setDescription('Basta abrir seu ticket e esperar para falar com nosso suporte.')
-      .setFooter({ text: `Equipe ${channel?.name}`, iconURL: String(guild?.iconURL({ size: 64 })) })
-      .setColor('Green')
+    .setTitle('Pegue seu ticket!')
+    .setDescription('Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.')
+    .setFooter({ text: `Equipe ${channel?.name}`, iconURL: String(guild?.iconURL({ size: 64 })) })
+    .setColor('Green')
 
-    const botao = new ActionRowBuilder<any>().addComponents(
-      new ButtonBuilder()
-        .setCustomId('ticket')
-        .setEmoji({ name: '📩' })
-        .setLabel('Abra seu Ticket')
-        .setStyle(ButtonStyle.Success)
-    )
+  const botao = new ActionRowBuilder<any>().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ticket')
+      .setEmoji({ name: '📩' })
+      .setLabel('Abra seu ticket')
+      .setStyle(ButtonStyle.Success)
+  )
 
     const msgTicket = await db.messages.get(`${guild?.id}.msg_ticket`)
     console.log(msgTicket)
