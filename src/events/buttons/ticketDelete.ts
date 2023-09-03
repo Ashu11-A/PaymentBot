@@ -1,14 +1,11 @@
 import { Event } from '@/structs/types/Event'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder } from 'discord.js'
 import { createRow } from '@/utils/Discord'
-import createTicket from './utils/createTicket'
 export default new Event({
   name: 'interactionCreate',
   async run (interaction) {
     if (interaction.isButton()) {
-      if (interaction.customId === 'ticket') {
-        await createTicket(interaction)
-      } else if (interaction.customId === 'del-ticket') {
+      if (interaction.customId === 'del-ticket') {
         await interaction.deferReply({ ephemeral: true })
         const message = await interaction.editReply({
           embeds: [

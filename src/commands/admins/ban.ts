@@ -41,7 +41,7 @@ export default new Command({
     const deleteMSG = options.getNumber('deletar-mensagens') ?? 0
     const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
 
-    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {

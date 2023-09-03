@@ -1,7 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder, type ButtonInteraction, ButtonStyle, type CacheType, ChannelType, type ChatInputCommandInteraction, type CommandInteraction, EmbedBuilder, type MessageContextMenuCommandInteraction, PermissionsBitField, type TextChannel, type UserContextMenuCommandInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction } from 'discord.js'
 import { db } from '@/app'
-
-export default async function createTicket (interaction: ChatInputCommandInteraction<CacheType> | MessageContextMenuCommandInteraction<CacheType> | UserContextMenuCommandInteraction<any> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>): Promise<void> {
+export async function ticketCollector (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guild } = interaction
   const nome = `🎫-${interaction.user.username}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
@@ -27,7 +26,7 @@ export default async function createTicket (interaction: ChatInputCommandInterac
     })
   } else {
     await interaction.deferReply({ ephemeral: true })
-    const roleDB = await db.guilds.get(`${interaction.guild?.id}.ticket_role`)
+    const roleDB = await db.guilds.get(`${interaction.guild?.id}.ticket.role`)
     try {
       const ch = await guild?.channels.create({
         name: `🎫-${interaction.user.username}`,
@@ -43,7 +42,7 @@ export default async function createTicket (interaction: ChatInputCommandInterac
             allow: [PermissionsBitField.Flags.ViewChannel]
           }
         ],
-        parent: await db.guilds.get(`${interaction?.guild?.id}.category_ticket`)
+        parent: await db.guilds.get(`${interaction?.guild?.id}.ticket.category`)
       })
       const channel = new ActionRowBuilder<any>().addComponents(
         new ButtonBuilder()

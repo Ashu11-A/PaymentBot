@@ -4,7 +4,9 @@ import { db } from '@/app'
 export async function setDatabase (interaction: CommandInteraction<CacheType>, typeChannel: TextChannel | CategoryChannel, typeData: string, typeString: string, text: string): Promise<void> {
   const { user, guild, channel } = interaction
 
-  await db.guilds.set(`${guild?.id}.${typeData}_${typeString}`, typeChannel?.id)
+  console.log(`${guild?.id}.${typeData}.${typeString}`, (typeChannel?.id))
+
+  await db.guilds.set(`${guild?.id}.${typeData}.${typeString}`, typeChannel?.id)
   try {
     const embedCategoriaSet = new EmbedBuilder()
       .setDescription(`**✅ - ${typeData === 'channel' ? 'Canal' : 'Categoria'} ` + '``' + typeChannel?.name + '`` ' + text + '!**')
@@ -32,11 +34,11 @@ export async function setDatabase (interaction: CommandInteraction<CacheType>, t
 
 export async function setDatabaseString (interaction: CommandInteraction<CacheType>, data: string, typeData: string, typeString: string, text: string): Promise<void> {
   const { user, guild, channel } = interaction
-  await db.guilds.set(`${guild?.id}.${typeData}_${typeString}`, data)
+  await db.guilds.set(`${guild?.id}.${typeData}.${typeString}`, data)
 
   try {
     const embedCategoriaSet = new EmbedBuilder()
-      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${text} ${typeData}_${typeString}!**`)
+      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${text} ${typeData}.${typeString}!**`)
       .setColor('Green')
       .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
 

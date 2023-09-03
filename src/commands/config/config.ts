@@ -43,7 +43,7 @@ export default new Command({
       options: [
         {
           name: 'logs',
-          description: '[ 📃 Logs ] Use para definir o canal do logs.',
+          description: '[ 📃 Logs ] Use para definir o canal de logs.',
           type: ApplicationCommandOptionType.Channel,
           channelTypes: [
             ChannelType.GuildText
@@ -72,6 +72,18 @@ export default new Command({
           channelTypes: [
             ChannelType.GuildText
           ]
+        }
+      ]
+    },
+    {
+      name: 'equipe',
+      description: '[ 🤝 Equipe ] Configurar elementos do comando equipe',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'logs',
+          description: '[ 📃 Logs ] Use para definir o canal de logs.',
+          type: ApplicationCommandOptionType.Channel
         }
       ]
     },
@@ -130,10 +142,10 @@ export default new Command({
           const canal = options.getChannel('canal') as TextChannel
           const cargo = options.getRole('cargo')
           if (categoria !== null) {
-            await setDatabase(interaction, canal, 'category', 'ticket', 'setado para os tickets')
+            await setDatabase(interaction, categoria, 'ticket', 'category', 'setado para os tickets')
           }
           if (canal !== null) {
-            await setDatabase(interaction, canal, 'channel', 'ticket', 'setado para os tickets')
+            await setDatabase(interaction, canal, 'ticket', 'channel', 'setado para os tickets')
           }
           if (cargo !== null) {
             await setDatabaseString(interaction, cargo.id, 'ticket', 'role', 'foi atribuido a propriedade')
@@ -175,6 +187,13 @@ export default new Command({
           }
           if (desc !== null) {
             await setDatabaseString(interaction, desc, 'minecraft', 'desc', 'foi atribuido a propriedade')
+          }
+          break
+        }
+        case 'equipe': {
+          const logs = options.getChannel('logs') as TextChannel
+          if (logs !== null) {
+            await setDatabase(interaction, logs, 'channel', 'staff_logs', 'setado para as logs de entrada e saida da equipe')
           }
           break
         }

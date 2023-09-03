@@ -1,7 +1,7 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection } from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { LogsDiscord } from '@/app'
-import createTicket from '@/events/commands/utils/createTicket'
+import { ticketCollector } from './collectorButtons/ticketCollector'
 
 export default new Command({
   name: 'ticket',
@@ -21,7 +21,7 @@ export default new Command({
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
 
     if (channel === null) {
-      await createTicket(interaction)
+      await ticketCollector(interaction)
       return
     }
 
@@ -83,5 +83,10 @@ export default new Command({
         content: 'Ocorreu um erro!'
       })
     }
-  }
+  },
+  buttons: new Collection([
+    ['ticket', async (buttonInteraction) => {
+      await ticketCollector(buttonInteraction)
+    }]
+  ])
 })

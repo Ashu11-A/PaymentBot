@@ -3,7 +3,7 @@ import { type ColorResolvable, type TextChannel, type CommandInteraction, type C
 
 export async function LogsDiscord (interaction: CommandInteraction<CacheType>, type: string, cause: string, color: ColorResolvable, infos: any): Promise<void> {
   const { commandName, user } = interaction
-  const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+  const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
   const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
   let title: string = ''

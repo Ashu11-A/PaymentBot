@@ -1,10 +1,10 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel } from 'discord.js'
 import { Command } from '@/structs/types/Command'
-import { LogsDiscord } from '@/app'
+import { LogsDiscord, db } from '@/app'
 
 export default new Command({
   name: 'equipe',
-  description: '[ 💎 Moderação ] Add/Rem alguem da equipe',
+  description: '[ 💎 Moderação ] Add/Rem alguém da equipe',
   type: ApplicationCommandType.ChatInput,
   options: [
     {
@@ -37,9 +37,8 @@ export default new Command({
     const cargo = options.getRole('cargo')
     const type = options.getString('tipo') ?? 'add'
     const { guild } = interaction
-    const sendChannel = guild?.channels.cache.find(
-      (channel: { name: string }) => channel.name === 'equipe'
-    ) as TextChannel
+    const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.staff_logs`)
+    const sendChannel = guild?.channels.cache.get(channelDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('ManageRoles')) === false) {
       await interaction.reply({
@@ -62,33 +61,41 @@ export default new Command({
         .setDescription('❌ - Você não pode utilizar este comando em sí mesmo.')
       return await interaction.reply({ embeds: [embed], ephemeral: true })
     }
+
     let message: string = ''
     try {
       if (type === 'add') {
         message = `foi promovido ao cargo <@&${cargo?.id}>`
-        member?.roles.add(String(cargo?.id)).catch(async (err) => {
-          console.log(err)
-          return await interaction.reply({
-            content: 'Ocorreu um erro!',
-            ephemeral: true
+        member?.roles.add(String(cargo?.id))
+          .then(async () => {
+            await db.staff.set(`${interaction?.guild?.id}.members.${user?.id}`, {
+              user: user?.username,
+              role: cargo?.id
+            })
           })
-        })
+          .catch(async (err) => {
+            console.log(err)
+            return await interaction.reply({
+              content: 'Ocorreu um erro!',
+              ephemeral: true
+            })
+          })
       } else if (type === 'rem') {
         message = 'não integra mais a equipe'
-        member?.roles.remove(String(cargo?.id)).catch(async (err) => {
-          console.log(err)
-          return await interaction.reply({
-            content: 'Ocorreu um erro!',
-            ephemeral: true
+        member?.roles.remove(String(cargo?.id))
+          .then(async () => {
+            await db.guilds.delete(`${interaction?.guild?.id}.members.staff.${user?.id}`)
           })
-        })
+          .catch(async (err) => {
+            console.log(err)
+            return await interaction.reply({
+              content: 'Ocorreu um erro!',
+              ephemeral: true
+            })
+          })
       }
-      // Adiciona o log de warning após o comando ter sido executado
-      console.log(
-        `O usuario ${user?.username} com o ID: ${user?.id} foi promovido para: ${cargo?.name}`
-      )
       const embed = new EmbedBuilder()
-        .setColor('Random')
+        .setColor(cargo?.color ?? 'Random')
         .setTitle('📰 | STAFF LOG')
         .setDescription(
           `<@${user?.id}> ${message}.`

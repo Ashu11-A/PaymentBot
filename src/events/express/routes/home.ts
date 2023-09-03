@@ -20,7 +20,7 @@ class Home {
         router: req.originalUrl
       })
     } finally {
-      core.info(`Alguem acessou o router: ${req.originalUrl} no ip ${ipAddress}`.yellow)
+      core.info(`Alguém acessou o router: ${req.originalUrl} no ip ${ipAddress}`.yellow)
     }
   }
 }

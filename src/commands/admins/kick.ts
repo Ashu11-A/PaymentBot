@@ -23,7 +23,7 @@ export default new Command({
     const user: any = options.getUser('usuário')
     const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
     const { guild } = interaction
-    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+    const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {

@@ -9,7 +9,7 @@ export default new Event({
 
     if (interaction.isCommand()) {
       try {
-        const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel_logs`) as string
+        const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
         const logsChannel = interaction.guild?.channels.cache.get(logsDB)
 
         if ((logsChannel?.isTextBased()) === false) return

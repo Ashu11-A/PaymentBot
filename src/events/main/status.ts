@@ -8,7 +8,7 @@ export default new Event({
   name: 'ready',
   async run () {
     async function updateStatus (): Promise<void> {
-      const IP = await db.guilds.get(`${config.Guild.ID}.minecraft_ip`)
+      const IP = await db.guilds.get(`${config.Guild.ID}.minecraft.ip`)
       const res = await axios.get(`https://api.mcsrvstat.us/3/${IP}`)
       const formatRes = `${IP} | Status: ${res.data.online === true ? `Online | Players: ${res.data.players.online ?? 0}/${res.data.players.max ?? 0}` : 'Offline'}`
       console.log(`[ 'Status' ] - "${formatRes}".`)
