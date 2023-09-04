@@ -40,6 +40,18 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
           {
             id: interaction.user.id,
             allow: [PermissionsBitField.Flags.ViewChannel]
+          },
+          {
+            id: '1144009037097222144',
+            allow: [PermissionsBitField.Flags.ViewChannel]
+          },
+          {
+            id: '1144008994499870761',
+            allow: [PermissionsBitField.Flags.ViewChannel]
+          },
+          {
+            id: '1144009942584545454',
+            allow: [PermissionsBitField.Flags.ViewChannel]
           }
         ],
         parent: await db.guilds.get(`${interaction?.guild?.id}.ticket.category`)
