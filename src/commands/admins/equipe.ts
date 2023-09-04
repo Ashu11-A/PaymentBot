@@ -65,7 +65,7 @@ export default new Command({
     let message: string = ''
     try {
       if (type === 'add') {
-        message = `foi promovido ao cargo <@&${cargo?.id}>`
+        message = `adicionado a equipe como <@&${cargo?.id}>`
         member?.roles.add(String(cargo?.id))
           .then(async () => {
             await db.staff.set(`${interaction?.guild?.id}.members.${user?.id}`, {

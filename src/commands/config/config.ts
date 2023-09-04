@@ -72,6 +72,11 @@ export default new Command({
           channelTypes: [
             ChannelType.GuildText
           ]
+        },
+        {
+          name: 'react-message',
+          description: '[ 👍 React ] Canais onde mensagens serão automaticamente adicionado reações',
+          type: ApplicationCommandOptionType.Boolean
         }
       ]
     },
