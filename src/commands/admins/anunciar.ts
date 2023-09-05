@@ -171,7 +171,7 @@ export default new Command({
                 .setColor('Green')
             ],
             components: [
-              new ActionRowBuilder<any>().addComponents(
+              new ActionRowBuilder<ButtonBuilder>().addComponents(
                 new ButtonBuilder()
                   .setLabel('Clique para ir ao canal')
                   .setURL(

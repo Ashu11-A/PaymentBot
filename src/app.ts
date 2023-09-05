@@ -22,6 +22,7 @@ const db = {
   guilds: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'guilds' }),
   messages: new QuickDB<any>({ filePath: join(rootDir, 'database/messages.sqlite'), table: 'messages' }),
   staff: new QuickDB<any>({ filePath: join(rootDir, 'database/staff.sqlite'), table: 'staff' }),
+  system: new QuickDB<any>({ filePath: join(rootDir, 'database/system.sqlite'), table: 'system' }),
   tokens: new QuickDB<any>({ filePath: join(rootDir, 'database/tokens.sqlite'), table: 'tokens' })
 }
 

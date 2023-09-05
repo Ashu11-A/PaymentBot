@@ -47,7 +47,7 @@ export default new Command({
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
         .setColor('Green')
 
-      const botao = new ActionRowBuilder<any>().addComponents(
+      const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setCustomId('ticket')
           .setEmoji({ name: '📩' })
@@ -65,7 +65,7 @@ export default new Command({
                   .setColor('Green')
               ],
               components: [
-                new ActionRowBuilder<any>().addComponents(
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
                   new ButtonBuilder()
                     .setLabel('Clique para ir ao canal')
                     .setURL(

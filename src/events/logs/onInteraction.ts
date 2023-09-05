@@ -9,6 +9,9 @@ export default new Event({
 
     if (interaction.isCommand()) {
       try {
+        const enabled = await db.system.get(`${interaction.guild?.id}.status.systemLogs`)
+        if (enabled !== undefined && enabled === false) return
+
         const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
         const logsChannel = interaction.guild?.channels.cache.get(logsDB)
 

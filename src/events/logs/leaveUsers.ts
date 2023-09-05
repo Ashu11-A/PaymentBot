@@ -32,6 +32,9 @@ export default new Event({
         await db.staff.delete(`${interaction.guild.id}.members.staff.${interaction.user.id}`)
       }
 
+      const enabled = await db.system.get(`${interaction.guild?.id}.status.systemWelcomer`)
+      if (enabled !== undefined && enabled === false) return
+
       const { user } = interaction
       const embed = new EmbedBuilder()
         .setDescription(`Usuário ${user.username}, saiu do servidor!`)

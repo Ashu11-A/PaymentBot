@@ -7,6 +7,9 @@ export default new Event({
   async run (interaction) {
     console.log(`Um novo usuário entrou no servidor: | ${interaction.guild.name} | ${interaction.user.username}`)
     try {
+      const enabled = await db.system.get(`${interaction.guild?.id}.status.systemWelcomer`)
+      if (enabled !== undefined && enabled === false) return
+
       const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.entrada`) as string
       const suportDB = await db.guilds.get(`${interaction?.guild?.id}.ticket.channel`) as string
 

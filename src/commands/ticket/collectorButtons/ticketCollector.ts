@@ -1,11 +1,11 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake } from 'discord.js'
 import { db } from '@/app'
 export async function ticketCollector (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guild } = interaction
   const nome = `🎫-${interaction.user.username}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
   if (sendChannel != null) {
-    const buttonChannel = new ActionRowBuilder<any>().addComponents(
+    const buttonChannel = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel('Clique para ir ao seu ticket')
         .setURL(
@@ -26,37 +26,45 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
     })
   } else {
     await interaction.deferReply({ ephemeral: true })
+
+    const enabled = await db.system.get(`${interaction.guild?.id}.status.systemTicket`)
+    if (enabled !== undefined && enabled === false) {
+      await interaction.editReply({ content: '❌ | Os tickets estão desativados no momento!' })
+      return
+    }
+
     const roleDB = await db.guilds.get(`${interaction.guild?.id}.ticket.role`)
     try {
+      const permissionOverwrites = [
+        {
+          id: guild?.id,
+          deny: [PermissionsBitField.Flags.ViewChannel]
+        },
+        {
+          id: interaction.user.id,
+          allow: [PermissionsBitField.Flags.ViewChannel]
+        },
+        {
+          id: '1144009037097222144',
+          allow: [PermissionsBitField.Flags.ViewChannel]
+        },
+        {
+          id: '1144008994499870761',
+          allow: [PermissionsBitField.Flags.ViewChannel]
+        },
+        {
+          id: '1144009942584545454',
+          allow: [PermissionsBitField.Flags.ViewChannel]
+        }
+      ] as OverwriteResolvable[] | Collection<Snowflake, OverwriteResolvable>
       const ch = await guild?.channels.create({
         name: `🎫-${interaction.user.username}`,
         type: ChannelType.GuildText,
         topic: `Ticket do(a) ${interaction.user.username}, ID: ${interaction.user.id}`,
-        permissionOverwrites: [
-          {
-            id: guild?.id,
-            deny: [PermissionsBitField.Flags.ViewChannel]
-          },
-          {
-            id: interaction.user.id,
-            allow: [PermissionsBitField.Flags.ViewChannel]
-          },
-          {
-            id: '1144009037097222144',
-            allow: [PermissionsBitField.Flags.ViewChannel]
-          },
-          {
-            id: '1144008994499870761',
-            allow: [PermissionsBitField.Flags.ViewChannel]
-          },
-          {
-            id: '1144009942584545454',
-            allow: [PermissionsBitField.Flags.ViewChannel]
-          }
-        ],
+        permissionOverwrites,
         parent: await db.guilds.get(`${interaction?.guild?.id}.ticket.category`)
       })
-      const channel = new ActionRowBuilder<any>().addComponents(
+      const channel = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setLabel('Clique para ir ao seu ticket')
           .setURL(
@@ -91,7 +99,7 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
         )
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
 
-      const botao = new ActionRowBuilder<any>().addComponents(
+      const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
           .setCustomId('del-ticket')
           .setEmoji({ name: '✖️' })

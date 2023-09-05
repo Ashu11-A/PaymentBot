@@ -1,5 +1,6 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction } from 'discord.js'
 import { db } from '@/app'
+import { setSystem } from './setSystem'
 
 export async function setDatabase (interaction: CommandInteraction<CacheType>, typeChannel: TextChannel | CategoryChannel, typeData: string, typeString: string, text: string): Promise<void> {
   const { user, guild, channel } = interaction
@@ -13,17 +14,18 @@ export async function setDatabase (interaction: CommandInteraction<CacheType>, t
       .setColor('Green')
       .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
 
-    let button: any
-    if (typeData === 'channel') {
-      button = new ActionRowBuilder<any>().addComponents(
-        new ButtonBuilder()
-          .setLabel(`Click aqui para ir ao ${typeChannel?.name}`)
-          .setURL(`https://discord.com/channels/${guild?.id}/${typeChannel.id}`)
-          .setStyle(ButtonStyle.Link)
-      )
-    }
+    const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setLabel(`Click aqui para ir ao ${typeChannel?.name}`)
+        .setURL(`https://discord.com/channels/${guild?.id}/${typeChannel.id}`)
+        .setStyle(ButtonStyle.Link)
+    )
 
-    await channel?.send({ embeds: [embedCategoriaSet], components: [button] })
+    if (typeData === 'channel') {
+      await interaction?.editReply({ embeds: [embedCategoriaSet], components: [button] })
+    } else {
+      await interaction?.editReply({ embeds: [embedCategoriaSet] })
+    }
   } catch (error) {
     console.log(error)
     await channel?.send({
@@ -32,20 +34,49 @@ export async function setDatabase (interaction: CommandInteraction<CacheType>, t
   }
 }
 
-export async function setDatabaseString (interaction: CommandInteraction<CacheType>, data: string, typeData: string, typeString: string, text: string): Promise<void> {
+export async function setDatabaseString (interaction: CommandInteraction<CacheType>, data: string, typeData: string, systemName: string, displayText: string): Promise<void> {
   const { user, guild, channel } = interaction
-  await db.guilds.set(`${guild?.id}.${typeData}.${typeString}`, data)
+  await db.guilds.set(`${guild?.id}.${typeData}.${systemName}`, data)
 
   try {
     const embedCategoriaSet = new EmbedBuilder()
-      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${text} ${typeData}.${typeString}!**`)
+      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${displayText} ${typeData}.${systemName}!**`)
       .setColor('Green')
       .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
 
-    await channel?.send({ embeds: [embedCategoriaSet] })
+    await interaction?.editReply({ embeds: [embedCategoriaSet] })
   } catch (error) {
     console.log(error)
     await channel?.send({
+      content: 'Ocorreu um erro!'
+    })
+  }
+}
+
+export async function setDatabaseSystem (interaction: ButtonInteraction<CacheType>, typeData: string, systemName: string, displayName: string): Promise<void> {
+  const { user, guild } = interaction
+  let status = await db.system.get(`${guild?.id}.${typeData}.${systemName}`)
+  let msg
+  if (status === undefined || status === false) {
+    status = true
+    msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
+  } else {
+    status = false
+    msg = '**❌ | Sistema' + '``' + displayName + '``' + 'foi Desativado!**'
+  }
+  await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
+
+  try {
+    const embedCategoriaSet = new EmbedBuilder()
+      .setDescription(msg)
+      .setColor((status === true ? 'Green' : 'Red'))
+      .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
+
+    await interaction?.editReply({ embeds: [embedCategoriaSet] })
+    await setSystem(interaction)
+  } catch (error) {
+    console.log(error)
+    await interaction?.reply({
       content: 'Ocorreu um erro!'
     })
   }
