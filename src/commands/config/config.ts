@@ -10,7 +10,6 @@ import { Command } from '@/structs/types/Command'
 import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDatabase'
 import { LogsDiscord, db } from '@/app'
 import { setSystem } from './utils/setSystem'
-import { updateStatus } from '@/events/main/status'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
 
 export default new Command({
@@ -291,7 +290,7 @@ export default new Command({
           content: 'Ocorreu um erro!'
         })
       } catch {
-        return await interaction.reply({
+        return await interaction.channel?.send({
           content: 'Ocorreu um erro!'
         })
       }
@@ -299,28 +298,34 @@ export default new Command({
   },
   buttons: new Collection([
     ['systemTicket', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemTicket', 'Ticket')
     }],
     ['systemWelcomer', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemWelcomer', 'Boas vindas')
     }],
     ['systemStatus', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemStatus', 'Status')
     }],
     ['systemStatusMinecraft', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusMinecraft', 'Status')
     }],
     ['systemStatusString', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusString', 'Status')
     }],
     ['systemLogs', async (buttonInteraction) => {
-      await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemLogs', 'Logs')
+    }],
+    ['systemStatusOnline', async (buttonInteraction) => {
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusOnline', 'Status')
+    }],
+    ['systemStatusAusente', async (buttonInteraction) => {
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusAusente', 'Status')
+    }],
+    ['systemStatusNoPerturbe', async (buttonInteraction) => {
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusNoPerturbe', 'Status')
+    }],
+    ['systemStatusInvisível', async (buttonInteraction) => {
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusInvisível', 'Status')
     }]
   ]),
   modals: new Collection([

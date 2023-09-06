@@ -29,34 +29,36 @@ export async function updateStatus (ip: string, type: PresenceStatusData): Promi
 export default new Event({
   name: 'ready',
   async run () {
-    const guilds = client.guilds.cache
-    for (const guild of guilds.values()) {
-      const enabled = await db.system.get(`${guild.id}.status.systemStatus`)
-      if (enabled !== undefined && enabled === false) return
+    setIntervalAsync(async () => {
+      const guilds = client.guilds.cache
+      for (const guild of guilds.values()) {
+        const enabled = await db.system.get(`${guild.id}.status.systemStatus`)
+        if (enabled !== undefined && enabled === false) return
 
-      const type = (await db.guilds.get(`${guild.id}.status.type`)) as PresenceStatusData
-      const ip = await db.guilds.get(`${guild.id}.minecraft.ip`)
-      const typeStatus = await db.system.get(`${guild.id}.status.systemStatusMinecraft`)
+        const type = (await db.guilds.get(`${guild.id}.status.type`)) as PresenceStatusData
+        const typeStatus = await db.system.get(`${guild.id}.status.systemStatusMinecraft`)
+        console.log(typeStatus)
 
-      if (typeStatus !== undefined) {
-        await updateStatus(ip, type)
-        setIntervalAsync(async () => {
+        if (typeStatus !== undefined && typeStatus === true) {
+          const ip = await db.guilds.get(`${guild.id}.minecraft.ip`)
           await updateStatus(ip, type)
-        }, 1000 * 60 * 3)
-      } else {
-        const values = await db.messages.get(`${guild.id}.system.status.messages`)
-        let status = 0
-        setIntervalAsync(() => {
-          if (status >= values.length) status = 0
-          const newStatus = values[status]
+        } else if (typeStatus === undefined || typeStatus === false) {
+          const messages = await db.messages.get(`${guild.id}.system.status.messages`)
+          let currentMessage = await db.messages.get(`${guild.id}.system.status.currentMessage`)
+          if (currentMessage >= messages.length || currentMessage === undefined) {
+            currentMessage = 0
+            await db.messages.set(`${guild.id}.system.status.currentMessage`, 0)
+          }
+          console.log(messages, currentMessage)
+          const newStatus = messages[currentMessage]
           client?.user?.setPresence({
             activities: [{ name: newStatus, type: ActivityType.Playing }],
             status: type
           })
           console.log(`[ 'Status' ] - "${newStatus}".`)
-          status++
-        }, 10000)
+          await db.messages.add(`${guild.id}.system.status.currentMessage`, 1)
+        }
       }
-    }
+    }, 15000)
   }
 })

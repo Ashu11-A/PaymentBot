@@ -1,4 +1,4 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction } from 'discord.js'
+import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction, type Guild, type User } from 'discord.js'
 import { db } from '@/app'
 import { setSystem } from './setSystem'
 
@@ -53,42 +53,102 @@ export async function setDatabaseString (interaction: CommandInteraction<CacheTy
   }
 }
 
-export async function setDatabaseSystem (interaction: ButtonInteraction<CacheType>, typeData: string, systemName: string, displayName: string): Promise<void> {
-  const { user, guild } = interaction
-  let status = await db.system.get(`${guild?.id}.${typeData}.${systemName}`)
-  let msg: string
-  if (systemName === 'systemStatusMinecraft' || systemName === 'systemStatusString') {
-    if (systemName === 'systemStatusMinecraft') {
-      msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
-      await db.system.set(`${guild?.id}.${typeData}.systemStatusMinecraft`, true)
-      await db.system.delete(`${guild?.id}.${typeData}.systemStatusString`)
-    } else {
-      msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
-      await db.system.delete(`${guild?.id}.${typeData}.systemStatusMinecraft`)
-      await db.system.set(`${guild?.id}.${typeData}.systemStatusString`, true)
-    }
-  } else if (status === undefined || status === false) {
-    status = true
-    msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
-    await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
+async function updateSystemStatusAndClearOthers (
+  interaction: ButtonInteraction<CacheType>,
+  guild: Guild | null,
+  typeData: string,
+  systemName: string,
+  enabledType: string | null,
+  displayName: string,
+  user: User,
+  otherSystemNames: string[]
+): Promise<void> {
+  const statusKey = `${guild?.id}.${typeData}.${systemName}`
+  const status = await db.system.get(statusKey) as boolean
+
+  let activate: boolean
+
+  if (enabledType === 'switch') {
+    activate = true
   } else {
-    status = false
-    msg = '**❌ | Sistema' + '``' + displayName + '``' + 'foi Desativado!**'
-    await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
+    activate = (!status)
   }
 
-  try {
-    const embedCategoriaSet = new EmbedBuilder()
-      .setDescription(msg)
-      .setColor((status === true ? 'Green' : 'Red'))
-      .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
+  await db.system.set(statusKey, activate)
 
-    await interaction?.editReply({ embeds: [embedCategoriaSet] })
+  const statusMsg = activate
+    ? `✅ | Sistema **\`${displayName}\`** foi Ativado!`
+    : `❌ | Sistema **\`${displayName}\`** foi Desativado!`
+
+  const embedCategoriaSet = new EmbedBuilder()
+    .setDescription(statusMsg)
+    .setColor(activate ? 'Green' : 'Red')
+    .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
+
+  for (const otherSystem of otherSystemNames) {
+    const key = `${guild?.id}.${typeData}.${otherSystem}`
+    console.log(`Deletando database: ${key}`)
+    await db.system.delete(key)
+    const result = await db.system.get(key)
+    if (result !== undefined) {
+      console.log(`Erro ao excluir a chave: ${key}`)
+    }
+  }
+
+  await interaction.editReply({ embeds: [embedCategoriaSet] })
+}
+
+export async function setDatabaseSystem (
+  interaction: ButtonInteraction<CacheType>,
+  typeData: string,
+  systemName: string,
+  displayName: string
+): Promise<void> {
+  await interaction.deferReply({ ephemeral: true })
+  const { user, guild } = interaction
+
+  type SystemActions = Record<string, () => Promise<void>>
+
+  try {
+    const systemActions: SystemActions = {
+      systemStatusMinecraft: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusMinecraft', 'switch', displayName, user,
+          ['systemStatusString'])
+      },
+      systemStatusString: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusString', 'switch', displayName, user,
+          ['systemStatusMinecraft'])
+      },
+      systemStatusOnline: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusOnline', 'switch', displayName, user,
+          ['systemStatusAusente', 'systemStatusNoPerturbe', 'systemStatusInvisível']
+        )
+      },
+      systemStatusAusente: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusAusente', 'switch', displayName, user,
+          ['systemStatusOnline', 'systemStatusNoPerturbe', 'systemStatusInvisível']
+        )
+      },
+      systemStatusNoPerturbe: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusNoPerturbe', 'switch', displayName, user,
+          ['systemStatusOnline', 'systemStatusAusente', 'systemStatusInvisível']
+        )
+      },
+      systemStatusInvisível: async () => {
+        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusInvisível', 'switch', displayName, user,
+          ['systemStatusOnline', 'systemStatusAusente', 'systemStatusNoPerturbe']
+        )
+      }
+    }
+
+    if (systemName in systemActions) {
+      await systemActions[systemName]()
+    } else {
+      await updateSystemStatusAndClearOthers(interaction, guild, typeData, systemName, null, displayName, user, [])
+    }
+    console.log(await db.system.get(`${guild?.id}.${typeData}`))
     await setSystem(interaction)
   } catch (error) {
     console.log(error)
-    await interaction?.reply({
-      content: 'Ocorreu um erro!'
-    })
   }
 }

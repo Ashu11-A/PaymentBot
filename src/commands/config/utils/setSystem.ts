@@ -61,9 +61,28 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setLabel('Messages Array')
       .setEmoji({ name: '📃' })
   ]
+  const row3Buttons = [
+    new ButtonBuilder()
+      .setCustomId('systemStatusOnline')
+      .setLabel('Online')
+      .setEmoji({ name: '🟢' }),
+    new ButtonBuilder()
+      .setCustomId('systemStatusAusente')
+      .setLabel('Ausente')
+      .setEmoji({ name: '🟠' }),
+    new ButtonBuilder()
+      .setCustomId('systemStatusNoPerturbe')
+      .setLabel('Não Perturbe')
+      .setEmoji({ name: '🔴' }),
+    new ButtonBuilder()
+      .setCustomId('systemStatusInvisível')
+      .setLabel('Invisível')
+      .setEmoji({ name: '⚫' })
+  ]
 
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
+  const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
 
   const emojiToButtonType: any = {
     '🎫': 'systemTicket',
@@ -71,7 +90,11 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     '⚙️': 'systemStatus',
     '🧱': 'systemStatusMinecraft',
     '📃': 'systemStatusString',
-    '📰': 'systemLogs'
+    '📰': 'systemLogs',
+    '🟢': 'systemStatusOnline',
+    '🟠': 'systemStatusAusente',
+    '🔴': 'systemStatusNoPerturbe',
+    '⚫': 'systemStatusInvisível'
   }
 
   for (const value of row1Buttons) {
@@ -98,6 +121,18 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     }
   }
 
+  for (const value of row3Buttons) {
+    const buttons = value.data.emoji?.name as string
+    const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
+    if (result !== undefined && result === true) {
+      value.setStyle(ButtonStyle.Success)
+    } else if (result === false) {
+      value.setStyle(ButtonStyle.Danger)
+    } else {
+      value.setStyle(ButtonStyle.Secondary)
+    }
+  }
+
   try {
     await channelSend?.messages.fetch(message1DB)
       .then(async (msg) => {
@@ -112,10 +147,10 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       })
     await channelSend?.messages.fetch(message2DB)
       .then(async (msg) => {
-        await msg.edit({ embeds: [statusEmbed], components: [row2] })
+        await msg.edit({ embeds: [statusEmbed], components: [row2, row3] })
       })
       .catch(async () => {
-        await interaction.channel?.send({ embeds: [statusEmbed], components: [row2] })
+        await interaction.channel?.send({ embeds: [statusEmbed], components: [row2, row3] })
           .then(async (msg) => {
             await db.messages.set(`${guildID}.system.message2`, msg.id)
             await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
