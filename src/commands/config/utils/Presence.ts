@@ -4,10 +4,11 @@ import {
   type ModalSubmitInteraction,
   type CacheType
   , type StringSelectMenuInteraction,
-  StringSelectMenuBuilder
+  StringSelectMenuBuilder,
+  type ButtonInteraction
 } from 'discord.js'
 
-export async function modelPresence (interaction: CommandInteraction<'cached'>): Promise<void> {
+export async function modelPresence (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>): Promise<void> {
   const modal = new ModalBuilder({ custom_id: 'MessagePresence', title: 'Messages for Presence' })
   const input1 = new ActionRowBuilder<TextInputBuilder>({
     components: [

@@ -88,17 +88,6 @@ export default new Command({
           type: ApplicationCommandOptionType.Subcommand,
           options: [
             {
-              name: 'presença',
-              description: '[ 🟢 Presença ] Defina qual será o tipo de status',
-              type: ApplicationCommandOptionType.String,
-              choices: [
-                { name: 'Online', value: 'online' },
-                { name: 'Ausente', value: 'idle' },
-                { name: 'Não Perturbe', value: 'dnd' },
-                { name: 'Invisível', value: 'invisible' }
-              ]
-            },
-            {
               name: 'messages',
               description: '[ 🌠 Modal ] Envia um Modal para definir as mensagens do status',
               type: ApplicationCommandOptionType.String,
@@ -244,12 +233,7 @@ export default new Command({
         case 'status': {
           switch (options.getSubcommand(true)) {
             case 'opções': {
-              const presença = options.getString('presença')
               const messages = options.getString('messages')
-
-              if (presença !== null) {
-                await setDatabaseString(interaction, presença, 'status', 'type', 'foi atribuído a propriedade')
-              }
 
               if (messages !== null) {
                 if (messages === 'true') {
@@ -316,16 +300,16 @@ export default new Command({
       await setDatabaseSystem(buttonInteraction, 'status', 'systemLogs', 'Logs')
     }],
     ['systemStatusOnline', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusOnline', 'Status')
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'online')
     }],
     ['systemStatusAusente', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusAusente', 'Status')
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'idle')
     }],
     ['systemStatusNoPerturbe', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusNoPerturbe', 'Status')
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'dnd')
     }],
     ['systemStatusInvisível', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusInvisível', 'Status')
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'invisible')
     }]
   ]),
   modals: new Collection([

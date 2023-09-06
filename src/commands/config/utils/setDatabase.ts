@@ -65,24 +65,29 @@ async function updateSystemStatusAndClearOthers (
 ): Promise<void> {
   const statusKey = `${guild?.id}.${typeData}.${systemName}`
   const status = await db.system.get(statusKey) as boolean
-
-  let activate: boolean
+  let activate: string | boolean
+  let datatype: boolean = true
 
   if (enabledType === 'switch') {
     activate = true
+  } else if (typeof enabledType === 'string') {
+    activate = enabledType
   } else {
+    datatype = (!status)
     activate = (!status)
   }
 
   await db.system.set(statusKey, activate)
 
-  const statusMsg = activate
-    ? `✅ | Sistema **\`${displayName}\`** foi Ativado!`
+  if (typeof activate === 'string' || activate) datatype = true
+
+  const statusMsg = datatype
+    ? `✅ | Sistema **\`${systemName}\`** foi definido como **${displayName}**!`
     : `❌ | Sistema **\`${displayName}\`** foi Desativado!`
 
   const embedCategoriaSet = new EmbedBuilder()
     .setDescription(statusMsg)
-    .setColor(activate ? 'Green' : 'Red')
+    .setColor(datatype ? 'Green' : 'Red')
     .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
 
   for (const otherSystem of otherSystemNames) {
@@ -112,31 +117,39 @@ export async function setDatabaseSystem (
   try {
     const systemActions: SystemActions = {
       systemStatusMinecraft: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusMinecraft', 'switch', displayName, user,
-          ['systemStatusString'])
+        await updateSystemStatusAndClearOthers(
+          interaction,
+          guild,
+          typeData,
+          'systemStatusMinecraft',
+          'switch',
+          displayName,
+          user,
+          ['systemStatusString']
+        )
       },
       systemStatusString: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusString', 'switch', displayName, user,
-          ['systemStatusMinecraft'])
-      },
-      systemStatusOnline: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusOnline', 'switch', displayName, user,
-          ['systemStatusAusente', 'systemStatusNoPerturbe', 'systemStatusInvisível']
+        await updateSystemStatusAndClearOthers(
+          interaction,
+          guild,
+          typeData,
+          'systemStatusString',
+          'switch',
+          displayName,
+          user,
+          ['systemStatusMinecraft']
         )
       },
-      systemStatusAusente: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusAusente', 'switch', displayName, user,
-          ['systemStatusOnline', 'systemStatusNoPerturbe', 'systemStatusInvisível']
-        )
-      },
-      systemStatusNoPerturbe: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusNoPerturbe', 'switch', displayName, user,
-          ['systemStatusOnline', 'systemStatusAusente', 'systemStatusInvisível']
-        )
-      },
-      systemStatusInvisível: async () => {
-        await updateSystemStatusAndClearOthers(interaction, guild, typeData, 'systemStatusInvisível', 'switch', displayName, user,
-          ['systemStatusOnline', 'systemStatusAusente', 'systemStatusNoPerturbe']
+      systemStatusType: async () => {
+        await updateSystemStatusAndClearOthers(
+          interaction,
+          guild,
+          typeData,
+          systemName,
+          displayName,
+          displayName,
+          user,
+          []
         )
       }
     }
@@ -144,7 +157,16 @@ export async function setDatabaseSystem (
     if (systemName in systemActions) {
       await systemActions[systemName]()
     } else {
-      await updateSystemStatusAndClearOthers(interaction, guild, typeData, systemName, null, displayName, user, [])
+      await updateSystemStatusAndClearOthers(
+        interaction,
+        guild,
+        typeData,
+        systemName,
+        null,
+        displayName,
+        user,
+        []
+      )
     }
     console.log(await db.system.get(`${guild?.id}.${typeData}`))
     await setSystem(interaction)

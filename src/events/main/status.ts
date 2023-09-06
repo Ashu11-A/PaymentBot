@@ -35,7 +35,7 @@ export default new Event({
         const enabled = await db.system.get(`${guild.id}.status.systemStatus`)
         if (enabled !== undefined && enabled === false) return
 
-        const type = (await db.guilds.get(`${guild.id}.status.type`)) as PresenceStatusData
+        const type = (await db.system.get(`${guild.id}.status.systemStatusType`)) as PresenceStatusData
         const typeStatus = await db.system.get(`${guild.id}.status.systemStatusMinecraft`)
         console.log(typeStatus)
 

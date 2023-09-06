@@ -3,12 +3,12 @@ import {
   ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  type CacheType,
-  type CommandInteraction,
+  type CacheType, type CommandInteraction,
   type ButtonInteraction,
   type TextChannel
 } from 'discord.js'
 import { db } from '@/app'
+import { brBuilder } from '@/utils/Format'
 
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const guildID = interaction?.guild?.id
@@ -27,9 +27,15 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     .setDescription('Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.')
     .setColor('Green')
 
-  const statusEmbed = new EmbedBuilder()
-    .setTitle('⚙️ Presence Status')
-    .setDescription('Escolha qual tipo de status deseja, e se quer ativa-lo ou desativa-lo')
+  const statusEmbed = new EmbedBuilder({
+    title: '⚙️ Presence Status',
+    description: brBuilder(
+      '◈ Ative ou Desative o status do Bot',
+      '◈ Escolha abaixo qual tipo de status deseja.',
+      '◈ Os status são atualizados a cada ``15 segundos``',
+      '◈ Você pode personalizar os status com o comando </config status opções:1147696144953118820> (opção disponivel com Messages Array)'
+    )
+  })
     .setColor('Green')
 
   const row1Buttons = [
@@ -91,10 +97,10 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     '🧱': 'systemStatusMinecraft',
     '📃': 'systemStatusString',
     '📰': 'systemLogs',
-    '🟢': 'systemStatusOnline',
-    '🟠': 'systemStatusAusente',
-    '🔴': 'systemStatusNoPerturbe',
-    '⚫': 'systemStatusInvisível'
+    '🟢': 'online',
+    '🟠': 'idle',
+    '🔴': 'dnd',
+    '⚫': 'invisible'
   }
 
   for (const value of row1Buttons) {
@@ -123,11 +129,10 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
 
   for (const value of row3Buttons) {
     const buttons = value.data.emoji?.name as string
-    const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
-    if (result !== undefined && result === true) {
+    const result = await emojiToButtonType[buttons]
+    const systemEnabled = await db.system.get(`${interaction?.guild?.id}.status.systemStatusType`)
+    if (systemEnabled === result) {
       value.setStyle(ButtonStyle.Success)
-    } else if (result === false) {
-      value.setStyle(ButtonStyle.Danger)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
