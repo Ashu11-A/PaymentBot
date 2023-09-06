@@ -1,28 +1,62 @@
 import { setIntervalAsync } from 'set-interval-async/fixed'
 import { Event } from '@/structs/types/Event'
-import { ActivityType } from 'discord.js'
-import { client, db, config } from '@/app'
+import { ActivityType, type PresenceStatusData } from 'discord.js'
+import { client, db } from '@/app'
 import axios from 'axios'
+
+export async function updateStatus (ip: string, type: PresenceStatusData): Promise<void> {
+  try {
+    const res = await axios.get(`https://api.mcsrvstat.us/3/${ip}`)
+    const formatRes = `${ip} | Status: ${
+      res.data.online === true
+        ? `Online | Players: ${res.data.players.online ?? 0}/${res.data.players.max ?? 0}`
+        : 'Offline'
+    }`
+    console.log(`[ 'Status' ] - "${formatRes}".`)
+    client?.user?.setPresence({
+      activities: [{ name: formatRes, type: ActivityType.Playing }],
+      status: `${type ?? 'online'}`
+    })
+  } catch (err) {
+    console.error(err)
+    client?.user?.setPresence({
+      activities: [{ name: 'API Error', type: ActivityType.Playing }],
+      status: 'idle'
+    })
+  }
+}
 
 export default new Event({
   name: 'ready',
   async run () {
-    async function updateStatus (): Promise<void> {
-      const enabled = await db.system.get(`${config.Guild.ID}.status.systemStatus`)
+    const guilds = client.guilds.cache
+    for (const guild of guilds.values()) {
+      const enabled = await db.system.get(`${guild.id}.status.systemStatus`)
       if (enabled !== undefined && enabled === false) return
 
-      const IP = await db.guilds.get(`${config.Guild.ID}.minecraft.ip`)
-      const res = await axios.get(`https://api.mcsrvstat.us/3/${IP}`)
-      const formatRes = `${IP} | Status: ${res.data.online === true ? `Online | Players: ${res.data.players.online ?? 0}/${res.data.players.max ?? 0}` : 'Offline'}`
-      console.log(`[ 'Status' ] - "${formatRes}".`)
-      client?.user?.setPresence({
-        activities: [{ name: formatRes, type: ActivityType.Playing }],
-        status: `${res.data.online === true ? 'online' : 'dnd'}`
-      })
+      const type = (await db.guilds.get(`${guild.id}.status.type`)) as PresenceStatusData
+      const ip = await db.guilds.get(`${guild.id}.minecraft.ip`)
+      const typeStatus = await db.system.get(`${guild.id}.status.systemStatusMinecraft`)
+
+      if (typeStatus !== undefined) {
+        await updateStatus(ip, type)
+        setIntervalAsync(async () => {
+          await updateStatus(ip, type)
+        }, 1000 * 60 * 3)
+      } else {
+        const values = await db.messages.get(`${guild.id}.system.status.messages`)
+        let status = 0
+        setIntervalAsync(() => {
+          if (status >= values.length) status = 0
+          const newStatus = values[status]
+          client?.user?.setPresence({
+            activities: [{ name: newStatus, type: ActivityType.Playing }],
+            status: type
+          })
+          console.log(`[ 'Status' ] - "${newStatus}".`)
+          status++
+        }, 10000)
+      }
     }
-    await updateStatus()
-    setIntervalAsync(async () => {
-      await updateStatus()
-    }, 1000 * 60 * 3)
   }
 })

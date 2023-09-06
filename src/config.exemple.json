@@ -8,9 +8,6 @@
         "CtrlPanel": "https://dash.exemple.net",
         "Site": "https://exemple.net"
     },
-    "Guild": {
-        "ID": "I'm number"
-    },
     "Slash": {
         "Info": {
             "Owner": "I'm number",

@@ -56,15 +56,26 @@ export async function setDatabaseString (interaction: CommandInteraction<CacheTy
 export async function setDatabaseSystem (interaction: ButtonInteraction<CacheType>, typeData: string, systemName: string, displayName: string): Promise<void> {
   const { user, guild } = interaction
   let status = await db.system.get(`${guild?.id}.${typeData}.${systemName}`)
-  let msg
-  if (status === undefined || status === false) {
+  let msg: string
+  if (systemName === 'systemStatusMinecraft' || systemName === 'systemStatusString') {
+    if (systemName === 'systemStatusMinecraft') {
+      msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
+      await db.system.set(`${guild?.id}.${typeData}.systemStatusMinecraft`, true)
+      await db.system.delete(`${guild?.id}.${typeData}.systemStatusString`)
+    } else {
+      msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
+      await db.system.delete(`${guild?.id}.${typeData}.systemStatusMinecraft`)
+      await db.system.set(`${guild?.id}.${typeData}.systemStatusString`, true)
+    }
+  } else if (status === undefined || status === false) {
     status = true
     msg = '**✅ | Sistema' + '``' + displayName + '``' + 'foi Ativado!**'
+    await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
   } else {
     status = false
     msg = '**❌ | Sistema' + '``' + displayName + '``' + 'foi Desativado!**'
+    await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
   }
-  await db.system.set(`${guild?.id}.${typeData}.${systemName}`, status)
 
   try {
     const embedCategoriaSet = new EmbedBuilder()

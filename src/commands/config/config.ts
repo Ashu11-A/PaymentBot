@@ -1,8 +1,17 @@
-import { ApplicationCommandOptionType, ApplicationCommandType, ChannelType, type CategoryChannel, type TextChannel, Collection } from 'discord.js'
+import {
+  ApplicationCommandOptionType,
+  ApplicationCommandType,
+  ChannelType,
+  type CategoryChannel,
+  type TextChannel,
+  Collection
+} from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDatabase'
 import { LogsDiscord, db } from '@/app'
 import { setSystem } from './utils/setSystem'
+import { updateStatus } from '@/events/main/status'
+import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
 
 export default new Command({
   name: 'config',
@@ -70,33 +79,67 @@ export default new Command({
       ]
     },
     {
-      name: 'minecraft',
-      description: '[ 🧱 Minecraft ] Definir informações do servidor de Minecraft',
-      type: ApplicationCommandOptionType.Subcommand,
+      name: 'status',
+      description: '[ ⚙️ Status ] Definir status personalizado ao bot.',
+      type: ApplicationCommandOptionType.SubcommandGroup,
       options: [
         {
-          name: 'canal',
-          description: '[ 💬 ] Canal onde ficará a embed das informações.',
-          type: ApplicationCommandOptionType.Channel,
-          required: false
+          name: 'opções',
+          description: '[🔩] Opções Gerais',
+          type: ApplicationCommandOptionType.Subcommand,
+          options: [
+            {
+              name: 'presença',
+              description: '[ 🟢 Presença ] Defina qual será o tipo de status',
+              type: ApplicationCommandOptionType.String,
+              choices: [
+                { name: 'Online', value: 'online' },
+                { name: 'Ausente', value: 'idle' },
+                { name: 'Não Perturbe', value: 'dnd' },
+                { name: 'Invisível', value: 'invisible' }
+              ]
+            },
+            {
+              name: 'messages',
+              description: '[ 🌠 Modal ] Envia um Modal para definir as mensagens do status',
+              type: ApplicationCommandOptionType.String,
+              choices: [
+                { name: 'Adicionar', value: 'true' },
+                { name: 'Remover', value: 'false' }
+              ]
+            }
+          ]
         },
         {
-          name: 'desc',
-          description: '[ 📄 ] Descrição do servidor (exemplo: RankUP, Factions).',
-          type: ApplicationCommandOptionType.String,
-          required: false
-        },
-        {
-          name: 'ip',
-          description: '[ 🔗 ] IP do servidor.',
-          type: ApplicationCommandOptionType.String,
-          required: false
-        },
-        {
-          name: 'porta',
-          description: '[ 🚪 ] Porta do servidor.',
-          type: ApplicationCommandOptionType.String,
-          required: false
+          name: 'minecraft',
+          description: '[ 🧱 Minecraft ] Definir informações do servidor de Minecraft',
+          type: ApplicationCommandOptionType.Subcommand,
+          options: [
+            {
+              name: 'canal',
+              description: '[ 💬 ] Canal onde ficará a embed das informações.',
+              type: ApplicationCommandOptionType.Channel,
+              required: false
+            },
+            {
+              name: 'desc',
+              description: '[ 📄 ] Descrição do servidor (exemplo: RankUP, Factions).',
+              type: ApplicationCommandOptionType.String,
+              required: false
+            },
+            {
+              name: 'ip',
+              description: '[ 🔗 ] IP do servidor.',
+              type: ApplicationCommandOptionType.String,
+              required: false
+            },
+            {
+              name: 'porta',
+              description: '[ 🚪 ] Porta do servidor.',
+              type: ApplicationCommandOptionType.String,
+              required: false
+            }
+          ]
         }
       ]
     },
@@ -145,10 +188,10 @@ export default new Command({
     }
 
     if (!interaction.inCachedGuild()) return
-    await interaction.deferReply({ ephemeral: true })
     try {
       switch (options.getSubcommand(true)) {
         case 'guild': {
+          await interaction.deferReply({ ephemeral: true })
           const banKick = options.getChannel('ban-kick') as TextChannel
           const entrada = options.getChannel('entrada') as TextChannel
           const logsEquipe = options.getChannel('logs-equipe') as TextChannel
@@ -178,28 +221,8 @@ export default new Command({
 
           break
         }
-        case 'minecraft': {
-          const canal = options.getChannel('canal') as TextChannel
-          const desc = options.getString('desc') as string
-          const ip = options.getString('ip') as string
-          const porta = options.getString('porta') as string
-
-          if (canal !== null) {
-            await setDatabase(interaction, canal, 'channel', 'minecraft', 'setado para o status do servidor de minecraft')
-          }
-          if (desc !== null) {
-            await setDatabaseString(interaction, desc, 'minecraft', 'desc', 'foi atribuído a propriedade')
-          }
-          if (ip !== null) {
-            await setDatabaseString(interaction, ip, 'minecraft', 'ip', 'foi atribuído a propriedade')
-          }
-          if (porta !== null) {
-            await setDatabaseString(interaction, porta, 'minecraft', 'porta', 'foi atribuído a propriedade')
-          }
-
-          break
-        }
         case 'ticket': {
+          await interaction.deferReply({ ephemeral: true })
           const canal = options.getChannel('canal') as TextChannel
           const cargo = options.getRole('cargo')
           const categoria = options.getChannel('categoria') as CategoryChannel
@@ -216,16 +239,62 @@ export default new Command({
 
           break
         }
-        default: {
-          await interaction.editReply({ content: 'Nenhum item foi selecionado, certeza que sabe o que está fazendo?' })
-          break
+      }
+
+      switch (options.getSubcommandGroup(false)) {
+        case 'status': {
+          switch (options.getSubcommand(true)) {
+            case 'opções': {
+              const presença = options.getString('presença')
+              const messages = options.getString('messages')
+
+              if (presença !== null) {
+                await setDatabaseString(interaction, presença, 'status', 'type', 'foi atribuído a propriedade')
+              }
+
+              if (messages !== null) {
+                if (messages === 'true') {
+                  await modelPresence(interaction)
+                } else {
+                  await delPresence(interaction)
+                }
+              }
+              break
+            }
+            case 'minecraft': {
+              await interaction.deferReply({ ephemeral: true })
+              const canal = options.getChannel('canal') as TextChannel
+              const desc = options.getString('desc') as string
+              const ip = options.getString('ip') as string
+              const porta = options.getString('porta') as string
+
+              if (canal !== null) {
+                await setDatabase(interaction, canal, 'channel', 'minecraft', 'setado para o status do servidor de minecraft')
+              }
+              if (desc !== null) {
+                await setDatabaseString(interaction, desc, 'minecraft', 'desc', 'foi atribuído a propriedade')
+              }
+              if (ip !== null) {
+                await setDatabaseString(interaction, ip, 'minecraft', 'ip', 'foi atribuído a propriedade')
+              }
+              if (porta !== null) {
+                await setDatabaseString(interaction, porta, 'minecraft', 'porta', 'foi atribuído a propriedade')
+              }
+            }
+          }
         }
       }
     } catch (error) {
       console.error(error)
-      return await interaction.editReply({
-        content: 'Ocorreu um erro!'
-      })
+      try {
+        return await interaction.editReply({
+          content: 'Ocorreu um erro!'
+        })
+      } catch {
+        return await interaction.reply({
+          content: 'Ocorreu um erro!'
+        })
+      }
     }
   },
   buttons: new Collection([
@@ -241,9 +310,27 @@ export default new Command({
       await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemStatus', 'Status')
     }],
+    ['systemStatusMinecraft', async (buttonInteraction) => {
+      await buttonInteraction.deferReply({ ephemeral: true })
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusMinecraft', 'Status')
+    }],
+    ['systemStatusString', async (buttonInteraction) => {
+      await buttonInteraction.deferReply({ ephemeral: true })
+      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusString', 'Status')
+    }],
     ['systemLogs', async (buttonInteraction) => {
       await buttonInteraction.deferReply({ ephemeral: true })
       await setDatabaseSystem(buttonInteraction, 'status', 'systemLogs', 'Logs')
+    }]
+  ]),
+  modals: new Collection([
+    ['MessagePresence', async (modalInteraction) => {
+      await setPresence(modalInteraction)
+    }]
+  ]),
+  selects: new Collection([
+    ['messagesStatusArray', async (selectInteraction) => {
+      await delModalPresence(selectInteraction)
     }]
   ])
 })

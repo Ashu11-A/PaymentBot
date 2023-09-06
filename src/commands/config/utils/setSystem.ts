@@ -1,18 +1,35 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, type CacheType, type CommandInteraction, type ButtonInteraction, type TextChannel } from 'discord.js'
+import {
+  ActionRowBuilder,
+  ButtonBuilder,
+  ButtonStyle,
+  EmbedBuilder,
+  type CacheType,
+  type CommandInteraction,
+  type ButtonInteraction,
+  type TextChannel
+} from 'discord.js'
 import { db } from '@/app'
+
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const guildID = interaction?.guild?.id
-  const channelDB = await db.guilds.get(`${guildID}.channel.system`) as string
-  const messageDB = await db.messages.get(`${guildID}.system`) as string
+  const channelDB = (await db.guilds.get(`${guildID}.channel.system`)) as string
+  const message1DB = (await db.messages.get(`${guildID}.system.message1`)) as string
+  const message2DB = (await db.messages.get(`${guildID}.system.message2`)) as string
 
   let channelSend
 
   if (channelDB !== undefined) {
     channelSend = interaction.guild?.channels.cache.get(String(channelDB)) as TextChannel
   }
-  const embed = new EmbedBuilder()
+
+  const enabled = new EmbedBuilder()
     .setTitle('🎉 Configurações')
     .setDescription('Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.')
+    .setColor('Green')
+
+  const statusEmbed = new EmbedBuilder()
+    .setTitle('⚙️ Presence Status')
+    .setDescription('Escolha qual tipo de status deseja, e se quer ativa-lo ou desativa-lo')
     .setColor('Green')
 
   const row1Buttons = [
@@ -22,31 +39,42 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setEmoji({ name: '🎫' }),
     new ButtonBuilder()
       .setCustomId('systemWelcomer')
-      .setLabel('Bem vindo')
-      .setEmoji({ name: '❤️' })
-  ]
-  const row2Buttons = [
-    new ButtonBuilder()
-      .setCustomId('systemStatus')
-      .setLabel('Status')
-      .setEmoji({ name: '⚙️' }),
+      .setLabel('Boas Vindas')
+      .setEmoji({ name: '❤️' }),
     new ButtonBuilder()
       .setCustomId('systemLogs')
       .setLabel('Logs')
       .setEmoji({ name: '📰' })
   ]
 
+  const row2Buttons = [
+    new ButtonBuilder()
+      .setCustomId('systemStatus')
+      .setLabel('Status')
+      .setEmoji({ name: '⚙️' }),
+    new ButtonBuilder()
+      .setCustomId('systemStatusMinecraft')
+      .setLabel('Minecraft Server')
+      .setEmoji({ name: '🧱' }),
+    new ButtonBuilder()
+      .setCustomId('systemStatusString')
+      .setLabel('Messages Array')
+      .setEmoji({ name: '📃' })
+  ]
+
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
-  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(row2Buttons)
+  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
 
   const emojiToButtonType: any = {
     '🎫': 'systemTicket',
     '❤️': 'systemWelcomer',
     '⚙️': 'systemStatus',
+    '🧱': 'systemStatusMinecraft',
+    '📃': 'systemStatusString',
     '📰': 'systemLogs'
   }
 
-  for (const value of row1Buttons.concat(row2Buttons)) {
+  for (const value of row1Buttons) {
     const buttons = value.data.emoji?.name as string
     const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
     if (result !== undefined && result === true) {
@@ -57,25 +85,42 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       value.setStyle(ButtonStyle.Secondary)
     }
   }
-  try {
-    if (channelSend !== undefined) {
-      await channelSend.messages.fetch(messageDB)
-        .then(async (msg) => {
-          await msg.edit({ embeds: [embed], components: [row1, row2] })
-        })
-        .catch(async () => {
-          await interaction.channel?.send({ embeds: [embed], components: [row1, row2] })
-            .then(async (msg) => {
-              await db.messages.set(`${guildID}.system`, msg.id)
-              await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
-            })
-        })
+
+  for (const value of row2Buttons) {
+    const buttons = value.data.emoji?.name as string
+    const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
+    if (result !== undefined && result === true) {
+      value.setStyle(ButtonStyle.Success)
+    } else if (result === false) {
+      value.setStyle(ButtonStyle.Danger)
     } else {
-      await interaction.channel?.send({ embeds: [embed], components: [row1, row2] })
-        .then(async (msg) => {
-          await db.messages.set(`${guildID}.system`, msg.id)
-        })
+      value.setStyle(ButtonStyle.Secondary)
     }
+  }
+
+  try {
+    await channelSend?.messages.fetch(message1DB)
+      .then(async (msg) => {
+        await msg.edit({ embeds: [enabled], components: [row1] })
+      })
+      .catch(async () => {
+        await interaction.channel?.send({ embeds: [enabled], components: [row1] })
+          .then(async (msg) => {
+            await db.messages.set(`${guildID}.system.message1`, msg.id)
+            await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
+          })
+      })
+    await channelSend?.messages.fetch(message2DB)
+      .then(async (msg) => {
+        await msg.edit({ embeds: [statusEmbed], components: [row2] })
+      })
+      .catch(async () => {
+        await interaction.channel?.send({ embeds: [statusEmbed], components: [row2] })
+          .then(async (msg) => {
+            await db.messages.set(`${guildID}.system.message2`, msg.id)
+            await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
+          })
+      })
   } catch (err) {
     console.log(err)
   }
