@@ -24,16 +24,21 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
 
   const enabled = new EmbedBuilder()
     .setTitle('🎉 Configurações')
-    .setDescription('Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.')
+    .setDescription(brBuilder(
+      '◈ Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.',
+      '◈ Para configurar os tickets, utilize </config ticket:1147696144953118820>,',
+      'os Logs, Boas Vindas, e outos aspectos, utilize </config guild:1147696144953118820>'
+    ))
     .setColor('Green')
 
   const statusEmbed = new EmbedBuilder({
     title: '⚙️ Presence Status',
     description: brBuilder(
-      '◈ Ative ou Desative o status do Bot',
+      '◈ Ative ou Desative o status do Bot.',
       '◈ Escolha abaixo qual tipo de status deseja.',
-      '◈ Os status são atualizados a cada ``15 segundos``',
-      '◈ Você pode personalizar os status com o comando </config status opções:1147696144953118820> (opção disponivel com Messages Array)'
+      '◈ Os status são atualizados a cada ``15 segundos``.',
+      '◈ Messages Array: Você pode personalizar os status com o comando </config status opções:1147696144953118820>.',
+      '◈ Minecraft Server: Para utilizar esse metodo configure-o em: </config status minecraft:1147696144953118820>.'
     )
   })
     .setColor('Green')
