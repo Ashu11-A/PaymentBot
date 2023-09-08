@@ -1,6 +1,6 @@
-import { AttachmentBuilder, EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder, Collection, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
 import { Command } from '@/structs/types/Command'
-import { LogsDiscord } from '@/app'
+import { LogsDiscord, db } from '@/app'
 import { brBuilder } from '@/utils/Format'
 import { createRow } from '@/utils/Discord'
 
@@ -9,18 +9,6 @@ export default new Command({
   description: '[ 💎 Moderação ] Enviar uma mensagem ao chat especificado.',
   type: ApplicationCommandType.ChatInput,
   options: [
-    {
-      name: 'título',
-      description: 'Titulo que será integrado a embed',
-      required: true,
-      type: ApplicationCommandOptionType.String
-    },
-    {
-      name: 'descrição',
-      description: 'Mensagem que será integrado a embed',
-      required: true,
-      type: ApplicationCommandOptionType.String
-    },
     {
       name: 'canal',
       description: 'Selecionar canal onde a embed será enviada',
@@ -43,19 +31,13 @@ export default new Command({
       required: false
     },
     {
-      name: 'imagem-enviar',
+      name: 'imagem',
       description: 'Possibilita o envio personalizado de uma imagem a embed',
-      type: ApplicationCommandOptionType.Attachment,
-      required: false
-    },
-    {
-      name: 'imagem-servidor',
-      description: 'Habilitar icon do servidor na Embed',
       type: ApplicationCommandOptionType.String,
+      required: false,
       choices: [
-        { name: 'Habilitar', value: 'true' }
-      ],
-      required: false
+        { name: 'Server', value: 'iconServer' }
+      ]
     },
     {
       name: 'marcar',
@@ -66,18 +48,6 @@ export default new Command({
     }
   ],
   async run ({ interaction, options }) {
-    const title = options.getString('título', true)
-    const description = options.getString('descrição', true)
-    const channel = options.getChannel('canal', true)
-    const color = options.getString('cor')
-    const image = options.getString('imagem-servidor')
-    const imageAttach = options.getAttachment('imagem-enviar')
-    const cargo = options.getRole('marcar')
-    const { guild } = interaction
-    const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
-
-    await interaction.deferReply({ ephemeral: true })
-
     if ((interaction?.memberPermissions?.has('Administrator')) === false) {
       await interaction.editReply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
@@ -92,100 +62,179 @@ export default new Command({
       return
     }
 
-    if (title !== null && title.length > 256) {
-      await interaction.editReply({
-        content: brBuilder(
-          'O título da embed deve conter no maximo 256 caracteres!',
-          `O titulo que você enviou tem ${title.length} caracteres!`
-        )
-      })
-      return
+    const channel = options.getChannel('canal', true)
+    const color = options.getString('cor')
+    let imageSlash = options.getString('imagem')
+    const cargoSlash = options.getRole('marcar')
+
+    await db.guilds.set(`${interaction.guildId}.channel.anunciar.${interaction.user.id}`, channel.id)
+
+    if (imageSlash === 'iconServer') {
+      imageSlash = String(interaction.guild?.iconURL({ size: 512 }))
     }
 
-    if (description !== null && description.length > 4096) {
-      await interaction.editReply({
-        content: brBuilder(
-          'A descrição da embed deve conter no maximo 4096 caracteres!',
-          `O descrição que você enviou tem ${description.length} caracteres!`
-        )
-      })
-      return
-    }
-    const embed = new EmbedBuilder()
-      .setTitle(title)
-      .setDescription(description)
-      .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.user.avatarURL({ size: 64 })) })
-      .setTimestamp()
-
-    if (color !== null) {
-      embed.setColor(color as ColorResolvable)
-    } else {
-      embed.setColor('Random')
-    }
-    let file: any[] = []
-    if (image === 'true') {
-      embed.setThumbnail(String(interaction.guild?.iconURL({ size: 1024 })))
-    } else if (imageAttach !== null) {
-      file = [new AttachmentBuilder(imageAttach.url, { name: 'image.png', description: `${interaction.user.id}` })]
-      embed.setThumbnail('attachment://image.png')
-    }
-
-    const message = await interaction.editReply({
-      embeds: [embed, new EmbedBuilder({
-        description: `Deseja enviar a mensagem ao canal ${sendChannel.name}`
-      })],
-      components: [createRow(
-        new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
-        new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
-      )],
-      files: file
-    })
-    const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })
-    collector.on('collect', async subInteraction => {
-      collector.stop()
-      const clearData = { components: [], embeds: [], files: [] }
-
-      if (subInteraction.customId === 'embed-cancel-button') {
-        void subInteraction.update({
-          ...clearData,
-          embeds: [new EmbedBuilder({
-            description: 'Você cancelou a ação'
-          })]
+    const modal = new ModalBuilder({ custom_id: 'modalAnunciar', title: 'Mensagem a ser enviada' })
+    const title = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'title',
+          label: 'Titulo',
+          placeholder: 'Coloque um titulo bem objetivo',
+          style: TextInputStyle.Paragraph,
+          required: false,
+          maxLength: 256
         })
-        return
+      ]
+    })
+    const description = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'description',
+          label: 'Descrição',
+          placeholder: 'Coloque uma descrição bem objetivo',
+          style: TextInputStyle.Paragraph,
+          required: false,
+          maxLength: 4000
+        })
+      ]
+    })
+    const image = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'image',
+          label: 'URL da imagem',
+          value: imageSlash ?? '',
+          style: TextInputStyle.Short,
+          required: false
+        })
+      ]
+    })
+    const cor = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'cor',
+          label: 'Cor da embed',
+          placeholder: 'Cor em Hexadecimal. Ex: #22c55e',
+          value: color ?? '#22c55e',
+          style: TextInputStyle.Short,
+          required: false
+        })
+      ]
+    })
+    const cargo = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'cargo',
+          label: 'Cargo a ser marcado no envio da embed',
+          placeholder: 'ID do cargo',
+          value: cargoSlash?.id ?? '',
+          style: TextInputStyle.Short,
+          required: false
+        })
+      ]
+    })
+
+    modal.setComponents(title, description, image, cor, cargo)
+
+    await interaction.showModal(modal)
+  },
+  modals: new Collection([
+    ['modalAnunciar', async (modalInteraction) => {
+      await modalInteraction.deferReply({ ephemeral: true })
+      const { fields, guild, guildId, user } = modalInteraction
+      const channelID = await db.guilds.get(`${guildId}.channel.anunciar.${user.id}`)
+      const fieldNames = ['title', 'description', 'image', 'cor', 'cargo']
+
+      const data: any = {}
+
+      for (const field of fieldNames) {
+        const message = fields.getTextInputValue(field)
+
+        if (message !== null && message !== '') {
+          data[field] = message
+        } else {
+          data[field] = null
+        }
       }
 
-      if (sendChannel !== undefined) {
-        let msg = {}
-        if (cargo !== null) {
-          msg = { content: `<@&${cargo?.id}>`, embeds: [embed], files: file }
-        } else {
-          msg = { embeds: [embed], files: file }
-        }
-        await sendChannel.send(msg)
-          .then(async () => await subInteraction.update({
-            ...clearData,
-            embeds: [
-              new EmbedBuilder()
-                .setDescription(`✅ | Mensagem enviada com sucesso ao chat: <#${sendChannel.id}>`)
-                .setColor('Green')
-            ],
-            components: [
-              new ActionRowBuilder<ButtonBuilder>().addComponents(
-                new ButtonBuilder()
-                  .setLabel('Clique para ir ao canal')
-                  .setURL(
-                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-                  )
-                  .setStyle(ButtonStyle.Link)
-              )
-            ]
-          }))
-          .catch(async err => await subInteraction.update({
-            ...clearData,
-            content: brBuilder('Não foi possível enviar a mensagem com a embed', codeBlock('ts', err))
-          }))
+      const { title, description, image, cor, cargo } = data
+      const sendChannel = guild?.channels.cache.get(String(channelID)) as TextChannel
+
+      console.log(data)
+      const embed = new EmbedBuilder()
+        .setTitle(title)
+        .setDescription(description)
+        .setFooter({ text: `Equipe ${guild?.name}`, iconURL: String(user.avatarURL({ size: 64 })) })
+        .setTimestamp()
+
+      if (cor !== null) {
+        embed.setColor(cor as ColorResolvable)
+      } else {
+        embed.setColor('Random')
       }
-    })
-  }
+      if (image !== null) {
+        embed.setThumbnail(image)
+      }
+
+      const message = await modalInteraction.editReply({
+        embeds: [embed, new EmbedBuilder({
+          description: `Deseja enviar a mensagem ao canal ${sendChannel.name}`
+        })],
+        components: [createRow(
+          new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+          new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+        )]
+      })
+      const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })
+      collector.on('collect', async subInteraction => {
+        collector.stop()
+        const clearData = { components: [], embeds: [], files: [] }
+
+        if (subInteraction.customId === 'embed-cancel-button') {
+          void subInteraction.update({
+            ...clearData,
+            embeds: [new EmbedBuilder({
+              description: 'Você cancelou a ação'
+            })]
+          })
+          return
+        }
+
+        if (sendChannel !== undefined) {
+          let msg = {}
+          if (cargo !== null) {
+            msg = { content: `<@&${cargo?.id}>`, embeds: [embed] }
+          } else {
+            msg = { embeds: [embed] }
+          }
+          await sendChannel.send(msg)
+            .then(async () => {
+              await subInteraction.update({
+                ...clearData,
+                embeds: [
+                  new EmbedBuilder()
+                    .setDescription(`✅ | Mensagem enviada com sucesso ao chat: <#${sendChannel.id}>`)
+                    .setColor('Green')
+                ],
+                components: [
+                  new ActionRowBuilder<ButtonBuilder>().addComponents(
+                    new ButtonBuilder()
+                      .setLabel('Clique para ir ao canal')
+                      .setURL(
+                    `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
+                      )
+                      .setStyle(ButtonStyle.Link)
+                  )
+                ]
+              })
+              await db.guilds.delete(`${guildId}.channel.anunciar.${user.id}`)
+            })
+            .catch(async err => await subInteraction.update({
+              ...clearData,
+              content: brBuilder('Não foi possível enviar a mensagem com a embed', codeBlock('ts', err))
+            }))
+        }
+      })
+    }]
+  ])
 })
