@@ -3,11 +3,6 @@
         "Port": 3005,
         "encryptionKey": "i am something very precious and i have to have 32 characters"
     },
-    "Slash": {
-        "Info": {
-            "Owner": "I'm number"
-        }
-    },
     "Logs": {
         "configPATH": "./src/config",
         "loggingsPATH": "./storage/logs"
