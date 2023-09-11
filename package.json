@@ -37,6 +37,7 @@
     "express": "^4.18.2",
     "fs": "^0.0.1-security",
     "inquirer": "^9.2.10",
+    "mercadopago": "^1.5.17",
     "necord": "^6.0.0",
     "nodemon": "^3.0.1",
     "quick.db": "^9.1.7",

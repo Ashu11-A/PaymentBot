@@ -39,15 +39,18 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
 
   const row3Buttons = [
     new ButtonBuilder()
-      .setCustomId('paymentDelete')
-      .setLabel('Apagar Produto')
-      .setStyle(ButtonStyle.Danger)
-      .setEmoji('✖️'),
-    new ButtonBuilder()
       .setCustomId('paymentSave')
       .setLabel('Salvar')
       .setStyle(ButtonStyle.Success)
-      .setEmoji('✔️')
+      .setEmoji('✔️'),
+    new ButtonBuilder()
+      .setCustomId('paymentStatus')
+      .setLabel('Ativar/Desativar'),
+    new ButtonBuilder()
+      .setCustomId('paymentDelete')
+      .setLabel('Apagar Produto')
+      .setStyle(ButtonStyle.Danger)
+      .setEmoji('✖️')
   ]
 
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
@@ -74,6 +77,21 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
     }
   }
 
+  for (const value of row3Buttons) {
+    const { custom_id: customID } = Object(value.toJSON())
+    if (customID === 'paymentStatus') {
+      const result = await db.payments.get(`${guildId}.channels.${channelId}.messages.${message.id}.status`)
+      console.log(result)
+      if (result !== undefined && result === true) {
+        value.setLabel('Desativar')
+        value.setStyle(ButtonStyle.Secondary)
+      } else {
+        value.setLabel('Ativar')
+        value.setStyle(ButtonStyle.Primary)
+      }
+    }
+  }
+
   const clearData = { components: [] }
   await message.edit({ ...clearData })
 
@@ -81,6 +99,7 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
 }
 
 export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>, message: Message<boolean>): Promise<void> {
+  const { guildId, channelId } = interaction
   const row1Buttons = [
     new ButtonBuilder()
       .setCustomId('paymentBuy')
@@ -94,6 +113,19 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
   ]
 
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
+
+  for (const value of row1Buttons) {
+    const { custom_id: customID } = Object(value.toJSON())
+    if (customID === 'paymentBuy') {
+      const result = await db.payments.get(`${guildId}.channels.${channelId}.messages.${message.id}.status`)
+      console.log(result)
+      if (result !== undefined && result === true) {
+        value.setDisabled(false)
+      } else {
+        value.setDisabled(true)
+      }
+    }
+  }
 
   const clearData = { components: [] }
 
