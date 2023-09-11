@@ -1,6 +1,6 @@
 import { Command } from '@/structs/types/Command'
 import { brBuilder, calculateImageSize, formatBytes } from '@/utils/Format'
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, codeBlock } from 'discord.js'
+import { ActionRowBuilder, ApplicationCommandOptionType, ApplicationCommandType, ButtonBuilder, ButtonStyle, EmbedBuilder, codeBlock } from 'discord.js'
 
 const arrayTamanho = [16, 32, 64, 128, 256, 512, 1024, 2048, 4096]
 const tamanhoChoices = arrayTamanho.map(size => ({
@@ -25,17 +25,25 @@ export default new Command({
 
     try {
       const size: any = Number(options.getString('tamanho')) ?? 4096
-      const img = interaction.guild?.iconURL({ size })
+      const img = interaction.guild?.iconURL({ size }) as string
       const tamanho = await calculateImageSize(String(img))
 
       const embed = new EmbedBuilder()
         .setColor('Blue')
-        .setAuthor({ name: String(interaction.guild?.name), iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
-        .setDescription(`**Click [aqui](${String(img)}) para baixar a imagem**\n**Tamanho: ${formatBytes(tamanho)}**`)
-        .setImage(String(img))
+        .setAuthor({ iconURL: img, name: interaction.guild?.name as string })
+        .setImage(img)
+
+      const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setEmoji('🔗')
+          .setLabel(`Baixar Imagem (${formatBytes(tamanho)})`)
+          .setURL(img)
+          .setStyle(ButtonStyle.Link)
+      )
 
       await interaction.editReply({
-        embeds: [embed]
+        embeds: [embed],
+        components: [button]
       })
     } catch (err) {
       await interaction.editReply({

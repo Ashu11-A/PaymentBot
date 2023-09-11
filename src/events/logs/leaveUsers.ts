@@ -10,8 +10,10 @@ export default new Event({
       const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.saída`) as string
       const channelStaffDB = await db.guilds.get(`${interaction?.guild?.id}.channel.staff_logs`) as string
 
-      const sendChannel = interaction.guild?.channels.cache.get(channelDB)
-      const sendStaffChannel = interaction?.guild.channels.cache.get(channelStaffDB) as TextChannel
+      if (channelDB === undefined) return
+
+      const sendChannel = interaction.guild?.channels.cache.get(channelDB) as TextChannel | undefined
+      const sendStaffChannel = interaction?.guild.channels.cache.get(channelStaffDB) as TextChannel | undefined
 
       const userStaff = await db.staff.get(`${interaction.guild.id}.members.${interaction.user.id}`)
 
@@ -26,7 +28,7 @@ export default new Event({
           .setFooter({ text: `Equipe ${interaction.guild?.name}` })
           .setTimestamp()
 
-        if (sendChannel !== undefined) {
+        if (sendStaffChannel !== undefined) {
           await sendStaffChannel.send({ embeds: [embed] })
         }
         await db.staff.delete(`${interaction.guild.id}.members.staff.${interaction.user.id}`)
@@ -39,10 +41,10 @@ export default new Event({
       const embed = new EmbedBuilder()
         .setDescription(`Usuário ${user.username}, saiu do servidor!`)
         .setColor('Random')
-        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild.iconURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction.guild.iconURL({ size: 64 }) ?? undefined) })
 
-      if (sendChannel !== null) {
-        await (sendChannel as TextChannel).send({ embeds: [embed] })
+      if (sendChannel !== undefined) {
+        await sendChannel.send({ embeds: [embed] })
       }
     } catch (err) {
       console.log(err)

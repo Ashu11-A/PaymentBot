@@ -38,7 +38,7 @@ export default new Event({
           }
         )
         .setColor('Green')
-        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild.iconURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) })
         .setThumbnail(String(interaction.user.avatarURL({ size: 512 })))
 
       if (sendChannel !== null) {

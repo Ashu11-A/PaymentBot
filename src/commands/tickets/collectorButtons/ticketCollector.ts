@@ -97,7 +97,7 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
             })
           }
         )
-        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) })
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()

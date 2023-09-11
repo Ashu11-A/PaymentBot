@@ -10,10 +10,12 @@ export default new Event({
     if (interaction.isCommand()) {
       try {
         const enabled = await db.system.get(`${interaction.guild?.id}.status.systemLogs`)
-        if (enabled !== undefined && enabled === false) return
-
         const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
-        const logsChannel = interaction.guild?.channels.cache.get(logsDB)
+
+        if (enabled !== undefined && enabled === false) return
+        if (logsDB === undefined) return
+
+        const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel | undefined
 
         if ((logsChannel?.isTextBased()) === false) return
         const { channel, user, commandName, createdAt, commandType } = interaction
@@ -45,8 +47,8 @@ export default new Event({
           .setColor('White')
 
         if (channel != null) embed.addFields({ name: '💬 No chat:', value: channel.url, inline: false })
-        if (logsChannel !== null) {
-          await (logsChannel as TextChannel).send({ embeds: [embed] })
+        if (logsChannel !== undefined) {
+          await logsChannel.send({ embeds: [embed] })
         }
       } catch (err) {
         console.log(err)

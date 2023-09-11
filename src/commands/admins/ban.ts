@@ -89,12 +89,12 @@ export default new Command({
         .setColor('Green')
         .setTitle('Usuário banido com sucesso!')
         .setDescription(
-          `User: ${user?.username}, de ID: ${user?.id} foi banido do servidor.`
+          `${user?.username} foi banido do servidor.`
         )
         .addFields(
           {
-            name: 'Usuário banido',
-            value: `${user?.username}, ID: ${user?.id}`
+            name: 'Usuário Banido',
+            value: '```User: ' + user?.username + '\n' + 'ID:' + user?.id + '```'
           },
           {
             name: 'Moderador responsável',
@@ -110,13 +110,13 @@ export default new Command({
         )
 
       if (logsChannel !== undefined) {
-        void logsChannel.send({ embeds: [embed] })
+        await logsChannel.send({ embeds: [embed] })
       }
 
-      return await interaction.reply({ embeds: [embed] })
+      await interaction.reply({ embeds: [embed] })
     } catch (error) {
       console.error(error)
-      return await interaction.reply({
+      await interaction.reply({
         content: 'Ocorreu um erro ao banir o usuário!',
         ephemeral: true
       })

@@ -21,10 +21,12 @@ export default new Command({
     }
   ],
   async run ({ interaction, options }) {
-    await interaction.deferReply({ ephemeral: true })
-    const userID: any = options.getString('usuário')
+    await interaction.deferReply()
+
+    const userID = options.getString('usuário', true)
     const reason: string = options.getString('motivo') ?? 'Nenhum motivo especificado'
     const { guild } = interaction
+
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
@@ -42,9 +44,16 @@ export default new Command({
       return
     }
     try {
-      // Verificar se o usuário a ser desbanido está realmente banido
+      if (isNaN(Number(userID))) {
+        const embed = new EmbedBuilder()
+          .setTitle('Erro')
+          .setDescription('O ID do usuário especificado é inválido.')
+          .setColor('Red')
+        return await interaction.editReply({ embeds: [embed] })
+      }
+
       const bans = await guild?.bans.fetch()
-      if (bans?.has(userID) !== null) {
+      if (bans?.has(userID) !== null && bans?.has(userID) !== true) {
         const embed = new EmbedBuilder()
           .setTitle('Erro')
           .setDescription('O usuário especificado não está banido.')
@@ -52,26 +61,18 @@ export default new Command({
         return await interaction.editReply({ embeds: [embed] })
       }
 
-      // Verificar se o ID do usuário é válido
-      if (isNaN(userID)) {
-        const embed = new EmbedBuilder()
-          .setTitle('Erro')
-          .setDescription('O ID do usuário especificado é inválido.')
-          .setColor('Red')
-        return await interaction.editReply({ embeds: [embed] })
-      }
       await guild?.members.unban(userID, reason)
         .then(async () => {
           const embed = new EmbedBuilder()
             .setColor('Green')
             .setTitle('Usuário desbanido com sucesso!')
             .setDescription(
-          `${interaction.user?.username}#${userID} foi desbanido do servidor.`
+          `${userID} foi desbanido do servidor.`
             )
             .addFields(
               {
                 name: 'Usuário desbanido',
-                value: `ID: ${userID}`
+                value: '```ID: ' + userID + '```'
               },
               {
                 name: 'Moderador responsável',
@@ -90,14 +91,14 @@ export default new Command({
             await logsChannel.send({ embeds: [embed] })
           }
 
-          return await interaction.editReply({ embeds: [embed] })
+          await interaction.editReply({ embeds: [embed] })
         }).catch(async (err) => {
-          return await interaction.editReply({
+          await interaction.editReply({
             content: brBuilder('Ocorreu um erro ao desbanir o usuário!', codeBlock('ts', err))
           })
         })
     } catch (err) {
-      return await interaction.editReply({
+      await interaction.editReply({
         content: brBuilder('Ocorreu um erro ao desbanir o usuário!', codeBlock('ts', String(err)))
       })
     }

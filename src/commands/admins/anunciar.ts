@@ -164,7 +164,7 @@ export default new Command({
       const embed = new EmbedBuilder()
         .setTitle(title)
         .setDescription(description)
-        .setFooter({ text: `Equipe ${guild?.name}`, iconURL: String(user.avatarURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${guild?.name}`, iconURL: (user.avatarURL({ size: 64 }) ?? undefined) })
         .setTimestamp()
 
       if (cor !== null) {

@@ -14,15 +14,12 @@ export default new Event({
       }
       const channel = guild?.channels.cache.get(channelDB) as TextChannel | undefined
 
-      if (channel === undefined) {
-        console.log('Nenhum canal configurado!')
-        return
-      }
+      if (channel === undefined) return
 
       const embed = new EmbedBuilder()
         .setTitle('Pegue seu ticket!')
         .setDescription('Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.')
-        .setFooter({ text: `Equipe ${channel?.name}`, iconURL: String(guild?.iconURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${channel?.name}`, iconURL: (guild?.iconURL({ size: 64 }) ?? undefined) })
         .setColor('Green')
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(

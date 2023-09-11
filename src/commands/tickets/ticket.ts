@@ -44,7 +44,7 @@ export default new Command({
       const embed = new EmbedBuilder()
         .setTitle('Pegue seu ticket!')
         .setDescription('Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.')
-        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
+        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) })
         .setColor('Green')
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(

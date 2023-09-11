@@ -1,4 +1,4 @@
-import { LogsDiscord, db } from '@/app'
+import { LogsDiscord, client, db } from '@/app'
 import { Command } from '@/structs/types/Command'
 import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, type TextChannel } from 'discord.js'
 
@@ -52,6 +52,14 @@ export default new Command({
       return await interaction.reply({ embeds: [embed], ephemeral: true })
     }
 
+    if (user.id === client?.user?.id) {
+      const unauthorizedEmbed = new EmbedBuilder()
+        .setColor('Red')
+        .setTitle('Não permitido!')
+        .setDescription('Você quer me banir? tá marcado!')
+      return await interaction.reply({ embeds: [unauthorizedEmbed], ephemeral: true })
+    }
+
     // Tenta banir o usuário
     try {
       await guild?.members.kick(user, reason)
@@ -62,14 +70,14 @@ export default new Command({
       )
       const embed = new EmbedBuilder()
         .setColor('Green')
-        .setTitle('Usuário banido com sucesso!')
+        .setTitle('Usuário expulso com sucesso!')
         .setDescription(
-          `${user?.username}#${user?.id} foi banido do servidor.`
+          `${user?.username} foi expulso do servidor.`
         )
         .addFields(
           {
             name: 'Usuário expulso',
-            value: `${user?.username}, ID: ${user?.id}`
+            value: '```User: ' + user?.username + '\n' + 'ID:' + user?.id + '```'
           },
           { name: 'Motivo', value: reason },
           {
