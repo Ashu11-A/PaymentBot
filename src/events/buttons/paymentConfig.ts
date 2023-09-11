@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { buttonsConfig } from '@/commands/payment/utils/buttons'
+import { buttonsConfig } from '@/commands/payments/utils/buttons'
 import { Event } from '@/structs/types/Event'
 import { validarCorHex, validarValor } from '@/utils/Validator'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from 'discord.js'

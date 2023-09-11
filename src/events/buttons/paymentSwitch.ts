@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { buttonsConfig, buttonsUsers } from '@/commands/payment/utils/buttons'
+import { buttonsConfig, buttonsUsers } from '@/commands/payments/utils/buttons'
 import { Event } from '@/structs/types/Event'
 
 export default new Event({

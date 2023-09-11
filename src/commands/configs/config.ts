@@ -11,7 +11,7 @@ import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDa
 import { LogsDiscord, db } from '@/app'
 import { setSystem } from './utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
-import sendEmbed from '../payment/utils/sendEmbed'
+import sendEmbed from '@/commands/payments/utils/sendEmbed'
 
 const system = {
   systemTicket: { info: 'Ticket' },
@@ -19,6 +19,7 @@ const system = {
   systemWelcomer: { info: 'Boas vindas' },
   systemStatus: { info: 'Status' },
   systemStatusMinecraft: { info: 'Status' },
+  systemStatusString: { info: 'Status' },
   systemLogs: { info: 'Logs' },
   systemStatusOnline: { type: 'systemStatusType', info: 'online' },
   systemStatusAusente: { type: 'systemStatusType', info: 'idle' },
