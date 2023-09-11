@@ -20,6 +20,7 @@ if (!fs.existsSync(`${rootDir}/database`)) {
 
 const db = {
   guilds: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'guilds' }),
+  payments: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'payments' }),
   messages: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'messages' }),
   staff: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'staff' }),
   system: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'system' }),

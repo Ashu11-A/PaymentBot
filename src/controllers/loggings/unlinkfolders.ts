@@ -17,7 +17,7 @@ export function unlinkfolders (logFolderPath: string, level: string): void {
       return aStat.mtime.getTime() - bStat.mtime.getTime()
     })
 
-  const maxLogFileCount = loggings.autodelete ?? 10 // sistema de deletar logs, padrão 10
+  const maxLogFileCount = loggings.autodelete ?? 9999 // sistema de deletar logs, padrão 10
   const ActiveDelete = loggings.activedelete ?? 'on' // ativa o sistema de deletar logs,
 
   if (ActiveDelete === 'on') {

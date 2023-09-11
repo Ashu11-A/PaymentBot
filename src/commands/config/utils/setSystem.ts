@@ -27,9 +27,9 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     .setDescription(brBuilder(
       '◈ Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.',
       '◈ Para configurar os tickets, utilize </config ticket:1147696144953118820>,',
-      'os Logs, Boas Vindas, e outos aspectos, utilize </config guild:1147696144953118820>'
+      'os Logs, Boas Vindas, e outos aspectos, utilize </config guild:1147696144953118820>',
+      'configure o sistema de pagamentos em: </config pagamentos:1147696144953118820>.'
     ))
-    .setColor('Green')
 
   const statusEmbed = new EmbedBuilder({
     title: '⚙️ Presence Status',
@@ -37,11 +37,11 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       '◈ Ative ou Desative o status do Bot.',
       '◈ Escolha abaixo qual tipo de status deseja.',
       '◈ Os status são atualizados a cada ``15 segundos``.',
-      '◈ Messages Array: Você pode personalizar os status com o comando </config status opções:1147696144953118820>.',
-      '◈ Minecraft Server: Para utilizar esse metodo configure-o em: </config status minecraft:1147696144953118820>.'
-    )
+      '◈ Mensagens: Você pode personalizar os status com o comando </config status opções:1147696144953118820>.',
+      '◈ Minecraft: Para utilizar esse metodo configure-o em: </config status minecraft:1147696144953118820>.'
+    ),
+    color: 0x57f287
   })
-    .setColor('Green')
 
   const row1Buttons = [
     new ButtonBuilder()
@@ -55,7 +55,11 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     new ButtonBuilder()
       .setCustomId('systemLogs')
       .setLabel('Logs')
-      .setEmoji({ name: '📰' })
+      .setEmoji({ name: '📰' }),
+    new ButtonBuilder()
+      .setCustomId('systemPayments')
+      .setLabel('Pagamentos')
+      .setEmoji({ name: '💲' })
   ]
 
   const row2Buttons = [
@@ -65,11 +69,11 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setEmoji({ name: '⚙️' }),
     new ButtonBuilder()
       .setCustomId('systemStatusMinecraft')
-      .setLabel('Minecraft Server')
+      .setLabel('Minecraft')
       .setEmoji({ name: '🧱' }),
     new ButtonBuilder()
       .setCustomId('systemStatusString')
-      .setLabel('Messages Array')
+      .setLabel('Mensagens')
       .setEmoji({ name: '📃' })
   ]
   const row3Buttons = [
@@ -91,26 +95,20 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setEmoji({ name: '⚫' })
   ]
 
+  const typeStatus: any = {
+    systemStatusOnline: 'online',
+    systemStatusAusente: 'idle',
+    systemStatusNoPerturbe: 'dnd',
+    systemStatusInvisível: 'invisible'
+  }
+
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
 
-  const emojiToButtonType: any = {
-    '🎫': 'systemTicket',
-    '❤️': 'systemWelcomer',
-    '⚙️': 'systemStatus',
-    '🧱': 'systemStatusMinecraft',
-    '📃': 'systemStatusString',
-    '📰': 'systemLogs',
-    '🟢': 'online',
-    '🟠': 'idle',
-    '🔴': 'dnd',
-    '⚫': 'invisible'
-  }
-
   for (const value of row1Buttons) {
-    const buttons = value.data.emoji?.name as string
-    const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
+    const { custom_id: customID } = Object(value.toJSON())
+    const result = await db.system.get(`${interaction?.guild?.id}.status.${customID}`)
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
     } else if (result === false) {
@@ -121,8 +119,8 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
   }
 
   for (const value of row2Buttons) {
-    const buttons = value.data.emoji?.name as string
-    const result = await db.system.get(`${interaction?.guild?.id}.status.${emojiToButtonType[buttons]}`)
+    const { custom_id: customID } = Object(value.toJSON())
+    const result = await db.system.get(`${interaction?.guild?.id}.status.${customID}`)
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
     } else if (result === false) {
@@ -133,8 +131,8 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
   }
 
   for (const value of row3Buttons) {
-    const buttons = value.data.emoji?.name as string
-    const result = await emojiToButtonType[buttons]
+    const { custom_id: customID } = Object(value.toJSON())
+    const result = await typeStatus[customID]
     const systemEnabled = await db.system.get(`${interaction?.guild?.id}.status.systemStatusType`)
     if (systemEnabled === result) {
       value.setStyle(ButtonStyle.Success)

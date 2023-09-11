@@ -59,21 +59,21 @@ export default new Command({
       if (user !== null) {
         embed.addFields({
           name: `User: ${user?.username}`,
-          value: 'ID: ' + '```' + user.id + '```'
+          value: 'ID: ```' + user.id + '```'
         })
       }
 
       if (cargo !== null) {
         embed.addFields({
           name: `Role: ${cargo?.name}`,
-          value: 'ID: ' + '```' + cargo.id + '```'
+          value: 'ID: ```' + cargo.id + '```'
         })
       }
 
       if (canal !== null) {
         embed.addFields({
           name: `Channel: ${canal?.name}`,
-          value: 'ID: ' + '```' + canal.id + '```'
+          value: 'ID: ```' + canal.id + '```'
         })
       }
 
@@ -81,7 +81,7 @@ export default new Command({
         embeds: [embed]
       })
     } else {
-      await interaction.editReply({ message: 'Nenhuma opção foi expecificada...' })
+      await interaction.editReply({ content: 'Nenhuma opção foi expecificada...' })
     }
   }
 })

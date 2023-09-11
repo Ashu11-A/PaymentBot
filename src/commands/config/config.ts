@@ -11,6 +11,20 @@ import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDa
 import { LogsDiscord, db } from '@/app'
 import { setSystem } from './utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
+import sendEmbed from '../payment/utils/sendEmbed'
+
+const system = {
+  systemTicket: { info: 'Ticket' },
+  systemPayments: { info: 'Pagamentos' },
+  systemWelcomer: { info: 'Boas vindas' },
+  systemStatus: { info: 'Status' },
+  systemStatusMinecraft: { info: 'Status' },
+  systemLogs: { info: 'Logs' },
+  systemStatusOnline: { type: 'systemStatusType', info: 'online' },
+  systemStatusAusente: { type: 'systemStatusType', info: 'idle' },
+  systemStatusNoPerturbe: { type: 'systemStatusType', info: 'dnd' },
+  systemStatusInvisível: { type: 'systemStatusType', info: 'invisible' }
+}
 
 export default new Command({
   name: 'config',
@@ -132,6 +146,64 @@ export default new Command({
       ]
     },
     {
+      name: 'pagamentos',
+      description: '[ 🛒 Pagamentos ] Configure o sistema de pagamento.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'add-produto',
+          description: '[ 📦 ] Cria um novo produto configurável no canal desejado.',
+          type: ApplicationCommandOptionType.Channel,
+          channelTypes: [
+            ChannelType.GuildText
+          ]
+        },
+        {
+          name: 'carrinho',
+          description: '[ 🗂 ] Escolha a categoria onde os carrinhos serão abertos',
+          type: ApplicationCommandOptionType.Channel,
+          channelTypes: [
+            ChannelType.GuildCategory
+          ]
+        },
+        {
+          name: 'autenticação',
+          description: '[ 🔐 ] Autenticar no sistema de pagamento desejado.',
+          type: ApplicationCommandOptionType.String,
+          choices: [
+            { name: 'Mercado Pago', value: 'mp' }
+          ]
+        }
+      ]
+    },
+    {
+      name: 'urls',
+      description: '[ 🔗 ] Configure as URLs que o bot irá utilizar.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'site',
+          description: 'Homepage do projeto/host.',
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'loja',
+          description: 'Se houver uma loja.',
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'pterodactyl',
+          description: 'Painel Pterodactyl',
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'ctrlpanel',
+          description: 'Painel ControlPanel',
+          type: ApplicationCommandOptionType.String
+        }
+      ]
+    },
+    {
       name: 'ticket',
       description: '[ 🎫 Ticket ] Configurar tickets',
       type: ApplicationCommandOptionType.Subcommand,
@@ -227,6 +299,45 @@ export default new Command({
 
           break
         }
+        case 'pagamentos': {
+          await interaction.deferReply({ ephemeral: true })
+          const addProduto = options.getChannel('add-produto') as TextChannel
+          const carrinho = options.getChannel('carrinho') as CategoryChannel
+          const autenticação = options.getString('autenticação')
+
+          if (addProduto !== null) {
+            await sendEmbed(interaction, addProduto)
+          }
+          if (carrinho !== null) {
+            await setDatabase(interaction, carrinho, 'payment', 'channel', 'foi atribuído a propriedade')
+          }
+          if (autenticação !== null) {
+            await setDatabaseString(interaction, autenticação, 'payment', 'category', 'setado para os tickets')
+          }
+
+          break
+        }
+        case 'urls': {
+          await interaction.deferReply({ ephemeral: true })
+          const site = options.getString('site')
+          const loja = options.getString('loja')
+          const ptero = options.getString('pterodactyl')
+          const ctrlPanel = options.getString('ctrlPanel')
+
+          if (site !== null) {
+            await setDatabaseString(interaction, site, 'urls', 'site', 'foi atribuído a propriedade')
+          }
+          if (loja !== null) {
+            await setDatabaseString(interaction, loja, 'urls', 'loja', 'foi atribuído a propriedade')
+          }
+          if (ptero !== null) {
+            await setDatabaseString(interaction, ptero, 'urls', 'ptero', 'foi atribuído a propriedade')
+          }
+          if (ctrlPanel !== null) {
+            await setDatabaseString(interaction, ctrlPanel, 'urls', 'ctrl', 'foi atribuído a propriedade')
+          }
+          break
+        }
       }
 
       switch (options.getSubcommandGroup(false)) {
@@ -280,38 +391,18 @@ export default new Command({
       }
     }
   },
-  buttons: new Collection([
-    ['systemTicket', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemTicket', 'Ticket')
-    }],
-    ['systemWelcomer', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemWelcomer', 'Boas vindas')
-    }],
-    ['systemStatus', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatus', 'Status')
-    }],
-    ['systemStatusMinecraft', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusMinecraft', 'Status')
-    }],
-    ['systemStatusString', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusString', 'Status')
-    }],
-    ['systemLogs', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemLogs', 'Logs')
-    }],
-    ['systemStatusOnline', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'online')
-    }],
-    ['systemStatusAusente', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'idle')
-    }],
-    ['systemStatusNoPerturbe', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'dnd')
-    }],
-    ['systemStatusInvisível', async (buttonInteraction) => {
-      await setDatabaseSystem(buttonInteraction, 'status', 'systemStatusType', 'invisible')
-    }]
-  ]),
+  buttons: new Collection(
+    Object.entries(system).map(([key, value]) => [
+      key,
+      async (buttonInteraction) => {
+        if ('type' in value) {
+          await setDatabaseSystem(buttonInteraction, 'status', value.type, value.info)
+        } else {
+          await setDatabaseSystem(buttonInteraction, 'status', key, value.info)
+        }
+      }
+    ])
+  ),
   modals: new Collection([
     ['MessagePresence', async (modalInteraction) => {
       await setPresence(modalInteraction)

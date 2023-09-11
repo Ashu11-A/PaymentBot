@@ -1,4 +1,4 @@
-import { config } from '@/app'
+import { config, db } from '@/app'
 import { Command } from '@/structs/types/Command'
 import { ApplicationCommandType, EmbedBuilder } from 'discord.js'
 
@@ -7,6 +7,7 @@ export default new Command({
   description: '[ 🪄 Utilidades ] Mostra informações sobre o servidor',
   type: ApplicationCommandType.ChatInput,
   async run ({ interaction }) {
+    const { site, loja } = await db.guilds.get(`${interaction.guildId}.urls`)
     const embed = new EmbedBuilder()
       .setColor('Blurple')
       .setTitle(`Essas são as informações da ${interaction.guild?.name}`)
@@ -19,12 +20,12 @@ export default new Command({
         },
         {
           name: 'Site',
-          value: config.URLs.Site,
+          value: site ?? 'indefinido',
           inline: true
         },
         {
           name: 'Loja',
-          value: config.URLs.Loja,
+          value: loja ?? 'indefinido',
           inline: true
         },
         {

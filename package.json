@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "nodemon",
     "build": "tsc --project tsconfig.json",
-    "start": "tsc src/app.ts && node .",
+    "start": "node dist/app.js",
     "lint": "eslint --ext .tsx,.ts --fix ./src -c .eslintrc.json"
   },
   "repository": {
