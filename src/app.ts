@@ -4,8 +4,8 @@ import Loggings from './controllers/Loggings'
 import { color } from '@/structs/types/Colors'
 import { LogsDiscord } from './utils/LogsDiscord'
 import { QuickDB } from 'quick.db'
-import fs from 'fs'
 import { join } from 'path'
+import { dirCR } from './utils/Folder'
 export * from 'colors'
 const client = new ExtendedClient()
 const core = new Loggings('All', 'blue')
@@ -14,9 +14,7 @@ client.start()
 
 const rootDir = process.cwd()
 
-if (!fs.existsSync(`${rootDir}/database`)) {
-  fs.mkdirSync(`${rootDir}/database`)
-}
+dirCR(`${rootDir}/database`)
 
 const db = {
   guilds: new QuickDB<any>({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'guilds' }),

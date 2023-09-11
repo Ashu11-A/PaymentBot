@@ -2,7 +2,7 @@ import fs from 'fs'
 import path from 'path'
 
 export function dirCR (folderPath: string): void {
-  fs.mkdirSync(folderPath, { recursive: true })
+  if (!fs.existsSync(folderPath)) { fs.mkdirSync(folderPath, { recursive: true }) }
 }
 
 export function dirEX (folderPath: string): boolean {
