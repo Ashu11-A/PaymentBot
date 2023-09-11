@@ -1,0 +1,92 @@
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection } from 'discord.js'
+import { Command } from '@/structs/types/Command'
+import { LogsDiscord } from '@/app'
+import { ticketCollector } from './collectorButtons/ticketCollector'
+
+export default new Command({
+  name: 'ticket',
+  description: '[ 🎫 Ticket ] Abrir Ticket',
+  type: ApplicationCommandType.ChatInput,
+  options: [
+    {
+      name: 'canal',
+      description: '[ADM] Canal onde será enviada a embed',
+      required: false,
+      type: ApplicationCommandOptionType.Channel
+    }
+  ],
+  async run ({ interaction, options }) {
+    const channel = options.getChannel('canal')
+    const { guild } = interaction
+    const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
+
+    if (channel === null) {
+      await ticketCollector(interaction)
+      return
+    }
+
+    await interaction.deferReply({ ephemeral: true })
+
+    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+      await interaction.editReply({
+        content: '**❌ - Você não possui permissão para utilizar este comando.**'
+      })
+      void LogsDiscord(
+        interaction,
+        'warn',
+        'noPermission',
+        'Orange',
+        []
+      )
+      return
+    }
+    try {
+      const embed = new EmbedBuilder()
+        .setTitle('Pegue seu ticket!')
+        .setDescription('Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.')
+        .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: String(interaction.guild?.iconURL({ size: 64 })) })
+        .setColor('Green')
+
+      const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId('ticket')
+          .setEmoji({ name: '📩' })
+          .setLabel('Abra seu ticket')
+          .setStyle(ButtonStyle.Success)
+      )
+
+      if (sendChannel !== undefined) {
+        await sendChannel.send({ embeds: [embed], components: [botao] })
+          .then(async () => {
+            await interaction.editReply({
+              embeds: [
+                new EmbedBuilder()
+                  .setDescription(`✅ | Mensagem enviada com sucesso ao chat: <#${sendChannel.id}>`)
+                  .setColor('Green')
+              ],
+              components: [
+                new ActionRowBuilder<ButtonBuilder>().addComponents(
+                  new ButtonBuilder()
+                    .setLabel('Clique para ir ao canal')
+                    .setURL(
+                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
+                    )
+                    .setStyle(ButtonStyle.Link)
+                )
+              ]
+            })
+          })
+      }
+    } catch (error) {
+      console.error(error)
+      return await interaction.editReply({
+        content: 'Ocorreu um erro!'
+      })
+    }
+  },
+  buttons: new Collection([
+    ['ticket', async (buttonInteraction) => {
+      await ticketCollector(buttonInteraction)
+    }]
+  ])
+})

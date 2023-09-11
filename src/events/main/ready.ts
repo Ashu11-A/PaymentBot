@@ -5,12 +5,14 @@ export default new Event({
   name: 'ready',
   once: true,
   run () {
-    const { commands, buttons, selects, modals } = client
+    const { commands, buttons, selects, modals, guilds, users } = client
 
     core.info('✅ Bot online'.green)
     core.info(`✅ Commands carregados: ${commands.size}`.cyan)
     core.info(`✅ Buttons carregados: ${buttons.size}`.cyan)
     core.info(`✅ Selects carregados: ${selects.size}`.cyan)
     core.info(`✅ Moldals carregados: ${modals.size}`.cyan)
+    core.info(`✅ Servidores: ${guilds.cache.size}`.cyan)
+    core.info(`✅ Users: ${users.cache.size}`.cyan)
   }
 })
