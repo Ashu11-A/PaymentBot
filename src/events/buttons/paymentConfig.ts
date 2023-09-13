@@ -66,7 +66,6 @@ export default new Event({
   name: 'interactionCreate',
   async run (interaction) {
     if (interaction.isButton()) {
-      console.log(interaction.customId)
       Object.entries(buttons).map(async ([key, value]) => {
         const { guildId, message, channelId, customId } = interaction
         const { title, label, placeholder, style, type, maxLength } = value

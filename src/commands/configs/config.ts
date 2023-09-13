@@ -210,25 +210,12 @@ export default new Command({
       type: ApplicationCommandOptionType.Subcommand,
       options: [
         {
-          name: 'canal',
-          description: '[ 🎫 Ticket ] Canal onde ficará a embed dos tickets.',
-          type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
-        },
-        {
           name: 'categoria',
           description: '[ 🎫 Ticket ] Use para definir categoria dos tickets.',
           type: ApplicationCommandOptionType.Channel,
           channelTypes: [
             ChannelType.GuildCategory
           ]
-        },
-        {
-          name: 'cargo',
-          description: '[ 🎫 Ticket ] Cargo a ser marcado após um pedido ser aberto.',
-          type: ApplicationCommandOptionType.Role
         }
       ]
     }

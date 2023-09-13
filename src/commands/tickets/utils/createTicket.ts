@@ -1,6 +1,6 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake } from 'discord.js'
 import { db } from '@/app'
-export async function ticketCollector (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
+export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guild } = interaction
   const nome = `🎫-${interaction.user.username}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
@@ -42,18 +42,6 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
         },
         {
           id: interaction.user.id,
-          allow: [PermissionsBitField.Flags.ViewChannel]
-        },
-        {
-          id: '1144009037097222144',
-          allow: [PermissionsBitField.Flags.ViewChannel]
-        },
-        {
-          id: '1144008994499870761',
-          allow: [PermissionsBitField.Flags.ViewChannel]
-        },
-        {
-          id: '1144009942584545454',
           allow: [PermissionsBitField.Flags.ViewChannel]
         }
       ] as OverwriteResolvable[] | Collection<Snowflake, OverwriteResolvable>
@@ -106,7 +94,11 @@ export async function ticketCollector (interaction: CommandInteraction<CacheType
           .setLabel('Fechar Ticket')
           .setStyle(ButtonStyle.Danger)
       )
-      await ch?.send({ content: `<@&${roleDB}>`, embeds: [embed], components: [botao] }).catch(console.error)
+      if (roleDB !== undefined) {
+        await ch?.send({ content: `<@&${roleDB}>`, embeds: [embed], components: [botao] }).catch(console.error)
+      } else {
+        await ch?.send({ embeds: [embed], components: [botao] }).catch(console.error)
+      }
     } catch (all) {
       console.error(all)
       await interaction.editReply({

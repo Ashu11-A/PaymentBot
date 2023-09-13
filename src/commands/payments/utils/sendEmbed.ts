@@ -17,7 +17,6 @@ export default async function sendEmbed (interaction: CommandInteraction<'cached
 
   await channel.send({ embeds: [embed] })
     .then(async (msg: Message<true>) => {
-      await db.payments.delete(`${guildId}.channels`)
       await db.payments.set(`${guildId}.channels.${channelId}.messages.${msg.id}`,
         {
           id: msg.id,
