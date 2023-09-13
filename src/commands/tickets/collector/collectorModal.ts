@@ -7,7 +7,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   await interaction.deferReply({ ephemeral: true })
 
   if (customId === 'ticketSelectMenu') {
-    const fieldNames = ['title', 'description']
+    const fieldNames = ['title', 'description', 'emoji']
 
     const existingData = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
     console.log('0', existingData)
@@ -17,6 +17,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     let title = ''
     let description = ''
+    let emoji = ''
 
     for (const fieldName of fieldNames) {
       const message = fields.getTextInputValue(fieldName)
@@ -25,10 +26,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         title = message
       } else if (fieldName === 'description') {
         description = message
+      } else if (fieldName === 'emoji') {
+        emoji = message
       }
     }
 
-    data.push({ title, description })
+    data.push({ title, description, emoji })
 
     console.log('2', data)
 
@@ -48,7 +51,6 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
             await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
                 await buttonsConfig(interaction, msg)
-                await interaction.editReply({ content: '✅ | Salvado com sucesso!' })
               })
           })
       })

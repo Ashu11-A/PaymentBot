@@ -1,24 +1,6 @@
 import { db } from '@/app'
 import { buttonsConfig } from '@/commands/tickets/utils/ticketUpdateConfig'
 import { Event } from '@/structs/types/Event'
-import { ActionRowBuilder, ModalBuilder, TextInputBuilder } from 'discord.js'
-
-const listItens = {
-  SetName: {
-    label: '❓| Qual será o Título?',
-    placeholder: 'Ex: Parceria',
-    style: 1,
-    maxLength: 256,
-    type: 'title'
-  },
-  SetDesc: {
-    label: '❓| Qual será a Descrição?',
-    placeholder: 'Ex: Quero me tornar um parceiro.',
-    style: 1,
-    maxLength: 256,
-    type: 'description'
-  }
-}
 
 export default new Event({
   name: 'interactionCreate',
@@ -36,32 +18,6 @@ export default new Event({
         }
         await interaction.reply({ content: '⏱️ | Aguarde só um pouco...', ephemeral: true })
         await buttonsConfig(interaction, message)
-      } else if (customId === 'ticketAddSelect') {
-        const modal = new ModalBuilder({ customId: 'ticketSelectMenu', title: 'Adicionar Opções no Select Menu' })
-        Object.entries(listItens).map(async ([, value]) => {
-          const { label, placeholder, style, type, maxLength } = value
-          if ((interaction?.memberPermissions?.has('Administrator')) === false) {
-            await interaction.reply({
-              content: '**❌ - Você não possui permissão para utilizar este botão!**',
-              ephemeral: true
-            })
-            return
-          }
-          const content = new ActionRowBuilder<TextInputBuilder>({
-            components: [
-              new TextInputBuilder({
-                custom_id: type,
-                label,
-                placeholder,
-                style,
-                required: true,
-                maxLength
-              })
-            ]
-          })
-          modal.addComponents(content)
-        })
-        await interaction.showModal(modal)
       }
     }
   }

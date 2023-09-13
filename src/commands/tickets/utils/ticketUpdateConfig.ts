@@ -1,7 +1,7 @@
 import { db } from '@/app'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
-export async function buttonsConfig (interaction: CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
+export async function buttonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
   const row1Buttons = [
     new ButtonBuilder()
@@ -41,11 +41,6 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
       .setDisabled(true)
       .setEmoji('📝'),
     new ButtonBuilder()
-      .setCustomId('ticketRemSelect')
-      .setLabel('Rem Select')
-      .setDisabled(true)
-      .setEmoji('🗑️'),
-    new ButtonBuilder()
       .setCustomId('ticketSetButton')
       .setLabel('Botão')
       .setEmoji('🔘')
@@ -63,37 +58,34 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
       .setStyle(ButtonStyle.Danger)
       .setEmoji('✖️')
   ]
-
   const dataDB = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
 
-  console.log(dataDB)
+  console.log('depois de remover', dataDB)
 
   let number = 0
   if (dataDB !== undefined) {
-    dataDB.forEach(({ title, description }: { title: string, description: string }) => {
+    dataDB.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
       console.log(`Title: ${title}`)
       console.log(`Description: ${description}`)
-      // You can also push them into an options array if needed
+      console.log(`Emoji: ${emoji}`)
       options.push({
         label: title,
         description,
-        value: String(number), // You can set this value as needed
-        emoji: '😩'
+        value: String(number),
+        emoji
       })
       number += 1
     })
   }
 
-  const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>({
-    components: [
-      new StringSelectMenuBuilder({
-        custom_id: 'ticketRowSelect',
-        placeholder: 'Escolha qual tipo de ticket deseja abrir!',
-        options
-      })
-    ]
-  })
+  const row4Buttons = [
+    new StringSelectMenuBuilder({
+      custom_id: 'ticketRowSelect',
+      placeholder: 'Escolha qual tipo de ticket deseja abrir!',
+      options
+    })
+  ]
 
   const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
@@ -106,6 +98,7 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
   const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
+  const row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row4Buttons)
 
   for (const value of row1Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
@@ -137,6 +130,16 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
     }
   }
 
+  for (const value of row4Buttons) {
+    const result = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.config`)
+
+    if (result === undefined || result === true) {
+      value.setPlaceholder('Modo edição, selecione um valor para remover.')
+    } else {
+      value.setPlaceholder('Escolha qual tipo de ticket deseja abrir!')
+    }
+  }
+
   const clearData = { components: [] }
   await message.edit({ ...clearData })
 
@@ -144,13 +147,19 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
   const button = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`)
 
   console.log('select', select, 'button', button)
-
-  if (select === true && dataDB !== undefined) {
-    await message.edit({ components: [row1, row2, row3, selectRow] })
-  } else if (button === true) {
-    await message.edit({ components: [row1, row2, row3, botao] })
-  } else {
+  try {
+    if (select === true && dataDB !== undefined) {
+      await message.edit({ components: [row1, row2, row3, row4] })
+    } else if (button === true) {
+      await message.edit({ components: [row1, row2, row3, botao] })
+    } else {
+      await message.edit({ components: [row1, row2, row3] })
+    }
+    await interaction.editReply({ content: '✅ | Salvado com sucesso!' })
+  } catch (err) {
+    console.log(err)
     await message.edit({ components: [row1, row2, row3] })
+    await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
   }
 }
 

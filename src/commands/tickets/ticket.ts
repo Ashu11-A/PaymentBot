@@ -5,6 +5,7 @@ import { buttonsConfig } from './utils/ticketUpdateConfig'
 import { createTicket } from './utils/createTicket'
 import collectorButtons from './collector/collectorButtons'
 import collectorModal from './collector/collectorModal'
+import collectorSelect from './collector/collectorSelect'
 
 const buttonsModals = {
   ticketSetName: {
@@ -75,6 +76,10 @@ const buttonsModals = {
     button: false,
     modal: true,
     type: 'select'
+  },
+  ticketAddSelect: {
+    button: true,
+    modal: false
   }
 }
 
@@ -177,5 +182,10 @@ export default new Command({
         }
       }
     ])
-  )
+  ),
+  selects: new Collection([
+    ['ticketRowSelect', async (selectInteraction) => {
+      await collectorSelect(selectInteraction)
+    }]
+  ])
 })
