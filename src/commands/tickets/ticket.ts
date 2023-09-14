@@ -5,7 +5,7 @@ import { buttonsConfig } from './utils/ticketUpdateConfig'
 import { createTicket } from './utils/createTicket'
 import collectorButtons from './collector/collectorButtons'
 import collectorModal from './collector/collectorModal'
-import collectorSelect from './collector/collectorSelect'
+import { deleteSelect, collectorSelect } from './collector/collectorSelect'
 
 const buttonsModals = {
   ticketSetName: {
@@ -80,6 +80,32 @@ const buttonsModals = {
   ticketAddSelect: {
     button: true,
     modal: false
+  },
+  'del-ticket': {
+    button: true,
+    modal: false
+  },
+  ticketSetSelect: {
+    button: true,
+    modal: false
+  },
+  ticketSetButton: {
+    button: true,
+    modal: false
+  },
+  ticketSendSave: {
+    button: true,
+    modal: true,
+    title: '❓| ID do channel',
+    label: 'Coloque um ID',
+    placeholder: 'Ex: 379089880887721995',
+    style: 1,
+    maxLength: 30,
+    type: 'embedChannelID'
+  },
+  ticketEmbedDelete: {
+    button: true,
+    modal: false
   }
 }
 
@@ -89,19 +115,19 @@ export default new Command({
   type: ApplicationCommandType.ChatInput,
   options: [
     {
-      name: 'canal',
-      description: '[ADM] Canal onde será enviada a embed',
+      name: 'panel-embed',
+      description: '[ADM] Envia a embed de configuração.',
       required: false,
       type: ApplicationCommandOptionType.Channel
     }
   ],
   async run ({ interaction, options }) {
-    const channel = options.getChannel('canal')
+    const channel = options.getChannel('panel-embed')
     const { guild, guildId, channelId } = interaction
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
 
     if (channel === null) {
-      await createTicket(interaction)
+      await createTicket(interaction, 'Ticket aberto por meio do comando /ticket')
       return
     }
 
@@ -168,7 +194,7 @@ export default new Command({
       key,
       async (buttonInteraction) => {
         if (value.button || !value.modal) {
-          await collectorButtons(buttonInteraction, value)
+          await collectorButtons(buttonInteraction, key, value)
         }
       }
     ])
@@ -178,13 +204,16 @@ export default new Command({
       key,
       async (modalInteraction) => {
         if (!value.button || value.modal) {
-          await collectorModal(modalInteraction, value)
+          await collectorModal(modalInteraction, key, value)
         }
       }
     ])
   ),
   selects: new Collection([
     ['ticketRowSelect', async (selectInteraction) => {
+      await deleteSelect(selectInteraction)
+    }],
+    ['ticketRowSelectProduction', async (selectInteraction) => {
       await collectorSelect(selectInteraction)
     }]
   ])

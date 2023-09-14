@@ -1,6 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
 import { db } from '@/app'
-export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
+export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | StringSelectMenuInteraction<CacheType>, about: string): Promise<void> {
   const { guild } = interaction
   const nome = `🎫-${interaction.user.username}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
@@ -71,11 +71,11 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
       })
       const embed = new EmbedBuilder()
         .setColor('Green')
-        .setTitle('❤️ | Obrigado por entrar em contato com o suporte.')
-        .setDescription('Descreva seu problema e aguarde uma resposta.\n \n**📃・Detalhes do Ticket:**')
+        .setTitle('Descreva o que gostaria de saber e aguarde uma resposta.')
         .addFields(
+          { name: '📃・Detalhes do Ticket:', value: about },
           {
-            name: '👤 | User:',
+            name: '👤 | Tomador do ticket:',
             value: `<@${interaction.user.id}>`
           },
           {

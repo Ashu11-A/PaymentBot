@@ -48,12 +48,12 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
 
   const row3Buttons = [
     new ButtonBuilder()
-      .setCustomId('ticketSave')
-      .setLabel('Salvar')
+      .setCustomId('ticketSendSave')
+      .setLabel('Enviar')
       .setStyle(ButtonStyle.Success)
       .setEmoji('✔️'),
     new ButtonBuilder()
-      .setCustomId('ticketDelete')
+      .setCustomId('ticketEmbedDelete')
       .setLabel('Apagar')
       .setStyle(ButtonStyle.Danger)
       .setEmoji('✖️')
@@ -61,7 +61,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
   const dataDB = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
 
-  console.log('depois de remover', dataDB)
+  console.log('Select: ' + dataDB, 'MessageID: ' + message.id)
 
   let number = 0
   if (dataDB !== undefined) {
@@ -130,6 +130,21 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
     }
   }
 
+  for (const value of row3Buttons) {
+    const { custom_id: customID } = Object(value.toJSON())
+
+    if (customID === 'ticketSendSave') {
+      const embedSend = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.embedChannelID`)
+      if (embedSend !== undefined && typeof embedSend === 'string') {
+        value.setEmoji('📝')
+        value.setLabel('Editar')
+      } else {
+        value.setEmoji('📤')
+        value.setLabel('Enviar')
+      }
+    }
+  }
+
   for (const value of row4Buttons) {
     const result = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.config`)
 
@@ -159,42 +174,71 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
   } catch (err) {
     console.log(err)
     await message.edit({ components: [row1, row2, row3] })
-    await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
+    await interaction.editReply({ content: '❌ | SelectMenu ficou sem nenhum item...!' })
   }
 }
 
-export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>, message: Message<boolean>): Promise<void> {
+export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>, originID: string | undefined, messageSend: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
-  const row1Buttons = [
-    new ButtonBuilder()
-      .setCustomId('ticketBuy')
-      .setLabel('Adicionar ao Carrinho')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('🛒'),
-    new ButtonBuilder()
-      .setCustomId('ticketConfig')
-      .setStyle(ButtonStyle.Secondary)
-      .setLabel('⚙️')
-  ]
 
-  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
+  const dataDB = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.select`)
+  const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
 
-  for (const value of row1Buttons) {
-    const { custom_id: customID } = Object(value.toJSON())
-    if (customID === 'ticketBuy') {
-      const result = await db.guilds.get(`${guildId}.channels.${channelId}.messages.${message.id}.status`)
-      console.log(result)
-      if (result !== undefined && result === true) {
-        value.setDisabled(false)
-      } else {
-        value.setDisabled(true)
-      }
-    }
+  console.log('Select: ' + dataDB, 'MessageID: ' + messageSend.id)
+  let number = 0
+  if (dataDB !== undefined) {
+    dataDB.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
+      console.log(`Title: ${title}`)
+      console.log(`Description: ${description}`)
+      console.log(`Emoji: ${emoji}`)
+      options.push({
+        label: title,
+        description,
+        value: `${number}_${channelId}_${originID}`,
+        emoji
+      })
+      number += 1
+    })
   }
 
+  const row1Buttons = [
+    new StringSelectMenuBuilder({
+      custom_id: 'ticketRowSelectProduction',
+      placeholder: 'Escolha qual tipo de ticket deseja abrir!',
+      options
+    })
+  ]
+
+  const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
+    new ButtonBuilder()
+      .setCustomId('ticketOpen')
+      .setEmoji({ name: '📩' })
+      .setLabel('Abra seu ticket')
+      .setStyle(ButtonStyle.Success)
+  )
+
+  const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row1Buttons)
+
   const clearData = { components: [] }
+  await messageSend.edit({ ...clearData })
+  const embed = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.embed`)
+  const select = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.properties.ticketSetSelect`)
 
-  await message.edit({ ...clearData })
-
-  await message.edit({ components: [row1] })
+  try {
+    if (select === true && dataDB !== undefined) {
+      await messageSend.edit({ embeds: [embed], components: [selectRow] })
+        .then(async () => {
+          await interaction.reply({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true })
+            .catch(async () => await interaction.followUp({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true }))
+        })
+    } else {
+      await messageSend.edit({ embeds: [embed], components: [botao] })
+        .then(async () => {
+          await interaction.reply({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true })
+            .catch(async () => await interaction.followUp({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true }))
+        })
+    }
+  } catch (err) {
+    console.log(err)
+  }
 }

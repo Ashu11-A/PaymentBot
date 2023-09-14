@@ -14,7 +14,6 @@ import { modelPresence, setPresence, delModalPresence, delPresence } from './uti
 import sendEmbed from '@/commands/payments/utils/sendEmbed'
 
 const system = {
-  systemTicket: { info: 'Ticket' },
   systemPayments: { info: 'Pagamentos' },
   systemWelcomer: { info: 'Boas vindas' },
   systemStatus: { info: 'Status' },
@@ -203,21 +202,6 @@ export default new Command({
           type: ApplicationCommandOptionType.String
         }
       ]
-    },
-    {
-      name: 'ticket',
-      description: '[ 🎫 Ticket ] Configurar tickets',
-      type: ApplicationCommandOptionType.Subcommand,
-      options: [
-        {
-          name: 'categoria',
-          description: '[ 🎫 Ticket ] Use para definir categoria dos tickets.',
-          type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildCategory
-          ]
-        }
-      ]
     }
   ],
   async run ({ interaction, options }) {
@@ -269,24 +253,6 @@ export default new Command({
 
           break
         }
-        case 'ticket': {
-          await interaction.deferReply({ ephemeral: true })
-          const canal = options.getChannel('canal') as TextChannel
-          const cargo = options.getRole('cargo')
-          const categoria = options.getChannel('categoria') as CategoryChannel
-
-          if (canal !== null) {
-            await setDatabase(interaction, canal, 'ticket', 'channel', 'setado para os tickets')
-          }
-          if (cargo !== null) {
-            await setDatabaseString(interaction, cargo.id, 'ticket', 'role', 'foi atribuído a propriedade')
-          }
-          if (categoria !== null) {
-            await setDatabase(interaction, categoria, 'ticket', 'category', 'setado para os tickets')
-          }
-
-          break
-        }
         case 'pagamentos': {
           await interaction.deferReply({ ephemeral: true })
           const addProduto = options.getChannel('add-produto') as TextChannel
@@ -300,7 +266,7 @@ export default new Command({
             await setDatabase(interaction, carrinho, 'payment', 'channel', 'foi atribuído a propriedade')
           }
           if (autenticação !== null) {
-            await setDatabaseString(interaction, autenticação, 'payment', 'category', 'setado para os tickets')
+            await setDatabaseString(interaction, autenticação, 'payment', 'category', 'setado para os autenticação')
           }
 
           break
