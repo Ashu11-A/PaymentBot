@@ -37,7 +37,6 @@ export default new Event({
 
         const type = (await db.system.get(`${guild.id}.status.systemStatusType`)) as PresenceStatusData
         const typeStatus = await db.system.get(`${guild.id}.status.systemStatusMinecraft`)
-        console.log(typeStatus)
 
         if (typeStatus !== undefined && typeStatus === true) {
           const ip = await db.guilds.get(`${guild.id}.minecraft.ip`)
