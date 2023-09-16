@@ -27,6 +27,7 @@
   "homepage": "https://github.com/Ashu11-A/SeventyHost-Bot#readme",
   "dependencies": {
     "@types/inquirer": "^9.0.3",
+    "@types/node": "^20.6.2",
     "@types/uuid": "^9.0.2",
     "@typescript-eslint/parser": "^6.4.1",
     "axios": "^1.5.0",

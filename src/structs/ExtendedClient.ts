@@ -23,9 +23,9 @@ export class ExtendedClient extends Client {
     })
   }
 
-  public start (): void {
-    this.registerModules()
-    this.registerEvents()
+  public async start (): Promise<void> {
+    await this.registerModules()
+    await this.registerEvents()
     void this.login(process.env.BOT_TOKEN)
   }
 
@@ -39,44 +39,46 @@ export class ExtendedClient extends Client {
       })
   }
 
-  private registerModules (): void {
+  private async registerModules (): Promise<void> {
     const slashCommands = new Array<ApplicationCommandDataResolvable>()
 
     const commandsPath = path.join(__dirname, '..', 'commands')
 
-    fs.readdirSync(commandsPath).forEach(local => {
-      fs.readdirSync(commandsPath + `/${local}/`).filter(fileCondition).forEach(async fileName => {
+    const localPath = fs.readdirSync(commandsPath)
+    for (const local of localPath) {
+      const files = fs.readdirSync(commandsPath + `/${local}/`).filter(fileCondition)
+      for (const fileName of files) {
         const command: CommandType = (await import(`../commands/${local}/${fileName}`))?.default
         const { name, buttons, selects, modals } = command
 
-        if (name) {
+        if (name !== undefined) {
           this.commands.set(name, command)
           slashCommands.push(command)
 
-          if (buttons) buttons.forEach((run, key) => this.buttons.set(key, run))
-          if (selects) selects.forEach((run, key) => this.selects.set(key, run))
-          if (modals) modals.forEach((run, key) => this.modals.set(key, run))
+          if (buttons !== undefined) buttons.forEach((run, key) => this.buttons.set(key, run))
+          if (selects !== undefined) selects.forEach((run, key) => this.selects.set(key, run))
+          if (modals !== undefined) modals.forEach((run, key) => this.modals.set(key, run))
         }
-      })
-    })
-
+      }
+    }
     this.on('ready', () => { this.registerCommands(slashCommands) })
   }
 
-  private registerEvents (): void {
+  private async registerEvents (): Promise<void> {
     const eventsPath = path.join(__dirname, '..', 'events')
 
-    fs.readdirSync(eventsPath).forEach(local => {
-      fs.readdirSync(`${eventsPath}/${local}`).filter(fileCondition)
-        .forEach(async fileName => {
-          const { name, once, run }: EventType<keyof ClientEvents> = (await import(`../events/${local}/${fileName}`))?.default
+    const filesPath = fs.readdirSync(eventsPath)
+    for (const local of filesPath) {
+      const files = fs.readdirSync(`${eventsPath}/${local}`).filter(fileCondition)
+      for (const fileName of files) {
+        const { name, once, run }: EventType<keyof ClientEvents> = (await import(`../events/${local}/${fileName}`))?.default
 
-          try {
-            if (name) (once) ? this.once(name, run) : this.on(name, run)
-          } catch (error) {
-            core.error(`Ocorreu um erro no evento: ${name} \n${error}`.red)
-          }
-        })
-    })
+        try {
+          if (name !== undefined) (once !== undefined) ? this.once(name, run) : this.on(name, run)
+        } catch (error: any) {
+          core.error(`Ocorreu um erro no evento: ${name} \n${error}`.red)
+        }
+      }
+    }
   }
 }

@@ -1,11 +1,11 @@
 import { ExtendedClient } from '@/structs/ExtendedClient'
-import config from 'config.json'
-import Loggings from './controllers/Loggings'
+import config from '@/config.json'
+import Loggings from '@/controllers/Loggings'
 import { color } from '@/structs/types/Colors'
-import { LogsDiscord } from './utils/LogsDiscord'
+import { LogsDiscord } from '@/utils/LogsDiscord'
 import { QuickDB } from 'quick.db'
 import { join } from 'path'
-import { dirCR } from './utils/Folder'
+import { dirCR } from '@/utils/Folder'
 export * from 'colors'
 const client = new ExtendedClient()
 const core = new Loggings('All', 'blue')

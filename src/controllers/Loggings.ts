@@ -1,4 +1,4 @@
-import { logs } from 'controllers/loggings/logs'
+import { logs } from '@/controllers/loggings/logs'
 
 class Loggings {
   private readonly title: string
