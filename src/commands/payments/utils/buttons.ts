@@ -13,9 +13,9 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
       .setLabel('Descrição')
       .setEmoji('📑'),
     new ButtonBuilder()
-      .setCustomId('paymentSetPrice')
-      .setLabel('Preço')
-      .setEmoji('💰'),
+      .setCustomId('paymentSetColor')
+      .setLabel('Cor')
+      .setEmoji('🎨'),
     new ButtonBuilder()
       .setCustomId('paymentSetMiniature')
       .setLabel('Miniatura')
@@ -28,9 +28,9 @@ export async function buttonsConfig (interaction: CommandInteraction<'cached'> |
 
   const row2Buttons = [
     new ButtonBuilder()
-      .setCustomId('paymentSetColor')
-      .setLabel('Cor')
-      .setEmoji('🎨'),
+      .setCustomId('paymentSetPrice')
+      .setLabel('Preço')
+      .setEmoji('💰'),
     new ButtonBuilder()
       .setCustomId('paymentSetRole')
       .setLabel('Add Cargo')

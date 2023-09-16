@@ -93,8 +93,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
             subInteraction?.channel?.delete().catch(console.error)
           }, 5000)
         } else {
-          const channelEmbedID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedChannelID`)
-          const messageID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedMessageID`)
+          const { embedChannelID: channelEmbedID, embedMessageID: messageID } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
 
           if (channelEmbedID !== undefined || messageID !== undefined) {
             try {
@@ -106,7 +105,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
             }
           }
 
-          await db.guilds.delete(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
+          await db.messages.delete(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
           await message.delete()
         }
       }
@@ -116,11 +115,11 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   if (customId === 'ticketSetSelect' || customId === 'ticketSetButton') {
     if (customId === 'ticketSetSelect') {
-      await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, true)
-      await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, false)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, true)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, false)
     } else {
-      await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, true)
-      await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, false)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, true)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, false)
     }
     await interaction.reply({ content: '⏱️ | Aguarde só um pouco...', ephemeral: true })
     await buttonsConfig(interaction, message)
@@ -160,9 +159,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   if (customId === 'ticketSendSave') {
     try {
-      const channelEmbedID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedChannelID`)
+      const { embedChannelID: channelEmbedID, embedMessageID: messageID } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
       const channel = interaction.guild?.channels.cache.get(channelEmbedID) as TextChannel
-      const messageID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedMessageID`)
 
       const msg = await channel?.messages.fetch(messageID)
       if (typeof channelEmbedID === 'string' && messageID !== undefined) {
@@ -177,7 +175,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   if (customId === key) {
     console.log(customId)
-    const textValue = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${type}`)
+    const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${type}`)
     const modal = new ModalBuilder({ customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [

@@ -6,13 +6,13 @@ import { createTicket } from '../utils/createTicket'
 export async function deleteSelect (interaction: StringSelectMenuInteraction<CacheType>): Promise<void> {
   const { guildId, channelId, message } = interaction
 
-  const values = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
+  const { select: values } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
 
   if (Array.isArray(values)) {
     const deleteValues = interaction.values.map(Number)
     const updatedValues = values.filter((_: any, index: any) => !deleteValues.includes(index))
 
-    await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`, updatedValues)
+    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`, updatedValues)
     await interaction.reply({
       content: '✅ Valores removidos com sucesso!',
       ephemeral: true
@@ -30,7 +30,7 @@ export async function collectorSelect (interaction: StringSelectMenuInteraction<
 
   console.log(posição, channelId, messageID)
 
-  const infos = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${messageID}.select`)
+  const { select: infos } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${messageID}`)
 
   if (Number(posição) >= 0 && Number(posição) < infos.length) {
     const { title, description } = infos[Number(posição)]

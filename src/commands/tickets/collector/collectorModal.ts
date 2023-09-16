@@ -9,7 +9,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   if (customId === 'ticketSelectMenu') {
     const fieldNames = ['title', 'description', 'emoji']
 
-    const existingData = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
+    const { select: existingData } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
     console.log('0', existingData)
     const data: any = existingData !== undefined ? existingData : []
 
@@ -35,12 +35,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     console.log('2', data)
 
-    await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`, data)
+    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`, data)
 
     await channel?.messages.fetch(String(message?.id))
       .then(async (msg) => {
-        // const roleID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
-        const embed = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embed`)
+        // const roleID = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
+        const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
         if (typeof embed?.color === 'string') {
           if (embed?.color?.startsWith('#') === true) {
             embed.color = parseInt(embed?.color.slice(1), 16)
@@ -48,7 +48,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         }
         await msg.edit({ embeds: [embed] })
           .then(async () => {
-            await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
+            await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
                 await buttonsConfig(interaction, msg)
               })
@@ -64,9 +64,8 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     const { type } = value
     const messageModal = fields.getTextInputValue('content')
 
-    const channelEmbedID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedChannelID`)
+    const { embedChannelID: channelEmbedID, embedMessageID: messageID } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
     const channelVerify = interaction.guild?.channels.cache.get(channelEmbedID) as TextChannel
-    const messageID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedMessageID`)
 
     if (channelEmbedID !== undefined) {
       await channelVerify?.messages.fetch(messageID)
@@ -76,13 +75,13 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       console.log('type:', type)
       console.log('messageModal:', messageModal)
 
-      await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
 
-      const embed = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embed`)
+      const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
       const channel = interaction.guild?.channels.cache.get(messageModal) as TextChannel
       await channel.send({ embeds: [embed] })
         .then(async (msg) => {
-          await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedMessageID`, msg.id)
+          await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.embedMessageID`, msg.id)
           await buttonsUsers(interaction, message?.id, msg)
         })
         .catch(async (err) => {
@@ -101,11 +100,11 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       messageModal = ''
     }
 
-    await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
+    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
     await channel?.messages.fetch(String(message?.id))
       .then(async (msg) => {
-      // const roleID = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
-        const embed = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.embed`)
+      // const roleID = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
+        const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
         if (typeof embed?.color === 'string') {
           if (embed?.color?.startsWith('#') === true) {
             embed.color = parseInt(embed?.color.slice(1), 16)
@@ -113,7 +112,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         }
         await msg.edit({ embeds: [embed] })
           .then(async () => {
-            await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
+            await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
                 await buttonsConfig(interaction, msg)
                 await interaction.editReply({ content: `${type} alterado para ${messageModal}` })

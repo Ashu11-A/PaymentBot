@@ -58,7 +58,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
       .setStyle(ButtonStyle.Danger)
       .setEmoji('✖️')
   ]
-  const dataDB = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`)
+  const { select: dataDB } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
 
   console.log('Select: ' + dataDB, 'MessageID: ' + message.id)
@@ -100,10 +100,11 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
   const row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row4Buttons)
 
+  const { properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
+
   for (const value of row1Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
-    const result = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.${customID}`)
-    if (result !== undefined) {
+    if (properties[customID] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
@@ -112,10 +113,9 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
 
   for (const value of row2Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
-    const result = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.${customID}`)
 
     if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
-      const enabled = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`)
+      const enabled = properties.ticketSetSelect
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -123,7 +123,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
       }
     }
 
-    if (result !== undefined && result === true) {
+    if (properties[customID] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
@@ -134,7 +134,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketSendSave') {
-      const embedSend = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.embedChannelID`)
+      const { embedChannelID: embedSend } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
       if (embedSend !== undefined && typeof embedSend === 'string') {
         value.setEmoji('📝')
         value.setLabel('Editar')
@@ -146,7 +146,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
   }
 
   for (const value of row4Buttons) {
-    const result = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.config`)
+    const result = properties.config
 
     if (result === undefined || result === true) {
       value.setPlaceholder('Modo edição, selecione um valor para remover.')
@@ -158,8 +158,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
   const clearData = { components: [] }
   await message.edit({ ...clearData })
 
-  const select = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`)
-  const button = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`)
+  const { ticketSetSelect: select, ticketSetButton: button } = properties
 
   console.log('select', select, 'button', button)
   try {
@@ -181,7 +180,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
 export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>, originID: string | undefined, messageSend: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
 
-  const dataDB = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.select`)
+  const { select: dataDB } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
 
   console.log('Select: ' + dataDB, 'MessageID: ' + messageSend.id)
@@ -221,8 +220,8 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
 
   const clearData = { components: [] }
   await messageSend.edit({ ...clearData })
-  const embed = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.embed`)
-  const select = await db.guilds.get(`${guildId}.ticket.${channelId}.messages.${originID}.properties.ticketSetSelect`)
+  const { embed, properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
+  const select = properties.ticketSetSelect
 
   try {
     if (select === true && dataDB !== undefined) {

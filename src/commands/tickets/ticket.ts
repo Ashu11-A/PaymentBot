@@ -158,7 +158,7 @@ export default new Command({
       if (sendChannel !== undefined) {
         await sendChannel.send({ embeds: [embed] })
           .then(async (msg) => {
-            await db.guilds.set(`${guildId}.ticket.${channelId}.messages.${msg.id}`, {
+            await db.messages.set(`${guildId}.ticket.${channelId}.messages.${msg.id}`, {
               id: msg.id,
               embed: embed.toJSON()
             })
