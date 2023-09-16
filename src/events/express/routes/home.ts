@@ -1,26 +1,23 @@
 import { type Request, type Response } from 'express'
-import { core } from '@/app'
 
 class Home {
   /**
-     * Home Page
-     */
+    * Home Page
+    */
   public get (req: Request, res: Response): object {
     const ipAddress: any = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
     try {
       return res.json({
         status: 200,
-        your_ip: ipAddress,
+        yourIp: ipAddress,
         router: req.originalUrl
-      })
+      }).status(200)
     } catch {
       return res.json({
         status: 500,
         your_ip: ipAddress,
         router: req.originalUrl
-      })
-    } finally {
-      core.info(`Alguém acessou o router: ${req.originalUrl} no ip ${ipAddress}`.yellow)
+      }).status(500)
     }
   }
 }
