@@ -209,8 +209,9 @@ export default new Command({
       await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        interaction.guild,
         'warn',
         'noPermission',
         'Orange',

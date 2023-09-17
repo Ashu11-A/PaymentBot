@@ -59,8 +59,9 @@ export default new Command({
           ephemeral: true
         })
       }
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        interaction.guild,
         'warn',
         'noPermission',
         'Orange',

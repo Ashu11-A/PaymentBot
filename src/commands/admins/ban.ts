@@ -49,8 +49,9 @@ export default new Command({
         content: '❌ - Você não tem permissão para banir usuários!',
         ephemeral: true
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        interaction.guild,
         'warn',
         'noPermissionBanKick',
         'Orange',

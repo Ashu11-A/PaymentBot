@@ -1,10 +1,9 @@
 import { db } from '@/app'
-import { type ColorResolvable, type TextChannel, type CommandInteraction, type CacheType, EmbedBuilder } from 'discord.js'
+import { type ColorResolvable, type TextChannel, type CommandInteraction, type CacheType, EmbedBuilder, type MessageInteraction, type Guild } from 'discord.js'
 
-export async function LogsDiscord (interaction: CommandInteraction<CacheType>, type: string, cause: string, color: ColorResolvable, infos: any): Promise<void> {
-  const { commandName, user } = interaction
-  const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
-  const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
+export async function LogsDiscord (interaction: CommandInteraction<CacheType> | MessageInteraction, guild: Guild | null, type: string, cause: string, color: ColorResolvable, infos: any): Promise<void> {
+  const logsDB = await db.guilds.get(`${guild?.id}.channel.logs`) as string
+  const logsChannel = guild?.channels.cache.get(logsDB) as TextChannel
 
   let title: string = ''
   let name: string = ''
@@ -21,13 +20,18 @@ export async function LogsDiscord (interaction: CommandInteraction<CacheType>, t
     switch (cause) {
       case 'noPermission': {
         name = 'Usuário sem permissão tentou executar um comando'
-        value = `<@${user.id}> Tentou usar o comando` + '```' + `/${commandName}` + '```'
+        value = `<@${interaction.user.id}> Tentou usar o comando` + '```' + `/${interaction.commandName}` + '```'
         break
       }
       case 'noPermissionBanKick': {
         const [{ userID, reason, actionType }] = infos
         name = 'Usuário sem permissão tentou executar um comando'
-        value = `<@${user.id}> Tentou ${actionType} o usuário <@${userID}>\nMotivo: ${reason}`
+        value = `<@${interaction.user.id}> Tentou ${actionType} o usuário <@${userID}>\nMotivo: ${reason}`
+        break
+      }
+      case 'messageDelete': {
+        name = 'Mensagem apagada era uma embed do sistema!'
+        value = 'Alguém Apagou uma mensagem que em teoria não poderia!\nDeletando mensagem do Database...'
         break
       }
     }

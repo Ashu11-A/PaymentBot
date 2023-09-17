@@ -87,8 +87,9 @@ export default new Command({
       await interaction.editReply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        guild,
         'warn',
         'noPermission',
         'Orange',

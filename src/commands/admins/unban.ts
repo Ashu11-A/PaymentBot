@@ -34,8 +34,9 @@ export default new Command({
       await interaction.editReply({
         content: '❌ - Você não tem permissão para desbanir usuários!'
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        guild,
         'warn',
         'noPermissionBanKick',
         'Orange',

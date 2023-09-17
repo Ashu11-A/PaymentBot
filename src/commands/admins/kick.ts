@@ -35,8 +35,9 @@ export default new Command({
         content: '❌ - Você não tem permissão para expulsar usuários!',
         ephemeral: true
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        guild,
         'warn',
         'noPermissionBanKick',
         'Orange',

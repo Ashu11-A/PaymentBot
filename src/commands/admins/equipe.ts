@@ -45,8 +45,9 @@ export default new Command({
         content: '**❌ - Você não possui permissão para utilizar este comando.**',
         ephemeral: true
       })
-      void LogsDiscord(
+      await LogsDiscord(
         interaction,
+        guild,
         'warn',
         'noPermission',
         'Orange',
