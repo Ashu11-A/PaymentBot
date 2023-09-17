@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { type StringSelectMenuInteraction, type CacheType } from 'discord.js'
-import { buttonsConfig } from '../utils/ticketUpdateConfig'
+import { ticketButtonsConfig } from '../utils/ticketUpdateConfig'
 import { createTicket } from '../utils/createTicket'
 
 export async function deleteSelect (interaction: StringSelectMenuInteraction<CacheType>): Promise<void> {
@@ -17,7 +17,7 @@ export async function deleteSelect (interaction: StringSelectMenuInteraction<Cac
       content: '✅ Valores removidos com sucesso!',
       ephemeral: true
     })
-    await buttonsConfig(interaction, message)
+    await ticketButtonsConfig(interaction, message)
   } else {
     console.error('Values is not an array. Handle this case appropriately.')
   }

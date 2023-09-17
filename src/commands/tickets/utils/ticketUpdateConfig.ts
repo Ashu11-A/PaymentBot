@@ -1,30 +1,11 @@
 import { db } from '@/app'
+import { createRowEdit } from '@/events/SUEE/utils/createRowEdit'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
-export async function buttonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
+export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
-  const row1Buttons = [
-    new ButtonBuilder()
-      .setCustomId('ticketSetName')
-      .setLabel('Nome')
-      .setEmoji('📝'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetDesc')
-      .setLabel('Descrição')
-      .setEmoji('📑'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetMiniature')
-      .setLabel('Miniatura')
-      .setEmoji('🖼️'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetBanner')
-      .setLabel('Banner')
-      .setEmoji('🌄'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetColor')
-      .setLabel('Cor')
-      .setEmoji('🎨')
-  ]
+
+  const [row1] = await createRowEdit(interaction, message, 'ticket')
 
   const row2Buttons = [
     new ButtonBuilder()
@@ -95,21 +76,11 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
       .setStyle(ButtonStyle.Success)
   )
 
-  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
   const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
   const row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row4Buttons)
 
   const { properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
-
-  for (const value of row1Buttons) {
-    const { custom_id: customID } = Object(value.toJSON())
-    if (properties[customID] !== undefined) {
-      value.setStyle(ButtonStyle.Primary)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
-  }
 
   for (const value of row2Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
@@ -123,7 +94,7 @@ export async function buttonsConfig (interaction: StringSelectMenuInteraction<Ca
       }
     }
 
-    if (properties[customID] !== undefined) {
+    if (properties !== undefined && properties[customID] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)

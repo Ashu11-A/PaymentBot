@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { buttonsConfig, buttonsUsers } from '@/commands/tickets/utils/ticketUpdateConfig'
+import { ticketButtonsConfig, buttonsUsers } from '@/commands/tickets/utils/ticketUpdateConfig'
 import { type TextChannel, type CacheType, type ModalSubmitInteraction } from 'discord.js'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
@@ -50,7 +50,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
           .then(async () => {
             await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
-                await buttonsConfig(interaction, msg)
+                await ticketButtonsConfig(interaction, msg)
               })
           })
       })
@@ -114,7 +114,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
           .then(async () => {
             await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
-                await buttonsConfig(interaction, msg)
+                await ticketButtonsConfig(interaction, msg)
                 await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
               })
           })

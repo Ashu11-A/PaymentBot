@@ -2,7 +2,7 @@ import { db } from '@/app'
 import { ActionRowBuilder, type CacheType, ModalBuilder, TextInputBuilder, type ButtonInteraction, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type TextChannel } from 'discord.js'
 import { createTicket } from '../utils/createTicket'
 import { createRow } from '@/utils/Discord'
-import { buttonsConfig, buttonsUsers } from '@/commands/tickets/utils/ticketUpdateConfig'
+import { ticketButtonsConfig, buttonsUsers } from '@/commands/tickets/utils/ticketUpdateConfig'
 
 const listItens = {
   SetName: {
@@ -122,7 +122,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, false)
     }
     await interaction.reply({ content: '⏱️ | Aguarde só um pouco...', ephemeral: true })
-    await buttonsConfig(interaction, message)
+    await ticketButtonsConfig(interaction, message)
     return
   }
 

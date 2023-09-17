@@ -34,7 +34,7 @@ export function validarCorHex (cor: string): any[] {
   const regex = /^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{8})$/
 
   if (!regex.test(cor)) {
-    return [false, 'Cor expecificado não é valido!']
+    return [false, 'A Cor expecificada não é valida!']
   }
 
   return [true]

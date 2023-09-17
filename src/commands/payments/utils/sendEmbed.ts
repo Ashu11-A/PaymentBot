@@ -1,7 +1,7 @@
 import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message } from 'discord.js'
 
 import { db } from '@/app'
-import { buttonsConfig } from './buttons'
+import { paymentButtonsConfig } from './paymentUpdateConfig'
 
 export default async function sendEmbed (interaction: CommandInteraction<'cached'>, channel: TextChannel): Promise<void> {
   const { guildId, channelId } = interaction
@@ -17,12 +17,12 @@ export default async function sendEmbed (interaction: CommandInteraction<'cached
 
   await channel.send({ embeds: [embed] })
     .then(async (msg: Message<true>) => {
-      await db.payments.set(`${guildId}.channels.${channelId}.messages.${msg.id}`,
+      await db.messages.set(`${guildId}.payments.${channelId}.messages.${msg.id}`,
         {
           id: msg.id,
           embed: embed.toJSON()
         })
-      await buttonsConfig(interaction, msg)
+      await paymentButtonsConfig(interaction, msg)
       await interaction.editReply({
         content: '✅ | Item criado com sucesso!',
         components: [

@@ -1,63 +1,13 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, Collection } from 'discord.js'
 import { Command } from '@/structs/types/Command'
 import { LogsDiscord, db } from '@/app'
-import { buttonsConfig } from './utils/ticketUpdateConfig'
+import { ticketButtonsConfig } from './utils/ticketUpdateConfig'
 import { createTicket } from './utils/createTicket'
 import collectorButtons from './collector/collectorButtons'
 import collectorModal from './collector/collectorModal'
 import { deleteSelect, collectorSelect } from './collector/collectorSelect'
 
 const buttonsModals = {
-  ticketSetName: {
-    button: true,
-    modal: true,
-    title: '❓| Qual será o Título da embed?',
-    label: 'Título da embed',
-    placeholder: 'Ex: Pegue seu ticket!',
-    style: 1,
-    maxLength: 256,
-    type: 'embed.title'
-  },
-  ticketSetDesc: {
-    button: true,
-    modal: true,
-    title: '❓| Qual será a Descrição do Ticket?',
-    label: 'Descrição do produto',
-    placeholder: 'Ex: Basta abrir seu ticket e aguardar um membro dê nossa equipe para lhe ajudar.',
-    style: 2,
-    maxLength: 4000,
-    type: 'embed.description'
-  },
-  ticketSetMiniature: {
-    button: true,
-    modal: true,
-    title: '❓| Qual será a Miniatura do Ticket?',
-    label: 'Coloque um Link, ou digite "VAZIO"',
-    placeholder: 'Ex: https://uma.imagemBem.ilustrativa/img.png',
-    style: 1,
-    maxLength: 4000,
-    type: 'embed.thumbnail.url'
-  },
-  ticketSetBanner: {
-    button: true,
-    modal: true,
-    title: '❓| Qual será o Banner da Ticket?',
-    label: 'Coloque um Link, ou digite "VAZIO"',
-    placeholder: 'Ex: https://um.bannerBem.legal/img.png',
-    style: 1,
-    maxLength: 4000,
-    type: 'embed.image.url'
-  },
-  ticketSetColor: {
-    button: true,
-    modal: true,
-    title: '❓| Qual será a Cor da Embed?',
-    label: 'Cor em hexadecimal',
-    placeholder: 'Ex: #13fc03',
-    style: 1,
-    maxLength: 7,
-    type: 'embed.color'
-  },
   ticketSetRole: {
     button: true,
     modal: true,
@@ -162,7 +112,7 @@ export default new Command({
               id: msg.id,
               embed: embed.toJSON()
             })
-            await buttonsConfig(interaction, msg)
+            await ticketButtonsConfig(interaction, msg)
             await interaction.editReply({
               embeds: [
                 new EmbedBuilder()
