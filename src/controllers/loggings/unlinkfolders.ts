@@ -8,7 +8,7 @@ const core = (levelsss: string, message: string): void => { Console('Loggings', 
 
 export function unlinkfolders (logFolderPath: string, level: string): void {
   const loggings = json(config.Logs.configPATH + '/loggings.json')
-  const logFilesPattern = new RegExp(`.*_${level.toLowerCase()}.log.txt`)
+  const logFilesPattern = new RegExp(`.*_${level.toLowerCase()}.log`)
   const logFiles = fs.readdirSync(logFolderPath)
     .filter(file => logFilesPattern.test(file))
     .sort((a, b) => {
