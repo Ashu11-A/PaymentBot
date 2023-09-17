@@ -12,7 +12,7 @@ new Command({
     const loja = await db.guilds.get(`${interaction.guildId}.urls.loja`)
     const iconURL = interaction?.guild?.iconURL({ size: 64 }) ?? undefined
     const embed = new EmbedBuilder()
-      .setAuthor({ iconURL, name: interaction.guild?.name as string })
+      .setAuthor({ iconURL, name: interaction.guild?.name })
       .setColor('Blurple')
       .addFields(
         { name: 'Dono', value: `<@${interaction.guild?.ownerId}>`, inline: true },

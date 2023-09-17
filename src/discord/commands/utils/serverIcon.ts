@@ -34,7 +34,7 @@ new Command({
 
       const embed = new EmbedBuilder()
         .setColor('Blue')
-        .setAuthor({ iconURL: img, name: interaction.guild?.name as string })
+        .setAuthor({ iconURL: img, name: interaction.guild?.name })
         .setImage(img)
 
       const button = new ActionRowBuilder<ButtonBuilder>().addComponents(

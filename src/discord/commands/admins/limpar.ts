@@ -54,7 +54,7 @@ new Command({
 
     await interaction.deferReply({ ephemeral: true })
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       if (channel?.isTextBased() === false) {
         await interaction.reply({
           content: '**❌ - Você não possui permissão para utilizar este comando.**',

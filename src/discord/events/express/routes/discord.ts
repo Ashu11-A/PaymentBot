@@ -1,6 +1,6 @@
 import { type Request, type Response } from 'express'
 import { client } from '@/app'
-import { Component } from '@/discord/base';
+import { Component } from '@/discord/base'
 
 // Cria uma nova coleção para armazenar as interações
 
@@ -9,7 +9,7 @@ class Discord {
     * Discord Api Info
     */
   public get (req: Request, res: Response): object {
-    const commands  = client.application?.commands.cache
+    const commands = client.application?.commands.cache
     const { guilds, users } = client
     try {
       return res.json({

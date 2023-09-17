@@ -71,7 +71,7 @@ function applyColorTags (message: string): string {
 }
 
 // Atualize a função MakeLog para aplicar cores na mensagem
-function MakeLog (ConsoleLog: ConsoleLogger) {
+function MakeLog (ConsoleLog: ConsoleLogger): void {
   const { currentHour, color, controller, levelColor, level, message } = ConsoleLog
   const formattedController = cores[color](controller)
   const formattedLevel = cores[levelColor](level)

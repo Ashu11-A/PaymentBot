@@ -2,9 +2,10 @@ import express from 'express'
 import { router } from './router'
 
 export class App {
-  listen(Port: number, arg1: () => void) {
+  listen (Port: number, arg1: () => void) {
     throw new Error('Method not implemented.')
   }
+
   public server: express.Application
 
   constructor () {

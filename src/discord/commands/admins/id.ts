@@ -44,7 +44,7 @@ new Command({
       type: ApplicationCommandOptionType.Channel
     }
   ],
-  async run ( interaction ) {
+  async run (interaction) {
     await interaction.deferReply({ ephemeral: true })
 
     const { options } = interaction

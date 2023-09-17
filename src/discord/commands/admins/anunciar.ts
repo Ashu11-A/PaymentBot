@@ -48,7 +48,7 @@ new Command({
     }
   ],
   async run (interaction) {
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       await interaction.editReply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
@@ -146,7 +146,7 @@ new Command({
 new Component({
   customId: 'modalAnunciar',
   type: 'Modal',
-  async run(interaction) {
+  async run (interaction) {
     await interaction.deferReply({ ephemeral: true })
     const { fields, guild, guildId, user } = interaction
     const channelID = await db.guilds.get(`${guildId}.channel.anunciar.${user.id}`)
@@ -242,5 +242,5 @@ new Component({
           }))
       }
     })
-    }
-  })
+  }
+})

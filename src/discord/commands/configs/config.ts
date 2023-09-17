@@ -206,7 +206,7 @@ new Command({
     }
   ],
   async run (interaction) {
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })

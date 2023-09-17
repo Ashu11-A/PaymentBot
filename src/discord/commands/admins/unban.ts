@@ -31,7 +31,7 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('BanMembers')) === false) {
+    if (!(interaction?.memberPermissions?.has('BanMembers'))) {
       await interaction.editReply({
         content: '❌ - Você não tem permissão para desbanir usuários!'
       })
@@ -55,7 +55,7 @@ new Command({
       }
 
       const bans = await guild?.bans.fetch()
-      if (bans?.has(userID) !== null && bans?.has(userID) !== true) {
+      if (bans?.has(userID) !== null && !(bans?.has(userID))) {
         const embed = new EmbedBuilder()
           .setTitle('Erro')
           .setDescription('O usuário especificado não está banido.')

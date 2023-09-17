@@ -84,7 +84,7 @@ new Command({
 
     await interaction.deferReply({ ephemeral: true })
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       await interaction.editReply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
@@ -144,7 +144,7 @@ new Command({
 })
 
 Object.entries(buttonsModals).map(([key, value]) => {
-new Component({
+  new Component({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
@@ -154,7 +154,7 @@ new Component({
     }
   })
 
-new Component({
+  new Component({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {

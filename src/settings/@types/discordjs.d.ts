@@ -1,6 +1,6 @@
-declare module "discord.js" {
-    interface Client {
-        start(): void,
-    }
+declare module 'discord.js' {
+  interface Client {
+    start(): void
+  }
 }
-export {};
+export {}

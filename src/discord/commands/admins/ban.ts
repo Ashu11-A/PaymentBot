@@ -46,7 +46,7 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       await interaction.reply({
         content: '❌ - Você não tem permissão para banir usuários!',
         ephemeral: true

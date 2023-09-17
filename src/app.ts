@@ -1,19 +1,18 @@
-import { createClient } from "./discord/base";
-import { log } from "./settings";
+import { createClient } from './discord/base'
+import { log } from './settings'
 import Loggings from '@/controllers/Loggings'
-import { LogsDiscord } from '@/functions'
+import { LogsDiscord, dirCR } from '@/functions'
 import { QuickDB } from 'quick.db'
 import { join } from 'path'
-import { dirCR } from '@/functions'
 
 export * from 'colors'
 const core = new Loggings('All', 'blue')
 
-const client = createClient();
-client.start();
+const client = createClient()
+client.start()
 
-process.on("uncaughtException", log.error);
-process.on("unhandledRejection", log.error);
+process.on('uncaughtException', log.error)
+process.on('unhandledRejection', log.error)
 
 const rootDir = process.cwd()
 

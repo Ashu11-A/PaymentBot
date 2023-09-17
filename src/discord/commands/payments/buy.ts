@@ -48,7 +48,7 @@ new Command({
 })
 
 Object.entries(buttonsModals).map(([key, value]) => {
-new Component({
+  new Component({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
@@ -56,9 +56,9 @@ new Component({
         await collectorButtons(buttonInteraction, key, value)
       }
     }
-})
+  })
 
-new Component({
+  new Component({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {

@@ -20,7 +20,7 @@ new Command({
       type: ApplicationCommandOptionType.String
     }
   ],
-  async run (interaction ) {
+  async run (interaction) {
     const { guild, options } = interaction
 
     const user: any = options.getUser('usuário')
@@ -29,7 +29,7 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('Administrator')) === false) {
+    if (!(interaction?.memberPermissions?.has('Administrator'))) {
       console.log(
         'BAN',
         `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o banir sem ter permissão.`

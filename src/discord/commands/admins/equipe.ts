@@ -32,7 +32,7 @@ new Command({
 
     }
   ],
-  async run ( interaction ) {
+  async run (interaction) {
     const { options } = interaction
     const user = options.getUser('usuário')
     const member = interaction.guild?.members.cache.get(String(user?.id))
@@ -42,7 +42,7 @@ new Command({
     const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.staff_logs`)
     const sendChannel = guild?.channels.cache.get(channelDB) as TextChannel
 
-    if ((interaction?.memberPermissions?.has('ManageRoles')) === false) {
+    if (!(interaction?.memberPermissions?.has('ManageRoles'))) {
       await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**',
         ephemeral: true
