@@ -1,16 +1,19 @@
-import { ExtendedClient } from '@/structs/ExtendedClient'
-import config from '@/config.json'
+import { createClient } from "./discord/base";
+import { log } from "./settings";
 import Loggings from '@/controllers/Loggings'
-import { color } from '@/structs/types/Colors'
-import { LogsDiscord } from '@/utils/LogsDiscord'
+import { LogsDiscord } from '@/functions'
 import { QuickDB } from 'quick.db'
 import { join } from 'path'
-import { dirCR } from '@/utils/Folder'
+import { dirCR } from '@/functions'
+
 export * from 'colors'
-const client = new ExtendedClient()
 const core = new Loggings('All', 'blue')
 
-client.start()
+const client = createClient();
+client.start();
+
+process.on("uncaughtException", log.error);
+process.on("unhandledRejection", log.error);
 
 const rootDir = process.cwd()
 
@@ -25,4 +28,4 @@ const db = {
   tokens: new QuickDB<any>({ filePath: join(rootDir, 'database/tokens.sqlite'), table: 'tokens' })
 }
 
-export { client, config, color, core, LogsDiscord, db }
+export { client, core, LogsDiscord, db }

@@ -1,16 +1,16 @@
-import { json } from '@/utils/Json'
+import { json } from '@/functions'
 import { getTimestamp } from '@/controllers/loggings/getTimestamp'
-import { config } from '@/app'
+import { settings } from '@/settings'
 import { loggings } from '@/controllers/loggings/params'
 import colors from 'colors'
 import { registerlog } from '@/controllers/loggings/registerlog'
-import { type ConsoleLog as ConsoleLogger } from '@/interfaces/Controllers'
+import { type ConsoleLog as ConsoleLogger } from '@/settings/interfaces/Controllers'
 import { CheckColors } from '@/controllers/loggings/CheckColors'
 
 const cores: any = colors
 
 export function logs (controller: string, message: string, level: string, color: string): void {
-  const valoressssss = json(config.Logs.configPATH + '/loggings.json')
+  const valoressssss = json(settings.Logs.configPATH + '/loggings.json')
   const CURRENT_LOG_LEVEL = valoressssss.level ?? 'Debug' // Altere o nível atual conforme necessário
   // carrega o codigo
   const levelConfig: any = loggings[level]
