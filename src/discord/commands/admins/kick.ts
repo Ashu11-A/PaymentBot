@@ -38,7 +38,7 @@ new Command({
         content: '❌ - Você não tem permissão para expulsar usuários!',
         ephemeral: true
       })
-      await LogsDiscord(
+      await LogsDiscord.logGerator(
         interaction,
         guild,
         'warn',

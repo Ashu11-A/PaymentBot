@@ -35,7 +35,7 @@ new Command({
       await interaction.editReply({
         content: '❌ - Você não tem permissão para desbanir usuários!'
       })
-      await LogsDiscord(
+      await LogsDiscord.logGerator(
         interaction,
         guild,
         'warn',

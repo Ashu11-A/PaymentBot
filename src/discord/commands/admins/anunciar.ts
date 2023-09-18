@@ -49,10 +49,10 @@ new Command({
   ],
   async run (interaction) {
     if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      await interaction.editReply({
+      await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      await LogsDiscord(
+      await LogsDiscord.logGerator(
         interaction,
         interaction.guild,
         'warn',

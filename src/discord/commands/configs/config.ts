@@ -210,7 +210,7 @@ new Command({
       await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      await LogsDiscord(
+      await LogsDiscord.logGerator(
         interaction,
         interaction.guild,
         'warn',
