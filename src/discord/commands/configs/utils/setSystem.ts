@@ -22,14 +22,16 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     channelSend = interaction.guild?.channels.cache.get(String(channelDB)) as TextChannel
   }
 
-  const enabled = new EmbedBuilder()
-    .setTitle('🎉 Configurações')
-    .setDescription(brBuilder(
+  const enabled = new EmbedBuilder({
+    title: '🎉 Configurações',
+    description: brBuilder(
       '◈ Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.',
       '◈ Para configurar os tickets, utilize </config ticket:1150898069941002267>,',
       'os Logs, Boas Vindas, e outos aspectos, utilize </config guild:1150898069941002267>',
       'configure o sistema de pagamentos em: </config pagamentos:1150898069941002267>.'
-    ))
+    ),
+    color: 0x57f287
+  })
 
   const statusEmbed = new EmbedBuilder({
     title: '⚙️ Presence Status',

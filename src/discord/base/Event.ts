@@ -9,9 +9,9 @@ interface EventData<Key extends keyof ClientEvents> {
 }
 
 export class Event<Key extends keyof ClientEvents> {
-  public static all = new Collection<string, EventData<keyof ClientEvents>>()
+  public static all: Array<EventData<keyof ClientEvents>> = []
   constructor (data: EventData<Key>) {
     log.successEvent(ck.green(`${ck.cyan.underline(data.name)} has been successfully registered!`))
-    Event.all.set(data.name, data)
+    Event.all.push(data)
   }
 }

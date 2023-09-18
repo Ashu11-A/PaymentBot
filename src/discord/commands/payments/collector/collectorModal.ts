@@ -5,6 +5,7 @@ import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, channelId, message, fields } = interaction
+  console.log(key)
   if (customId === key) {
     await interaction.deferReply({ ephemeral: true })
 

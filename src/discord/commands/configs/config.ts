@@ -351,7 +351,7 @@ new Command({
 })
 
 Object.entries(system).map(([key, value]) => {
-  new Component({
+  return new Component({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {

@@ -144,7 +144,7 @@ new Command({
 })
 
 Object.entries(buttonsModals).map(([key, value]) => {
-  new Component({
+  return new Component({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
@@ -153,8 +153,10 @@ Object.entries(buttonsModals).map(([key, value]) => {
       }
     }
   })
+})
 
-  new Component({
+Object.entries(buttonsModals).map(([key, value]) => {
+  return new Component({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {

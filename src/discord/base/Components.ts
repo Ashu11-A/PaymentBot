@@ -31,14 +31,16 @@ type ComponentData<Cached extends CacheType = CacheType> = ComponentProps<Cached
 }
 
 export class Component<Cached extends CacheType = CacheType> {
-  public static all = new Collection<string, ComponentData>()
+  // public static all = new Collection<string, ComponentData>()
+  public static all = Array<Collection<string, keyof ComponentData>>()
   public static find<T extends ComponentData['type']>(customId: string, type: T) {
-    const c = Component.all.find(c => c.customId === customId && c.type == type)
+    const c = Component.all.find(c => c.customId === customId && c.type === type)
     return c as ComponentData & { type: T } | undefined
   }
 
   constructor (data: ComponentData<Cached>) {
     log.successComponent(ck.green(`${ck.cyan.underline(data.customId)} has been successfully saved!`))
-    Component.all.set(data.customId, data)
+    // Component.all.set(data.customId, data)
+    Component.all.push(data)
   }
 }

@@ -86,7 +86,9 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
-      const enabled = properties.ticketSetSelect
+      console.log('customID: ' + customID)
+      console.log('properties: ' + properties)
+      const enabled = properties?.ticketSetSelect
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -117,7 +119,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   }
 
   for (const value of row4Buttons) {
-    const result = properties.config
+    const result = properties?.config
 
     if (result === undefined || result === true) {
       value.setPlaceholder('Modo edição, selecione um valor para remover.')
@@ -129,7 +131,8 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const clearData = { components: [] }
   await message.edit({ ...clearData })
 
-  const { ticketSetSelect: select, ticketSetButton: button } = properties
+  const button = properties?.ticketSetButton
+  const select = properties?.ticketSetSelect
 
   console.log('select', select, 'button', button)
   try {
@@ -192,7 +195,7 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
   const clearData = { components: [] }
   await messageSend.edit({ ...clearData })
   const { embed, properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
-  const select = properties.ticketSetSelect
+  const select = properties?.ticketSetSelect
 
   try {
     if (select === true && dataDB !== undefined) {

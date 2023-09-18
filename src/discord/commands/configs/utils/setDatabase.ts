@@ -168,7 +168,7 @@ export async function setDatabaseSystem (
         []
       )
     }
-    console.log(await db.system.get(`${guild?.id}.${typeData}`))
+    console.log('Dados atuais do System:', await db.system.get(`${guild?.id}.${typeData}`))
     await setSystem(interaction)
   } catch (error) {
     console.log(error)
