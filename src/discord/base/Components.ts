@@ -1,6 +1,6 @@
 import { log } from '@/settings'
 import ck from 'chalk'
-import { type ButtonInteraction, type CacheType, type ChannelSelectMenuInteraction, Collection, type MentionableSelectMenuInteraction, type ModalSubmitInteraction, type RoleSelectMenuInteraction, type StringSelectMenuInteraction, type UserSelectMenuInteraction } from 'discord.js'
+import { type ButtonInteraction, type CacheType, type ChannelSelectMenuInteraction, type MentionableSelectMenuInteraction, type ModalSubmitInteraction, type RoleSelectMenuInteraction, type StringSelectMenuInteraction, type UserSelectMenuInteraction } from 'discord.js'
 
 type ComponentProps<Cached extends CacheType = CacheType> = {
   type: 'Button'
@@ -30,17 +30,20 @@ type ComponentData<Cached extends CacheType = CacheType> = ComponentProps<Cached
   customId: string
 }
 
-export class Component<Cached extends CacheType = CacheType> {
-  // public static all = new Collection<string, ComponentData>()
-  public static all = Array<Collection<string, keyof ComponentData>>()
-  public static find<T extends ComponentData['type']>(customId: string, type: T) {
-    const c = Component.all.find(c => c.customId === customId && c.type === type)
-    return c as ComponentData & { type: T } | undefined
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class Component {
+  public static all: Array<ComponentData<any>> = []
+
+  public static find<Cached extends CacheType, T extends ComponentData<Cached>['type']>(
+    customId: string,
+    type: T
+  ): ComponentData<Cached> & { type: T } | undefined {
+    const c = Component.all.find((component) => component.customId === customId && component.type === type)
+    return c as ComponentData<Cached> & { type: T } | undefined
   }
 
-  constructor (data: ComponentData<Cached>) {
+  constructor (data: ComponentData<any>) {
     log.successComponent(ck.green(`${ck.cyan.underline(data.customId)} has been successfully saved!`))
-    // Component.all.set(data.customId, data)
     Component.all.push(data)
   }
 }

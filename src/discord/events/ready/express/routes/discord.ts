@@ -20,9 +20,9 @@ class Discord {
             loaded: commands?.size,
             names: [commands?.map((command: { name: any }) => command.name)]
           },
-          buttons: Component.all.filter((component) => component.type === 'Button').size,
-          modals: Component.all.filter((component) => component.type === 'Modal').size,
-          selects: Component.all.filter((component) => component.type === 'StringSelect').size
+          buttons: Component.all.filter((component) => component.type === 'Button').length,
+          modals: Component.all.filter((component) => component.type === 'Modal').length,
+          selects: Component.all.filter((component) => component.type === 'StringSelect').length
         },
         guilds: {
           totalUsers: users.cache.size,
