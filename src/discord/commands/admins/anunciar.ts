@@ -2,7 +2,6 @@ import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, typ
 import { Command, Component } from '@/discord/base'
 import { LogsDiscord } from '@/app'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
-import { getTimestamp } from '@/controllers/loggings/getTimestamp'
 
 interface MessageProps {
   channelId: string
