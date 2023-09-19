@@ -10,7 +10,7 @@ interface ConsoleLogs {
   message: string
   Type: string
 }
-export function Console (controller: string, message: string, color: string, Type: string) {
+export function Console (controller: string, message: string, color: string, Type: string): void {
   const { currentHour } = getTimestamp()
   const ConsoleLog: ConsoleLogs = {
     currentHour,
@@ -22,7 +22,7 @@ export function Console (controller: string, message: string, color: string, Typ
   }
   MakeLog(ConsoleLog)
   // Atualize a função MakeLog para aplicar cores na mensagem
-  function MakeLog (ConsoleLog: ConsoleLogs) {
+  function MakeLog (ConsoleLog: ConsoleLogs): void {
     const { currentHour, color, controller, levelColor, message, Type } = ConsoleLog
     const formattedController = cores[color](controller)
     const formattedLevel = cores[levelColor](Type)

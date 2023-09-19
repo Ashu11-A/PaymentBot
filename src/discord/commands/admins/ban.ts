@@ -1,6 +1,7 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, GuildMember } from 'discord.js'
 import { Command } from '@/discord/base'
-import { LogsDiscord, client, db } from '@/app'
+import { client, db } from '@/app'
+import { Discord } from '@/functions'
 
 new Command({
   name: 'ban',
@@ -46,21 +47,8 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      await interaction.reply({
-        content: '❌ - Você não tem permissão para banir usuários!',
-        ephemeral: true
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        interaction.guild,
-        'warn',
-        'noPermissionBanKick',
-        'Orange',
-        [{ userID: user.id, reason, actionType: 'banir' }]
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')
+    if (havePermision) return
 
     if (user.id === interaction.user.id) {
       const unauthorizedEmbed = new EmbedBuilder()

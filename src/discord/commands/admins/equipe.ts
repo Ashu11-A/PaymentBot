@@ -1,6 +1,7 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel } from 'discord.js'
 import { Command } from '@/discord/base'
-import { LogsDiscord, db } from '@/app'
+import { db } from '@/app'
+import { Discord } from '@/functions'
 
 new Command({
   name: 'equipe',
@@ -42,21 +43,8 @@ new Command({
     const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.staff_logs`)
     const sendChannel = guild?.channels.cache.get(channelDB) as TextChannel
 
-    if (!(interaction?.memberPermissions?.has('ManageRoles'))) {
-      await interaction.reply({
-        content: '**❌ - Você não possui permissão para utilizar este comando.**',
-        ephemeral: true
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        guild,
-        'warn',
-        'noPermission',
-        'Orange',
-        []
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'ManageRoles')
+    if (havePermision) return
 
     if (user?.id === interaction.user.id) {
       const embed = new EmbedBuilder()

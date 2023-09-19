@@ -1,5 +1,6 @@
-import { LogsDiscord, client, db } from '@/app'
+import { client, db } from '@/app'
 import { Command } from '@/discord/base'
+import { Discord } from '@/functions'
 import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, type TextChannel } from 'discord.js'
 
 new Command({
@@ -29,25 +30,8 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      console.log(
-        'BAN',
-        `O usuario ${interaction.user.username} de ID:${interaction.user.id} tentou usar o banir sem ter permissão.`
-      )
-      await interaction.reply({
-        content: '❌ - Você não tem permissão para expulsar usuários!',
-        ephemeral: true
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        guild,
-        'warn',
-        'noPermissionBanKick',
-        'Orange',
-        [{ userID: user.id, reason, actionType: 'expulsar' }]
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'KickMembers', 'noPermissionBanKick')
+    if (havePermision) return
 
     if (user.id === interaction.user.id) {
       const embed = new EmbedBuilder()

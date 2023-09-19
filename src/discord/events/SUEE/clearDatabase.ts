@@ -1,8 +1,9 @@
 // Sistema de Verificação de Mensagens Apagadas (SVMA)
 
-import { LogsDiscord, db } from '@/app'
+import { db } from '@/app'
 import { Event } from '@/discord/base'
-import { type MessageInteraction } from 'discord.js'
+import { Discord } from '@/functions'
+import { type Guild, type MessageInteraction } from 'discord.js'
 
 export default new Event({
   name: 'messageDelete',
@@ -18,9 +19,9 @@ export default new Event({
       if (await db.messages.has(key)) {
         await db.messages.delete(key)
           .then(async () => {
-            await LogsDiscord.logGenerator(
+            await Discord.logGenerator(
               interaction as MessageInteraction,
-              guild,
+              guild as Guild,
               'warn',
               'messageDelete',
               'Red',

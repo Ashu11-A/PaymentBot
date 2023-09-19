@@ -1,7 +1,8 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, codeBlock } from 'discord.js'
 import { Command } from '@/discord/base'
-import { LogsDiscord, db } from '@/app'
+import { db } from '@/app'
 import { brBuilder } from '@magicyan/discord'
+import { Discord } from '@/functions'
 
 new Command({
   name: 'unban',
@@ -31,20 +32,9 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    if (!(interaction?.memberPermissions?.has('BanMembers'))) {
-      await interaction.editReply({
-        content: '❌ - Você não tem permissão para desbanir usuários!'
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        guild,
-        'warn',
-        'noPermissionBanKick',
-        'Orange',
-        [{ userID, reason, actionType: 'desbanir' }]
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')
+    if (havePermision) return
+
     try {
       if (isNaN(Number(userID))) {
         const embed = new EmbedBuilder()

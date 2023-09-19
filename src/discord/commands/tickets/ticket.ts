@@ -1,11 +1,12 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
 import { Command, Component } from '@/discord/base'
-import { LogsDiscord, db } from '@/app'
+import { db } from '@/app'
 import { ticketButtonsConfig } from './utils/ticketUpdateConfig'
 import { createTicket } from './utils/createTicket'
 import collectorButtons from './collector/collectorButtons'
 import collectorModal from './collector/collectorModal'
 import { deleteSelect, collectorSelect } from './collector/collectorSelect'
+import { Discord } from '@/functions'
 
 const buttonsModals = {
   ticketSetRole: {
@@ -84,20 +85,9 @@ new Command({
 
     await interaction.deferReply({ ephemeral: true })
 
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      await interaction.editReply({
-        content: '**❌ - Você não possui permissão para utilizar este comando.**'
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        guild,
-        'warn',
-        'noPermission',
-        'Orange',
-        []
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'Administrator')
+    if (havePermision) return
+
     try {
       const embed = new EmbedBuilder()
         .setTitle('Pedir suporte')

@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type CacheType, ModalBuilder, TextInputBuilder, type ButtonInteraction, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type TextChannel } from 'discord.js'
 import { createTicket } from '../utils/createTicket'
-import { createRow } from '@/functions'
+import { Discord, createRow } from '@/functions'
 import { ticketButtonsConfig, buttonsUsers } from '@/discord/commands/tickets/utils/ticketUpdateConfig'
 
 const listItens = {
@@ -126,13 +126,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     return
   }
 
-  if ((interaction?.memberPermissions?.has('Administrator')) === false) {
-    await interaction.reply({
-      content: '**❌ - Você não possui permissão para utilizar este botão!**',
-      ephemeral: true
-    })
-    return
-  }
+  const havePermision = await Discord.Permission(interaction, 'Administrator')
+  if (havePermision) return
 
   if (customId === 'ticketAddSelect') {
     const modal = new ModalBuilder({ customId: 'ticketSelectMenu', title: 'Adicionar Opções no Select Menu' })

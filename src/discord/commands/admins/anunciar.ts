@@ -1,7 +1,7 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder, Collection, ModalBuilder, TextInputStyle, type Attachment, AttachmentBuilder } from 'discord.js'
 import { Command, Component } from '@/discord/base'
-import { LogsDiscord } from '@/app'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
+import { Discord } from '@/functions'
 
 interface MessageProps {
   channelId: string
@@ -52,20 +52,8 @@ new Command({
     }
   ],
   async run (interaction) {
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      await interaction.reply({
-        content: '**❌ - Você não possui permissão para utilizar este comando.**'
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        interaction.guild,
-        'warn',
-        'noPermission',
-        'Orange',
-        []
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'Administrator')
+    if (havePermision) return
 
     const { options, member } = interaction
 

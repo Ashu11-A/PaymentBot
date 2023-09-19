@@ -7,10 +7,11 @@ import {
 } from 'discord.js'
 import { Command, Component } from '@/discord/base'
 import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDatabase'
-import { LogsDiscord, db } from '@/app'
+import { db } from '@/app'
 import { setSystem } from './utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
 import sendEmbed from '@/discord/commands/payments/utils/sendEmbed'
+import { Discord } from '@/functions/Discord'
 
 const system = {
   systemTicket: { info: 'Tickets' },
@@ -206,20 +207,8 @@ new Command({
     }
   ],
   async run (interaction) {
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      await interaction.reply({
-        content: '**❌ - Você não possui permissão para utilizar este comando.**'
-      })
-      await LogsDiscord.logGenerator(
-        interaction,
-        interaction.guild,
-        'warn',
-        'noPermission',
-        'Orange',
-        []
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'Administrator', 'noPermissionBanKick')
+    if (havePermision) return
 
     if (!interaction.inCachedGuild()) return
     const { options } = interaction

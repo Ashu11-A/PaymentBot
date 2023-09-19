@@ -1,5 +1,5 @@
-import { LogsDiscord } from '@/app'
 import { Command } from '@/discord/base'
+import { Discord } from '@/functions'
 import { brBuilder } from '@magicyan/discord'
 import { ApplicationCommandOptionType, ApplicationCommandType, codeBlock, type TextChannel } from 'discord.js'
 
@@ -54,23 +54,8 @@ new Command({
 
     await interaction.deferReply({ ephemeral: true })
 
-    if (!(interaction?.memberPermissions?.has('Administrator'))) {
-      if (channel?.isTextBased() === false) {
-        await interaction.reply({
-          content: '**❌ - Você não possui permissão para utilizar este comando.**',
-          ephemeral: true
-        })
-      }
-      await LogsDiscord.logGenerator(
-        interaction,
-        interaction.guild,
-        'warn',
-        'noPermission',
-        'Orange',
-        []
-      )
-      return
-    }
+    const havePermision = await Discord.Permission(interaction, 'ManageChannels', 'noPermission')
+    if (havePermision) return
 
     const amount = options.getInteger('quantidade', true)
     const mention = options.getUser('autor')
