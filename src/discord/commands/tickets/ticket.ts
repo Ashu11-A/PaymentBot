@@ -88,7 +88,7 @@ new Command({
       await interaction.editReply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      await LogsDiscord.logGerator(
+      await LogsDiscord.logGenerator(
         interaction,
         guild,
         'warn',

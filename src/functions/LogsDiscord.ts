@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { type ColorResolvable, type TextChannel, type CommandInteraction, type CacheType, EmbedBuilder, type MessageInteraction, type Guild } from 'discord.js'
+import { type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType } from 'discord.js'
 
 export class LogsDiscord {
   private readonly interaction: CommandInteraction<CacheType> | MessageInteraction
@@ -9,7 +9,14 @@ export class LogsDiscord {
   public readonly color: ColorResolvable
   public readonly infos: any
 
-  constructor (interaction: CommandInteraction<CacheType> | MessageInteraction, guild: Guild, type: string, cause: string, color: ColorResolvable, infos: any) {
+  constructor (
+    interaction: CommandInteraction<CacheType> | MessageInteraction,
+    guild: Guild,
+    type: string,
+    cause: string,
+    color: ColorResolvable,
+    infos: any
+  ) {
     this.interaction = interaction
     this.guild = guild
     this.type = type
@@ -77,7 +84,7 @@ export class LogsDiscord {
     }
   }
 
-  public static async logGerator (
+  public static async logGenerator (
     interaction: CommandInteraction<CacheType> | MessageInteraction,
     guild: Guild,
     type: string,

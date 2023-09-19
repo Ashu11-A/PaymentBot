@@ -61,7 +61,7 @@ new Command({
           ephemeral: true
         })
       }
-      await LogsDiscord.logGerator(
+      await LogsDiscord.logGenerator(
         interaction,
         interaction.guild,
         'warn',

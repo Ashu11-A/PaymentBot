@@ -51,7 +51,7 @@ new Command({
         content: '❌ - Você não tem permissão para banir usuários!',
         ephemeral: true
       })
-      await LogsDiscord.logGerator(
+      await LogsDiscord.logGenerator(
         interaction,
         interaction.guild,
         'warn',

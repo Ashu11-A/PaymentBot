@@ -47,7 +47,7 @@ new Command({
         content: '**❌ - Você não possui permissão para utilizar este comando.**',
         ephemeral: true
       })
-      await LogsDiscord.logGerator(
+      await LogsDiscord.logGenerator(
         interaction,
         guild,
         'warn',

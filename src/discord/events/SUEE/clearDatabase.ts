@@ -18,7 +18,7 @@ export default new Event({
       if (await db.messages.has(key)) {
         await db.messages.delete(key)
           .then(async () => {
-            await LogsDiscord.logGerator(
+            await LogsDiscord.logGenerator(
               interaction as MessageInteraction,
               guild,
               'warn',

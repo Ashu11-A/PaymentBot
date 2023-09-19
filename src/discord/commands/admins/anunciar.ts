@@ -52,7 +52,7 @@ new Command({
       await interaction.reply({
         content: '**❌ - Você não possui permissão para utilizar este comando.**'
       })
-      await LogsDiscord.logGerator(
+      await LogsDiscord.logGenerator(
         interaction,
         interaction.guild,
         'warn',
