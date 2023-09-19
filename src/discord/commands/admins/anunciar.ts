@@ -1,7 +1,15 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder, Collection, ModalBuilder, TextInputBuilder, TextInputStyle } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder, Collection, ModalBuilder, TextInputStyle, type Attachment, AttachmentBuilder } from 'discord.js'
 import { Command, Component } from '@/discord/base'
-import { LogsDiscord, db } from '@/app'
-import { brBuilder, createRow } from '@magicyan/discord'
+import { LogsDiscord } from '@/app'
+import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
+import { getTimestamp } from '@/controllers/loggings/getTimestamp'
+
+interface MessageProps {
+  channelId: string
+  image: Attachment | null
+}
+
+const members = new Collection<string, MessageProps>()
 
 new Command({
   name: 'anunciar',
@@ -33,11 +41,8 @@ new Command({
     {
       name: 'imagem',
       description: 'Possibilita o envio personalizado de uma imagem a embed',
-      type: ApplicationCommandOptionType.String,
-      required: false,
-      choices: [
-        { name: 'Server', value: 'iconServer' }
-      ]
+      type: ApplicationCommandOptionType.Attachment,
+      required: false
     },
     {
       name: 'marcar',
@@ -63,94 +68,72 @@ new Command({
       return
     }
 
-    const { options } = interaction
+    const { options, member } = interaction
 
     const channel = options.getChannel('canal', true)
     const color = options.getString('cor')
-    let imageSlash = options.getString('imagem')
+    const image = options.getAttachment('imagem')
     const cargoSlash = options.getRole('marcar')
 
-    await db.guilds.set(`${interaction.guildId}.channel.anunciar.${interaction.user.id}`, channel.id)
+    members.set(member.id, { channelId: channel.id, image })
 
-    if (imageSlash === 'iconServer') {
-      imageSlash = String(interaction.guild?.iconURL({ size: 512 }))
-    }
-
-    const modal = new ModalBuilder({ custom_id: 'modalAnunciar', title: 'Mensagem a ser enviada' })
-    const title = new ActionRowBuilder<TextInputBuilder>({
+    await interaction.showModal(new ModalBuilder({
+      custom_id: 'modalAnunciar',
+      title: 'Mensagem a ser enviada',
       components: [
-        new TextInputBuilder({
-          custom_id: 'title',
+        createModalInput({
+          customId: 'title',
           label: 'Titulo',
           placeholder: 'Coloque um titulo bem objetivo',
           style: TextInputStyle.Paragraph,
           required: false,
           maxLength: 256
-        })
-      ]
-    })
-    const description = new ActionRowBuilder<TextInputBuilder>({
-      components: [
-        new TextInputBuilder({
-          custom_id: 'description',
+        }),
+        createModalInput({
+          customId: 'description',
           label: 'Descrição',
           placeholder: 'Coloque uma descrição bem objetivo',
           style: TextInputStyle.Paragraph,
           required: false,
           maxLength: 4000
-        })
-      ]
-    })
-    const image = new ActionRowBuilder<TextInputBuilder>({
-      components: [
-        new TextInputBuilder({
-          custom_id: 'image',
-          label: 'URL da imagem',
-          value: imageSlash ?? '',
-          style: TextInputStyle.Short,
-          required: false
-        })
-      ]
-    })
-    const cor = new ActionRowBuilder<TextInputBuilder>({
-      components: [
-        new TextInputBuilder({
-          custom_id: 'cor',
+        }),
+        createModalInput({
+          customId: 'cor',
           label: 'Cor da embed',
           placeholder: 'Cor em Hexadecimal. Ex: #22c55e',
           value: color ?? '#22c55e',
           style: TextInputStyle.Short,
           required: false
-        })
-      ]
-    })
-    const cargo = new ActionRowBuilder<TextInputBuilder>({
-      components: [
-        new TextInputBuilder({
-          custom_id: 'cargo',
+        }),
+        createModalInput({
+          customId: 'cargo',
           label: 'Cargo a ser marcado no envio da embed',
           placeholder: 'ID do cargo',
-          value: cargoSlash?.id ?? '',
+          value: cargoSlash?.id ?? undefined,
           style: TextInputStyle.Short,
           required: false
         })
       ]
     })
-
-    modal.setComponents(title, description, image, cor, cargo)
-
-    await interaction.showModal(modal)
+    )
   }
 })
 
 new Component({
   customId: 'modalAnunciar',
   type: 'Modal',
+  cache: 'cached',
   async run (interaction) {
     await interaction.deferReply({ ephemeral: true })
-    const { fields, guild, guildId, user } = interaction
-    const channelID = await db.guilds.get(`${guildId}.channel.anunciar.${user.id}`)
-    const fieldNames = ['title', 'description', 'image', 'cor', 'cargo']
+    const { fields, guild, user, member } = interaction
+    const fieldNames = ['title', 'description', 'cor', 'cargo']
+
+    const messageProps = members.get(member.id)
+    if (messageProps === undefined) {
+      await interaction.editReply({
+        content: '❌ | Não foi possivel obter os dados! Tente novamente.'
+      })
+    }
 
     const data: any = {}
 
@@ -164,29 +147,38 @@ new Component({
       }
     }
 
-    const { title, description, image, cor, cargo } = data
-    const sendChannel = guild?.channels.cache.get(String(channelID)) as TextChannel
-
+    const { title, description, cor, cargo } = data
     console.log(data)
-    const embed = new EmbedBuilder()
-      .setTitle(title)
-      .setDescription(description)
-      .setFooter({ text: `Equipe ${guild?.name}`, iconURL: (user.avatarURL({ size: 64 }) ?? undefined) })
+    console.log(messageProps)
+    const sendChannel = guild?.channels.cache.get(String(messageProps?.channelId)) as TextChannel
+
+    const embed = new EmbedBuilder({
+      title,
+      description,
+      footer: ({ text: `Equipe ${guild?.name}`, iconURL: (user.avatarURL({ size: 64 }) ?? undefined) }),
+      image: ({ url: 'attachment://image.png' })
+    })
       .setTimestamp()
 
+    const files: AttachmentBuilder[] = []
+
+    if (messageProps?.image !== null) {
+      files.push(new AttachmentBuilder(String(messageProps?.image.url), { name: 'image.png' }))
+    }
     if (cor !== null) {
       embed.setColor(cor as ColorResolvable)
     } else {
       embed.setColor('Random')
     }
-    if (image !== null) {
-      embed.setThumbnail(image)
-    }
 
     const message = await interaction.editReply({
-      embeds: [embed, new EmbedBuilder({
-        description: `Deseja enviar a mensagem ao canal ${sendChannel.name}`
-      })],
+      embeds: [
+        embed, new EmbedBuilder({
+          description: `Deseja enviar a mensagem ao canal ${sendChannel.name}`
+        })
+          .setColor('Green')
+      ],
+      files,
       components: [createRow(
         new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
         new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
@@ -200,21 +192,24 @@ new Component({
       if (subInteraction.customId === 'embed-cancel-button') {
         void subInteraction.update({
           ...clearData,
-          embeds: [new EmbedBuilder({
-            description: 'Você cancelou a ação'
-          })]
+          embeds: [
+            new EmbedBuilder({
+              description: 'Você cancelou a ação'
+            })
+              .setColor('Red')
+          ]
         })
         return
       }
 
       if (sendChannel !== undefined) {
-        let msg = {}
-        if (cargo !== null) {
-          msg = { content: `<@&${cargo?.id}>`, embeds: [embed] }
-        } else {
-          msg = { embeds: [embed] }
-        }
-        await sendChannel.send(msg)
+        const content = (cargo !== null ? `<@&${cargo}>` : undefined)
+
+        await sendChannel.send({
+          content,
+          embeds: [embed],
+          files
+        })
           .then(async () => {
             await subInteraction.update({
               ...clearData,
@@ -234,7 +229,6 @@ new Component({
                 )
               ]
             })
-            await db.guilds.delete(`${guildId}.channel.anunciar.${user.id}`)
           })
           .catch(async err => await subInteraction.update({
             ...clearData,
