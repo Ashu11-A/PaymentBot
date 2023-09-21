@@ -1,10 +1,10 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type TextChannel, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
 import { db } from '@/app'
 export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | StringSelectMenuInteraction<CacheType>, about: string): Promise<void> {
-  const { guild } = interaction
-  const nome = `🎫-${interaction.user.username}`
-  const sendChannel = guild?.channels.cache.find((c) => c.name === nome) as TextChannel
-  if (sendChannel != null) {
+  const { guild, user } = interaction
+  const nome = `🎫-${user.id}`
+  const sendChannel = guild?.channels.cache.find((c) => c.name === nome)
+  if (sendChannel !== undefined) {
     const buttonChannel = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
         .setLabel('Clique para ir ao seu ticket')
@@ -17,7 +17,7 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
-          .setTitle(`Olá ${interaction.user.username}`)
+          .setTitle(`Olá ${user.username}`)
           .setDescription('❌ | Você já possui um ticket aberto!')
           .setColor('Red')
       ],
@@ -41,16 +41,16 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
           deny: [PermissionsBitField.Flags.ViewChannel]
         },
         {
-          id: interaction.user.id,
+          id: user.id,
           allow: [PermissionsBitField.Flags.ViewChannel]
         }
       ] as OverwriteResolvable[] | Collection<Snowflake, OverwriteResolvable>
       const ch = await guild?.channels.create({
-        name: `🎫-${interaction.user.username}`,
+        name: `🎫-${user.id}`,
         type: ChannelType.GuildText,
-        topic: `Ticket do(a) ${interaction.user.username}, ID: ${interaction.user.id}`,
+        topic: `Ticket do(a) ${user.username}, ID: ${user.id}`,
         permissionOverwrites,
-        parent: await db.guilds.get(`${interaction?.guild?.id}.ticket.category`)
+        parent: await db.guilds.get(`${guild?.id}.ticket.category`)
       })
       const channel = new ActionRowBuilder<ButtonBuilder>().addComponents(
         new ButtonBuilder()
@@ -63,7 +63,7 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
       await interaction.editReply({
         embeds: [
           new EmbedBuilder()
-            .setTitle(`Olá ${interaction.user.username}`)
+            .setTitle(`Olá ${user.username}`)
             .setDescription('✅ | Seu ticket foi criado com sucesso!')
             .setColor('Green')
         ],
@@ -76,7 +76,7 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
           { name: '📃・Detalhes do Ticket:', value: about },
           {
             name: '👤 | Tomador do ticket:',
-            value: `<@${interaction.user.id}>`
+            value: `<@${user.id}>`
           },
           {
             name: '🕗 | Aberto em:',
