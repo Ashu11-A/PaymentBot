@@ -48,6 +48,7 @@ new Command({
   }
 })
 
+// eslint-disable-next-line array-callback-return
 Object.entries(buttonsModals).map(([key, value]) => {
   new Component({
     customId: key,
