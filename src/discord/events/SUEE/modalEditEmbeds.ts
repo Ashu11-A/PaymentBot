@@ -65,7 +65,17 @@ export default new Event({
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${modalType}`, messageModal)
       await channel?.messages.fetch(String(message?.id))
         .then(async (msg) => {
-          const { embed } = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message?.id}`)
+          const { embed, role: roleID } = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message?.id}`)
+          console.log(embed)
+
+          if (roleID !== undefined && roleID !== '') {
+            embed.fields[1] = {
+              name: '🛂 | Você receberá o cargo:',
+              value: `<@&${roleID}>`
+            }
+          } else if (embed.fields[1] !== undefined || embed.fields[1]?.value === '<@&>') {
+            embed.fields.splice(1, 1)
+          }
           if (typeof embed?.color === 'string') {
             if (embed?.color?.startsWith('#') === true) {
               embed.color = parseInt(embed?.color.slice(1), 16)

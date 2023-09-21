@@ -1,10 +1,11 @@
 import { db } from '@/app'
-import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, ModalSubmitInteraction } from 'discord.js'
+import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock } from 'discord.js'
 
 interface Data {
   creditos?: number
   amount?: number
-  typeRedeem?: string
+  typeEmbed?: number
+  typeRedeem?: number
   cupom?: {
     name?: string
     porcent?: number
@@ -23,16 +24,18 @@ interface User {
 export class paymentEmbed {
   public static async TypeRedeem (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    typeEmbed?: number
-    data?: Data
+    data: Data
     user?: User
     message?: Message<boolean>
   }): Promise<{ rEmbeds: EmbedBuilder[], rComponents: Array<ActionRowBuilder<ButtonBuilder>> }> {
-    const { interaction, data, typeEmbed, user, message } = options
+    const { interaction, data, user, message } = options
+    const { typeEmbed, typeRedeem, cupom, creditos, amount } = data
 
-    console.log(data, typeEmbed, user)
+    console.log(typeEmbed, cupom, typeRedeem, creditos, amount)
+
     let titulo
     let descrição
+    let type
 
     if (typeEmbed === 1 || typeEmbed === undefined) {
       titulo = 'Checkout e Envio'
@@ -40,6 +43,13 @@ export class paymentEmbed {
     } else if (typeEmbed === 2) {
       titulo = 'Checkout e Pagamento'
       descrição = 'Confira as informações sobre os produtos e gere o link para o pagamento:'
+    }
+    if (typeRedeem === 1) {
+      type = 'DM'
+    } else if (typeRedeem === 2) {
+      type = 'Direct'
+    } else {
+      type = 'Não selecionado.'
     }
 
     const mainEmbed = new EmbedBuilder()
@@ -53,21 +63,21 @@ export class paymentEmbed {
       .addFields(
         {
           name: '**💰 Valor (sem taxas):**',
-          value: `R$${data?.cupom?.cupomAmount ?? data?.amount ?? 'Indefinido'}`
+          value: `R$${cupom?.cupomAmount ?? amount ?? 'Indefinido'}`
         },
         {
           name: '**🎫 Cupom:**',
-          value: `${data?.cupom?.name ?? 'Indefinido'} (${
-              data?.cupom?.porcent ?? '0'
+          value: `${cupom?.name ?? 'Nenhum'} (${
+              cupom?.porcent ?? '0'
             }%)`
         },
         {
           name: '**🪙 Créditos totais:**',
-          value: `${data?.creditos ?? 'Indefinido'}`
+          value: `${creditos ?? 'Indefinido'}`
         },
         {
           name: '**✉️ Método de envio:**',
-          value: `${data?.typeRedeem ?? 'Indefinido'}`
+          value: type
         }
       )
 
@@ -115,8 +125,6 @@ export class paymentEmbed {
       type: typeEmbed
     })
 
-    console.log(embeds)
-
     if (message !== undefined) {
       const embedsEdit = embeds.map((embedBuilder) =>
         embedBuilder.toJSON()
@@ -128,9 +136,8 @@ export class paymentEmbed {
       await message.edit({ ...clearData })
 
       await message.edit({ embeds: embedsEdit, components: componentsEdit })
-    } else {
-      return { rEmbeds: embeds, rComponents: components }
     }
+    return { rEmbeds: embeds, rComponents: components }
   }
 
   public static async ButtonEmbed (options: {
@@ -209,27 +216,60 @@ export class paymentEmbed {
 
     for (const value of row1Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
-      const { properties } = await db.payments.get(`${guildId}.process.${user.id}`)
-      if (properties !== undefined && properties[customID] !== undefined) {
+      const data = await db.payments.get(`${guildId}.process.${user.id}`)
+      console.log(customID, data?.typeRedeem, data?.properties?.[customID])
+      if (customID === 'paymentUserDM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
+        value.setDisabled(true)
+      }
+      if (customID === 'paymentUserDirect' && data?.typeRedeem === 2 && data?.properties[customID] === true) {
         value.setDisabled(true)
       }
     }
 
     for (const value of row2Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
-      const { properties } = await db.payments.get(`${guildId}.process.${user.id}`)
+      const data = await db.payments.get(`${guildId}.process.${user.id}`)
 
-      if (customID === 'paymentUserCupom' && properties?.cupom === true) {
+      if (customID === 'paymentUserCupom' && data?.properties?.cupom === true) {
         value.setDisabled(true)
       }
     }
 
-    if (type === 1 && type !== undefined) {
+    if (type === 1 || type === undefined) {
       return [row1, row2]
     } else if (type === 2) {
       return [row3, row4]
     }
 
     return []
+  }
+
+  public static async displayData (options: {
+    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
+    data: Data
+    type?: 'editReply' | 'reply'
+  }): Promise<void> {
+    const { interaction, type, data } = options
+    const embed = new EmbedBuilder({
+      title: '⚙️ | Setado com sucesso!',
+      description: 'Seus dados estão aqui, de forma limpa e justa.\nApos o pagamento/exclusão eles serão deletados.',
+      fields: [
+        {
+          name: '📑 Dados:',
+          value: codeBlock('json', JSON.stringify(data, null, 4))
+        }
+      ]
+    }).setColor('Green')
+
+    if (type === 'reply' || type === undefined) {
+      await interaction.reply({
+        ephemeral,
+        embeds: [embed]
+      })
+    } else {
+      await interaction.editReply({
+        embeds: [embed]
+      })
+    }
   }
 }

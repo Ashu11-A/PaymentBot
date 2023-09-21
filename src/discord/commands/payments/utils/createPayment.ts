@@ -58,9 +58,9 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       const { rEmbeds, rComponents } = await paymentEmbed.TypeRedeem({
         interaction,
         data: {
-          amount
-        },
-        typeEmbed: 1
+          amount,
+          typeEmbed: 1
+        }
       })
 
       /* Transforma as embeds recebidas em algo valido */
@@ -77,7 +77,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
           embeds,
           components
         })
-          .then(async () => {
+          .then(async (msg) => {
             await interaction.editReply({
               embeds: [
                 new EmbedBuilder({
@@ -93,6 +93,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
             await db.payments.set(`${guildId}.process.${user.id}`, {
               userID: user.id,
               channelId: paymentChannel.id,
+              messageId: msg.id,
               amount: embed?.fields[0]?.value
             })
           })
@@ -139,9 +140,6 @@ const buttons = {
     type: 'cupom'
   },
   paymentUserDM: {
-    modal: false
-  },
-  paymentUserDashboard: {
     modal: false
   },
   paymentUserWTF: {

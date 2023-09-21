@@ -1,24 +1,16 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
+import { PaymentFunction } from './functions/functions'
 
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { guildId, user, customId } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
   if (customId === key) {
+    // typeRedeem
     if (customId === 'paymentUserDM') {
-      console.log('oi')
-      return
-    }
-    if (customId === 'paymentUserDashboard') {
-      console.log('oi')
-      return
-    }
-    if (customId === 'paymentUserWTF') {
-      console.log('oi')
-      return
-    }
-    if (customId === 'paymentUserCancelar') {
-      console.log('oi')
+      await PaymentFunction.paymentUserDM({
+        interaction
+      })
       return
     }
     if (customId === 'paymentUserGerarPix') {
@@ -31,6 +23,18 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     }
     if (customId === 'paymentUserGerarCardCredito') {
       console.log('oi')
+      return
+    }
+    if (customId === 'paymentUserWTF') {
+      await PaymentFunction.paymentUserWTF({
+        interaction
+      })
+      return
+    }
+    if (customId === 'paymentUserCancelar') {
+      await PaymentFunction.paymentUserCancelar({
+        interaction
+      })
       return
     }
 

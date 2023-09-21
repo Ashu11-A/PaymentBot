@@ -5,9 +5,14 @@ import { paymentEmbed } from '../paymentEmbed'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, message, fields, user } = interaction
-  console.log(key)
   if (customId === key) {
     await interaction.deferReply({ ephemeral: true })
+
+    // typeRedeem
+    if (customId === 'paymentUserDirect') {
+      const type = 2
+      await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, type)
+    }
 
     const { type } = value
     const messageModal = fields.getTextInputValue('content')
@@ -26,13 +31,18 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     await channel?.messages.fetch(String(message?.id))
       .then(async (message) => {
         await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
-          .then(async () => {
+        await db.payments.get(`${guildId}.process.${user.id}`)
+          .then(async (data) => {
             await paymentEmbed.TypeRedeem({
               interaction,
-              message,
-              typeEmbed: 1
+              data,
+              message
             })
-            await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
+            await paymentEmbed.displayData({
+              interaction,
+              data,
+              type: 'editReply'
+            })
           }).catch(async (err: Error) => {
             console.log(err)
             await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
