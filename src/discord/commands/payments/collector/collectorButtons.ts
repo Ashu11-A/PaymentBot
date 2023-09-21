@@ -2,6 +2,7 @@ import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
 import { buttonsUsers, paymentButtonsConfig } from '@/discord/commands/payments/utils/paymentUpdateConfig'
 import { Discord } from '@/functions/Discord'
+import { createPayment } from '../utils/createPayment'
 
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { guildId, message, channelId, customId } = interaction
@@ -32,6 +33,11 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
         await paymentButtonsConfig(interaction, message)
       }
+      return
+    }
+
+    if (customId === 'paymentBuy') {
+      await createPayment(interaction)
       return
     }
 

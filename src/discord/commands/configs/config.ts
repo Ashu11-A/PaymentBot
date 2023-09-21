@@ -255,10 +255,10 @@ new Command({
             await sendEmbed(interaction, addProduto)
           }
           if (carrinho !== null) {
-            await setDatabase(interaction, carrinho, 'payment', 'channel', 'foi atribuído a propriedade')
+            await setDatabase(interaction, carrinho, 'payments', 'category', 'foi atribuído a propriedade')
           }
           if (autenticação !== null) {
-            await setDatabaseString(interaction, autenticação, 'payment', 'category', 'setado para os autenticação')
+            await setDatabaseString(interaction, autenticação, 'payments', 'category', 'setado para os autenticação')
           }
 
           break

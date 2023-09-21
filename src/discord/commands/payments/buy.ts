@@ -5,7 +5,6 @@ import collectorModal from './collector/collectorModal'
 
 const buttonsModals = {
   paymentSetPrice: {
-    button: true,
     title: '❓| Qual será o preço do produto?',
     label: 'Preço do produto',
     placeholder: 'Ex: 14,50',
@@ -14,7 +13,6 @@ const buttonsModals = {
     type: 'embed.fields[0].value'
   },
   paymentSetRole: {
-    button: true,
     title: '❓| Qual será o id a ser adquirido na compra?',
     label: 'Coloque um ID, ou digite "VAZIO"',
     placeholder: 'Ex: 379089880887721995',
@@ -23,13 +21,16 @@ const buttonsModals = {
     type: 'role'
   },
   paymentSave: {
-    button: true
+    modal: false
   },
   paymentConfig: {
-    button: true
+    modal: false
   },
   paymentStatus: {
-    button: true
+    modal: false
+  },
+  paymentBuy: {
+    modal: false
   }
 }
 
@@ -48,23 +49,22 @@ new Command({
 })
 
 Object.entries(buttonsModals).map(([key, value]) => {
-  return new Component({
+  new Component({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
-      if (value.button) {
+      const isButton = (value as { button?: boolean })?.button ?? true
+      if (isButton) {
         await collectorButtons(buttonInteraction, key, value)
       }
     }
   })
-})
-
-Object.entries(buttonsModals).map(([key, value]) => {
-  return new Component({
+  new Component({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {
-      if (value.button) {
+      const isModal = (value as { modal?: boolean })?.modal ?? true
+      if (isModal) {
         await collectorModal(modalInteraction, key, value)
       }
     }
