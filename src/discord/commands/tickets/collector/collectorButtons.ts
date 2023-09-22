@@ -169,7 +169,6 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   }
 
   if (customId === key) {
-    console.log(customId)
     const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${type}`)
     const modal = new ModalBuilder({ customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({

@@ -63,8 +63,6 @@ export default new Event({
     if (!interaction.isButton()) return
     const { customId, message, guildId, channelId } = interaction
 
-    console.log(customId)
-
     const getTypeFromCustomId = (customId: string): string[] | null[] => {
       const parts = customId.split('_')
       if (parts.length === 2) {
@@ -74,8 +72,6 @@ export default new Event({
     }
 
     const [type, button] = getTypeFromCustomId(customId)
-
-    console.log(type)
 
     if (type !== null && button !== null && button in buttonsModals) {
       const { title, label, placeholder, style, maxLength, type: modalType } = buttonsModals[button]

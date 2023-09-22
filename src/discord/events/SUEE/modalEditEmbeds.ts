@@ -30,8 +30,6 @@ export default new Event({
     if (!interaction.isModalSubmit()) return
     const { customId, guildId, channel, channelId, message, fields } = interaction
 
-    console.log(customId)
-
     const getTypeFromCustomId = (customId: string): string[] | null[] => {
       const parts = customId.split('_')
       if (parts.length === 2) {
