@@ -59,7 +59,8 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
         interaction,
         data: {
           amount,
-          typeEmbed: 1
+          typeEmbed: 0,
+          quantity: 1
         }
       })
 
@@ -94,7 +95,9 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
               userID: user.id,
               channelId: paymentChannel.id,
               messageId: msg.id,
-              amount: embed?.fields[0]?.value
+              amount: embed?.fields[0]?.value,
+              quantity: 1,
+              typeEmbed: 0
             })
           })
           .catch(async (err) => {

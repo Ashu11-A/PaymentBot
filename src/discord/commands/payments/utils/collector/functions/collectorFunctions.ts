@@ -15,7 +15,7 @@ export class PaymentFunction {
     const { guildId, user, customId, message } = interaction
     await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, 1)
     await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
-    await db.payments.set(`${guildId}.process.${user.id}.properties.paymentUserDirect`, false)
+    await db.payments.delete(`${guildId}.process.${user.id}.properties.paymentUserDirect`)
     const data = await db.payments.get(`${guildId}.process.${user.id}`)
     await paymentEmbed.TypeRedeem({
       interaction,

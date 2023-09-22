@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { PaymentFunction } from './functions/functions'
+import { PaymentFunction } from './functions/collectorFunctions'
 
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { guildId, user, customId } = interaction
