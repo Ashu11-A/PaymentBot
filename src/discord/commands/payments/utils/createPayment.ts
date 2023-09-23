@@ -159,6 +159,18 @@ const buttons = {
   },
   paymentUserGerarCardCredito: {
     modal: false
+  },
+  paymentUserAdd: {
+    modal: false
+  },
+  paymentUserRem: {
+    modal: false
+  },
+  paymentUserNext: {
+    modal: false
+  },
+  paymentUserBefore: {
+    modal: false
   }
 }
 

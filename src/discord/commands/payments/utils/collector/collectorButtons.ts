@@ -7,9 +7,37 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   const { title, label, placeholder, style, type, maxLength } = value
   if (customId === key) {
     // typeRedeem
+    if (customId === 'paymentUserAdd') {
+      await PaymentFunction.AddOrRem({
+        interaction,
+        type: 'Add'
+      })
+      return
+    }
+    if (customId === 'paymentUserRem') {
+      await PaymentFunction.AddOrRem({
+        interaction,
+        type: 'Rem'
+      })
+      return
+    }
     if (customId === 'paymentUserDM') {
       await PaymentFunction.paymentUserDM({
         interaction
+      })
+      return
+    }
+    if (customId === 'paymentUserNext') {
+      await PaymentFunction.NextOrBefore({
+        interaction,
+        type: 'next'
+      })
+      return
+    }
+    if (customId === 'paymentUserBefore') {
+      await PaymentFunction.NextOrBefore({
+        interaction,
+        type: 'before'
       })
       return
     }

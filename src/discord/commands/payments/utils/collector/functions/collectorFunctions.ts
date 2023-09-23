@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
-import { paymentEmbed } from '../../paymentEmbed'
+import { type Data, paymentEmbed } from '../../paymentEmbed'
 import { createRow } from '@magicyan/discord'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -29,7 +29,7 @@ export class PaymentFunction {
   }
 
   /**
-   * name
+   * Cancelar Pedido (Deleta database e chat)
    */
   public static async paymentUserCancelar (options: {
     interaction: ButtonInteraction<CacheType>
@@ -89,7 +89,7 @@ export class PaymentFunction {
   }
 
   /**
-   * name
+   * Botão que exibe as informações atuais do Pedido.
    */
   public static async paymentUserWTF (options: {
     interaction: ButtonInteraction<CacheType>
@@ -97,22 +97,151 @@ export class PaymentFunction {
     const { interaction } = options
     const { guildId, user } = interaction
     const { typeEmbed } = await db.payments.get(`${guildId}.process.${user.id}`)
-    if (typeEmbed === 1 || typeEmbed === undefined) {
-      const embed = new EmbedBuilder({
-        title: '[1] Nesta etapa, selecione o tipo de resgate.',
-        description: 'Existem 2 metodos:',
-        fields: [
+    const embed = new EmbedBuilder().setColor('Purple')
+    if (typeEmbed === 0 || typeEmbed === undefined) {
+      embed
+        .setTitle('Etapa [0]')
+        .setDescription('Ao interagir com os botões (+ e -), é possivel adicionar/remover itens do seu carrinho.\nAo clicar em (🎫) você poderá adicionar um cupom ao seu carrinho.')
+    } else if (typeEmbed === 1 || typeEmbed === undefined) {
+      embed
+        .setTitle('Etapa [1]')
+        .setDescription('Selecione o tipo de resgate, existem 2 metodos:')
+        .addFields(
           {
             name: '**💬 Mensagem via DM:**',
-            value: 'Você receberá um código de resgate via DM, que será resgatável pelo [Dash](https://dash.seventyhost.net/)'
+            value: 'Você receberá um código via DM, que será resgatável pelo [Dash](https://dash.seventyhost.net/)'
           },
           {
-            name: '**📲 Diretamente ao Dash:**',
-            value: 'Os créditos surgiram na sua conta, sem precisar ter que resgatar o código manualmente.'
+            name: '**📲 Instantaneamente:**',
+            value: 'Os créditos surgiram na sua conta, sem precisar resgata-lo manualmente.'
           }
-        ]
-      }).setColor('Purple')
-      await interaction.reply({ embeds: [embed], ephemeral })
+        )
     }
+    await interaction.reply({ embeds: [embed], ephemeral })
+  }
+
+  /**
+   * Adiciona/Remove do Usuário oa itens do carrinho.
+   */
+  public static async AddOrRem (options: {
+    interaction: ButtonInteraction<CacheType>
+    type: 'Add' | 'Rem'
+  }): Promise<void> {
+    const { interaction, type } = options
+    const { guildId, user, message } = interaction
+
+    const { quantity } = await db.payments.get(`${guildId}.process.${user.id}`)
+
+    if (type === 'Add') {
+      await db.payments.add(`${guildId}.process.${user.id}.quantity`, 1)
+    } else if (type === 'Rem' && quantity > 1) {
+      await db.payments.sub(`${guildId}.process.${user.id}.quantity`, 1)
+    } else {
+      await interaction.reply({ content: '❌ | Não foi possivel completar a ação.' })
+      return
+    }
+
+    const data = await db.payments.get(`${guildId}.process.${user.id}`)
+
+    await paymentEmbed.TypeRedeem({
+      interaction,
+      data,
+      message
+    })
+
+    await paymentEmbed.displayData({
+      interaction,
+      data
+    })
+  }
+
+  /**
+   * Passar/Retroceder a etapa do pagamento.
+   */
+  public static async NextOrBefore (options: {
+    interaction: ButtonInteraction<CacheType>
+    type: 'next' | 'before'
+  }): Promise<void> {
+    const { interaction, type } = options
+    const { guildId, user, message } = interaction
+
+    let data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
+
+    function stringNextBefore (numberType: number): string {
+      let typeString
+      switch (numberType) {
+        case 0: {
+          typeString = 'Quantidade & Cupom'
+          break
+        }
+        case 1: {
+          typeString = 'Forma de Envio'
+          break
+        }
+        case 2: {
+          typeString = 'Forma de Pagamento'
+          break
+        }
+        default: {
+          typeString = 'Indefinido (ERRO)'
+        }
+      }
+      return typeString
+    }
+
+    if (type === 'next') {
+      if (data?.typeEmbed !== undefined) {
+        if (
+          (data.typeEmbed === 0 && data?.quantity !== undefined && data.quantity >= 1) ||
+          (data.typeEmbed === 1 && data?.typeRedeem !== undefined && data.typeRedeem >= 1) ||
+          (data.typeEmbed === 2)
+        ) {
+          const number = await db.payments.add(`${guildId}.process.${user.id}.typeEmbed`, 1)
+          const typeString = stringNextBefore(number)
+
+          await interaction.reply({
+            ephemeral,
+            embeds: [
+              new EmbedBuilder({
+                title: 'Proxima Etapa',
+                description: `⏭️ | Olá ${user.username}, agora estamos na etapa de ***${typeString}***`
+              }).setColor('LightGrey')
+            ]
+          })
+        } else {
+          await interaction.reply({
+            ephemeral,
+            embeds: [
+              new EmbedBuilder({
+                title: '😶 | Desculpe-me',
+                description: 'Mas você não pode simplesmente pular a etapa, termine de selecionar as opções.'
+              }).setColor('Aqua')
+            ]
+          })
+          return
+        }
+      }
+    } else {
+      if (data?.typeEmbed !== undefined && data.typeEmbed > 0) {
+        const number = await db.payments.sub(`${guildId}.process.${user.id}.typeEmbed`, 1)
+        const typeString = stringNextBefore(number)
+
+        await interaction.reply({
+          ephemeral,
+          embeds: [
+            new EmbedBuilder({
+              title: 'Etapa Anterior',
+              description: `◀️ | Voltamos para a etapa de ***${typeString}***`
+            }).setColor('Orange')
+          ]
+        })
+      }
+    }
+    data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
+    await paymentEmbed.TypeRedeem({
+      interaction,
+      data,
+      message
+    })
   }
 }
