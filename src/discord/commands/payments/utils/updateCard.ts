@@ -1,12 +1,13 @@
-import { db } from '@/app'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock } from 'discord.js'
 
 export interface Data {
+  product?: string
   amount?: number
   creditos?: number
   quantity?: number
   typeEmbed?: number
   typeRedeem?: number
+  properties?: any
   cupom?: {
     name?: string
     porcent?: number
@@ -22,15 +23,16 @@ interface User {
 }
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class paymentEmbed {
-  public static async TypeRedeem (options: {
+export class updateCard {
+  public static async embedAndButtons (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
     data: Data
     user?: User
     message?: Message<boolean>
+    typeEdit?: 'update' | 'remover&update'
   }): Promise<{ rEmbeds: EmbedBuilder[], rComponents: Array<ActionRowBuilder<ButtonBuilder>> }> {
-    const { interaction, data, user, message } = options
-    const { typeEmbed, typeRedeem, cupom, creditos, amount, quantity } = data
+    const { interaction, data, user, message, typeEdit } = options
+    const { typeEmbed, typeRedeem, cupom, creditos, amount, quantity, product } = data
 
     console.log(typeEmbed, cupom, typeRedeem, creditos, amount, quantity)
 
@@ -47,6 +49,9 @@ export class paymentEmbed {
     } else if (typeEmbed === 2) {
       titulo = 'Checkout e Pagamento'
       descrição = 'Confira as informações sobre os produtos e gere o link para o pagamento:'
+    } else {
+      titulo = 'Indefinido'
+      descrição = 'Indefinido'
     }
     if (typeRedeem === 1) {
       type = 'DM'
@@ -58,24 +63,42 @@ export class paymentEmbed {
 
     const mainEmbed = new EmbedBuilder()
       .setColor('LightGrey')
-      .setTitle(titulo ?? 'Indefinido')
-      .setDescription(descrição ?? 'Indefinido')
+      .setTitle(titulo)
+      .setDescription(descrição)
 
     const infoPayment = new EmbedBuilder()
       .setColor('LightGrey')
       .setTitle('Informações do Pagamento')
       .addFields(
         {
+          name: 'Produto:',
+          value: (product ?? 'Indefinido'),
+          inline: true
+        },
+        {
           name: '**💰 Valor (Individual):**',
-          value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`
+          value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`,
+          inline: true
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true
         },
         {
           name: '**📦 Quantidade:**',
-          value: `${quantity ?? 1}`
+          value: `${quantity ?? 1}`,
+          inline: true
         },
         {
           name: '**🛒 Valor Total (sem taxas):**',
-          value: `R$${(cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)}`
+          value: `R$${(cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)}`,
+          inline: true
+        },
+        {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true
         },
         {
           name: '**✉️ Método de envio:**',
@@ -140,9 +163,8 @@ export class paymentEmbed {
       embeds.push(infoTax)
     }
 
-    const components = await paymentEmbed.ButtonEmbed({
-      interaction,
-      type: typeEmbed
+    const components = await updateCard.buttons({
+      data
     })
 
     if (message !== undefined) {
@@ -152,26 +174,27 @@ export class paymentEmbed {
       const componentsEdit = components.map((componentsBuilder) =>
         componentsBuilder.toJSON()
       )
-      const clearData = { components: [] }
-      await message.edit({ ...clearData })
-
-      await message.edit({ embeds: embedsEdit, components: componentsEdit })
+      if (typeEdit === 'update') {
+        await message.edit({ embeds: embedsEdit, components: componentsEdit })
+      } else {
+        await message.edit({ components: [] })
+        await message.edit({ embeds: embedsEdit, components: componentsEdit })
+      }
     }
     return { rEmbeds: embeds, rComponents: components }
   }
 
-  public static async ButtonEmbed (options: {
-    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    type?: number
+  public static async buttons (options: {
+    data: Data
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
-    const { type, interaction } = options
-    const { guildId, user } = interaction
+    const { data } = options
+    const { typeEmbed: type } = data
 
     const Primary = [
       new ButtonBuilder({
         customId: 'paymentUserRem',
         emoji: '➖',
-        style: ButtonStyle.Secondary
+        style: ButtonStyle.Primary
       }),
       new ButtonBuilder({
         customId: 'paymentUserAdd',
@@ -180,6 +203,7 @@ export class paymentEmbed {
       }),
       new ButtonBuilder({
         customId: 'paymentUserCupom',
+        label: 'Cupom',
         emoji: '🎫',
         style: ButtonStyle.Primary
       })
@@ -190,13 +214,13 @@ export class paymentEmbed {
         customId: 'paymentUserDM',
         label: 'Mensagem via DM',
         emoji: '💬',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Primary
       }),
       new ButtonBuilder({
         customId: 'paymentUserDirect',
         label: 'Instantaneamente',
         emoji: '📲',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Primary
       }),
       new ButtonBuilder({
         url: 'https://dash.seventyhost.net/',
@@ -241,7 +265,7 @@ export class paymentEmbed {
       }),
       new ButtonBuilder({
         customId: 'paymentUserWTF',
-        label: 'Saiba Mais',
+        label: 'Saiba Mais 🔔',
         emoji: '❔',
         style: ButtonStyle.Primary
       }),
@@ -269,22 +293,28 @@ export class paymentEmbed {
 
     for (const value of footerBar) {
       const { custom_id: customID } = Object(value.toJSON())
-      const data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
 
       if (customID === 'paymentUserBefore' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
         value.setDisabled(true)
+      }
+
+      if (customID === 'paymentUserNext' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
+        value.setDisabled(true)
+        value.setStyle(ButtonStyle.Secondary)
+      }
+
+      if (customID === 'paymentUserWTF' && data?.typeEmbed !== undefined && data?.properties?.[`${customID}_${data.typeEmbed}`] === true) {
+        value.setStyle(ButtonStyle.Secondary)
+        value.setLabel('Saiba Mais')
       }
     }
 
     for (const value of Primary) {
       const { custom_id: customID } = Object(value.toJSON())
-      const data = await db.payments.get(`${guildId}.process.${user.id}`)
 
-      if (customID === 'paymentUserRem' && data?.quantity <= 1) {
+      if (customID === 'paymentUserRem' && data?.quantity !== undefined && data.quantity <= 1) {
         console.log('Botão paymentUserRem, foi desabilidado.')
         value.setDisabled(true)
-      } else {
-        value.setStyle(ButtonStyle.Primary)
       }
 
       if (customID === 'paymentUserCupom' && data?.properties?.cupom === true) {
@@ -294,8 +324,7 @@ export class paymentEmbed {
 
     for (const value of Secondary) {
       const { custom_id: customID } = Object(value.toJSON())
-      const data = await db.payments.get(`${guildId}.process.${user.id}`)
-      console.log(customID, data?.typeRedeem, data?.properties?.[customID])
+
       if (customID === 'paymentUserDM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }

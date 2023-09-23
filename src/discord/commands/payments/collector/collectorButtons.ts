@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { buttonsUsers, paymentButtonsConfig } from '@/discord/commands/payments/utils/paymentUpdateConfig'
+import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { Discord } from '@/functions/Discord'
 import { createPayment } from '../utils/createPayment'
 
@@ -15,11 +15,16 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       await interaction.reply({ content: '⏱️ | Aguarde só um pouco...', ephemeral: true })
 
       if (customId === 'paymentSave') {
-        await buttonsUsers(interaction, message)
+        await updateProduct.buttonsUsers({
+          interaction, message
+        })
       }
 
       if (customId === 'paymentConfig') {
-        await paymentButtonsConfig(interaction, message)
+        await updateProduct.buttonsConfig({
+          interaction,
+          message
+        })
       }
 
       if (customId === 'paymentStatus') {
@@ -31,7 +36,10 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         }
 
         await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
-        await paymentButtonsConfig(interaction, message)
+        await updateProduct.buttonsConfig({
+          interaction,
+          message
+        })
       }
       return
     }

@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
-import { type Data, paymentEmbed } from '../../paymentEmbed'
+import { type Data, updateCard } from '../../updateCard'
 import { createRow } from '@magicyan/discord'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -17,12 +17,12 @@ export class PaymentFunction {
     await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
     await db.payments.delete(`${guildId}.process.${user.id}.properties.paymentUserDirect`)
     const data = await db.payments.get(`${guildId}.process.${user.id}`)
-    await paymentEmbed.TypeRedeem({
+    await updateCard.embedAndButtons({
       interaction,
       data,
       message
     })
-    await paymentEmbed.displayData({
+    await updateCard.displayData({
       interaction,
       data
     })
@@ -95,14 +95,14 @@ export class PaymentFunction {
     interaction: ButtonInteraction<CacheType>
   }): Promise<void> {
     const { interaction } = options
-    const { guildId, user } = interaction
+    const { guildId, user, message, customId } = interaction
     const { typeEmbed } = await db.payments.get(`${guildId}.process.${user.id}`)
     const embed = new EmbedBuilder().setColor('Purple')
     if (typeEmbed === 0 || typeEmbed === undefined) {
       embed
         .setTitle('Etapa [0]')
         .setDescription('Ao interagir com os botões (+ e -), é possivel adicionar/remover itens do seu carrinho.\nAo clicar em (🎫) você poderá adicionar um cupom ao seu carrinho.')
-    } else if (typeEmbed === 1 || typeEmbed === undefined) {
+    } else if (typeEmbed === 1) {
       embed
         .setTitle('Etapa [1]')
         .setDescription('Selecione o tipo de resgate, existem 2 metodos:')
@@ -116,8 +116,23 @@ export class PaymentFunction {
             value: 'Os créditos surgiram na sua conta, sem precisar resgata-lo manualmente.'
           }
         )
+    } else if (typeEmbed === 2) {
+      embed
+        .setTitle('Etapa [2]')
+        .setDescription('Selecione o método de pagamento:\nExistem 3 metodos, e suas taxas:\n- 💠 PIX (1%).\n- 💳 Cartão de Débito (1.99%)\n- 💳 Cartão de Crédito (4.98%)\n \n> Essa taxa é imposta pelo Mercado Pago.')
     }
     await interaction.reply({ embeds: [embed], ephemeral })
+      .then(async () => {
+        await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}_${typeEmbed}`, true)
+        const data = await db.payments.get(`${guildId}.process.${user.id}`)
+
+        await updateCard.embedAndButtons({
+          interaction,
+          message,
+          data,
+          typeEdit: 'update'
+        })
+      })
   }
 
   /**
@@ -137,19 +152,19 @@ export class PaymentFunction {
     } else if (type === 'Rem' && quantity > 1) {
       await db.payments.sub(`${guildId}.process.${user.id}.quantity`, 1)
     } else {
-      await interaction.reply({ content: '❌ | Não foi possivel completar a ação.' })
+      await interaction.reply({ content: '❌ | Não foi possivel completar a ação.', ephemeral })
       return
     }
 
     const data = await db.payments.get(`${guildId}.process.${user.id}`)
 
-    await paymentEmbed.TypeRedeem({
+    await updateCard.embedAndButtons({
       interaction,
       data,
       message
     })
 
-    await paymentEmbed.displayData({
+    await updateCard.displayData({
       interaction,
       data
     })
@@ -238,7 +253,7 @@ export class PaymentFunction {
       }
     }
     data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
-    await paymentEmbed.TypeRedeem({
+    await updateCard.embedAndButtons({
       interaction,
       data,
       message

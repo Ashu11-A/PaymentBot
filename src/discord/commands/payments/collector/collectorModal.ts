@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { paymentButtonsConfig } from '@/discord/commands/payments/utils/paymentUpdateConfig'
+import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 
@@ -48,7 +48,10 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
           .then(async () => {
             await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
-                await paymentButtonsConfig(interaction, msg)
+                await updateProduct.buttonsConfig({
+                  interaction,
+                  message: msg
+                })
                 await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
               })
           })

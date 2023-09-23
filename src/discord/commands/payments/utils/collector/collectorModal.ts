@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
-import { paymentEmbed } from '../paymentEmbed'
+import { updateCard } from '../updateCard'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, message, fields, user } = interaction
@@ -33,12 +33,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
         await db.payments.get(`${guildId}.process.${user.id}`)
           .then(async (data) => {
-            await paymentEmbed.TypeRedeem({
+            await updateCard.embedAndButtons({
               interaction,
               data,
               message
             })
-            await paymentEmbed.displayData({
+            await updateCard.displayData({
               interaction,
               data,
               type: 'editReply'

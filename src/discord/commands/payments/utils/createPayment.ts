@@ -1,9 +1,6 @@
 import { db } from '@/app'
 import { type ButtonInteraction, type CacheType, ButtonBuilder, ActionRowBuilder, ButtonStyle, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
-import { paymentEmbed } from './paymentEmbed'
-import { Component } from '@/discord/base'
-import collectorButtons from './collector/collectorButtons'
-import collectorModal from './collector/collectorModal'
+import { updateCard } from './updateCard'
 
 export async function createPayment (interaction: ButtonInteraction<CacheType>): Promise<void> {
   await interaction.deferReply({ ephemeral })
@@ -27,6 +24,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
   } else {
     try {
       const { embed } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
+      const product: string = embed?.title
       const amount: number = embed?.fields[0]?.value
       const enabled = await db.system.get(`${guildId}.status.systemPayments`)
       if (enabled !== undefined && enabled === false) {
@@ -55,9 +53,10 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
         parent: await db.guilds.get(`${guild?.id}.payments.category`)
       })
 
-      const { rEmbeds, rComponents } = await paymentEmbed.TypeRedeem({
+      const { rEmbeds, rComponents } = await updateCard.embedAndButtons({
         interaction,
         data: {
+          product,
           amount,
           typeEmbed: 0,
           quantity: 1
@@ -95,6 +94,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
               userID: user.id,
               channelId: paymentChannel.id,
               messageId: msg.id,
+              product,
               amount: embed?.fields[0]?.value,
               quantity: 1,
               typeEmbed: 0
@@ -128,72 +128,3 @@ async function buttonRedirect (guildId: string, channelId: string): Promise<Acti
     })
   )
 }
-
-const buttons = {
-  paymentUserDirect: {
-    title: '❓| Qual é o seu email cadastrado no Dash?',
-    label: 'Seu E-mail',
-    style: 1,
-    type: 'email'
-  },
-  paymentUserCupom: {
-    title: '❓| Qual cupom deseja utilizar?',
-    label: 'Seu Cupom',
-    style: 1,
-    type: 'cupom'
-  },
-  paymentUserDM: {
-    modal: false
-  },
-  paymentUserWTF: {
-    modal: false
-  },
-  paymentUserCancelar: {
-    modal: false
-  },
-  paymentUserGerarPix: {
-    modal: false
-  },
-  paymentUserGerarCardDebito: {
-    modal: false
-  },
-  paymentUserGerarCardCredito: {
-    modal: false
-  },
-  paymentUserAdd: {
-    modal: false
-  },
-  paymentUserRem: {
-    modal: false
-  },
-  paymentUserNext: {
-    modal: false
-  },
-  paymentUserBefore: {
-    modal: false
-  }
-}
-
-// eslint-disable-next-line array-callback-return
-Object.entries(buttons).map(([key, value]) => {
-  new Component({
-    customId: key,
-    type: 'Button',
-    async run (buttonInteraction) {
-      const isButton = (value as { button?: boolean })?.button ?? true
-      if (isButton) {
-        await collectorButtons(buttonInteraction, key, value)
-      }
-    }
-  })
-  new Component({
-    customId: key,
-    type: 'Modal',
-    async run (modalInteraction) {
-      const isModal = (value as { modal?: boolean })?.modal ?? true
-      if (isModal) {
-        await collectorModal(modalInteraction, key, value)
-      }
-    }
-  })
-})

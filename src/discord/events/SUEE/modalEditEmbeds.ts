@@ -1,7 +1,7 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
 import { db } from '@/app'
-import { paymentButtonsConfig } from '@/discord/commands/payments/utils/paymentUpdateConfig'
+import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { ticketButtonsConfig } from '@/discord/commands/tickets/utils/ticketUpdateConfig'
 import { Event } from '@/discord/base'
 import { validarCorHex } from '@/functions'
@@ -62,7 +62,7 @@ export default new Event({
 
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${modalType}`, messageModal)
       await channel?.messages.fetch(String(message?.id))
-        .then(async (msg) => {
+        .then(async (message) => {
           const { embed, role: roleID } = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message?.id}`)
           console.log(embed)
 
@@ -79,14 +79,17 @@ export default new Event({
               embed.color = parseInt(embed?.color.slice(1), 16)
             }
           }
-          await msg.edit({ embeds: [embed] })
+          await message.edit({ embeds: [embed] })
             .then(async () => {
               await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.properties.${customId}`, true)
                 .then(async () => {
                   if (type === 'ticket') {
-                    await ticketButtonsConfig(interaction, msg)
+                    await ticketButtonsConfig(interaction, message)
                   } else {
-                    await paymentButtonsConfig(interaction, msg)
+                    await updateProduct.buttonsConfig({
+                      interaction,
+                      message
+                    })
                   }
                   await interaction.editReply({ content: `${modalType} alterado para ${messageModal}` })
                 })
@@ -98,6 +101,4 @@ export default new Event({
         })
     }
   }
-
-}
-)
+})
