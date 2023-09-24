@@ -13,21 +13,53 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message } = options
     const { guildId, channelId } = interaction
+    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
 
     const [row1] = await createRowEdit(interaction, message, 'payments')
 
     const row2Buttons = [
-      new ButtonBuilder()
-        .setCustomId('paymentSetPrice')
-        .setLabel('Preço')
-        .setEmoji('💰'),
-      new ButtonBuilder()
-        .setCustomId('paymentSetRole')
-        .setLabel('Add Cargo')
-        .setEmoji('🛂')
+      new ButtonBuilder({
+        customId: 'paymentSetPrice',
+        label: 'Preço',
+        emoji: '💰'
+      }),
+      new ButtonBuilder({
+        customId: 'paymentSetRole',
+        label: 'Add Cargo',
+        emoji: '🛂'
+      })
     ]
 
-    const row3Buttons = [
+    const redeemSystem = [
+      new ButtonBuilder({
+        customId: 'paymentSetEstoque',
+        label: 'Estoque',
+        emoji: '🗃️',
+        style: ButtonStyle.Secondary
+      }),
+      new ButtonBuilder({
+        customId: 'paymentAddEstoque',
+        label: 'Add Estoque',
+        emoji: '➕',
+        style: ButtonStyle.Secondary,
+        disabled: true
+      }),
+      new ButtonBuilder({
+        customId: 'paymentSetCtrlPanel',
+        label: 'CrtlPanel',
+        emoji: '💻',
+        style: ButtonStyle.Secondary
+      }),
+      new ButtonBuilder({
+        customId: 'paymentAddtCtrlPanelCoins',
+        label: 'Moedas',
+        emoji: '🪙',
+        style: ButtonStyle.Secondary,
+        disabled: true
+      })
+    ]
+
+    const footerBar = [
       new ButtonBuilder()
         .setCustomId('paymentSave')
         .setLabel('Salvar')
@@ -43,25 +75,39 @@ export class updateProduct {
         .setEmoji('✖️')
     ]
 
-    const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
-    const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
+    const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
+    const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
+    const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(...footerBar)
+
+    for (const value of redeemSystem) {
+      const { custom_id: customID } = Object(value.toJSON())
+      if (data?.properties !== undefined && data.properties[customID] !== undefined && data.properties[customID] === true) {
+        value.setStyle(ButtonStyle.Primary)
+      } else {
+        value.setStyle(ButtonStyle.Secondary)
+      }
+
+      if (customID === 'paymentAddEstoque' && data?.properties !== undefined && data.properties?.paymentSetEstoque === true) {
+        value.setDisabled(false)
+      }
+      if (customID === 'paymentAddtCtrlPanelCoins' && data?.properties !== undefined && data.properties?.paymentSetCtrlPanel === true) {
+        value.setDisabled(false)
+      }
+    }
 
     for (const value of row2Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
-      const { properties } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-      if (properties !== undefined && properties[customID] !== undefined) {
+      if (data?.properties !== undefined && data.properties[customID] !== undefined) {
         value.setStyle(ButtonStyle.Primary)
       } else {
         value.setStyle(ButtonStyle.Secondary)
       }
     }
 
-    for (const value of row3Buttons) {
+    for (const value of footerBar) {
       const { custom_id: customID } = Object(value.toJSON())
       if (customID === 'paymentStatus') {
-        const { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-
-        if (status !== undefined && status === true) {
+        if (data?.status !== undefined && data?.status === true) {
           value.setLabel('Desativar')
           value.setStyle(ButtonStyle.Secondary)
         } else {
@@ -74,7 +120,7 @@ export class updateProduct {
     const clearData = { components: [] }
     await message.edit({ ...clearData })
 
-    await message.edit({ components: [row1, row2, row3] })
+    await message.edit({ components: [row1, row2, row3, row4] })
   }
 
   /**
@@ -86,6 +132,7 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message } = options
     const { guildId, channelId } = interaction
+    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
 
     const row1Buttons = [
       new ButtonBuilder()
@@ -104,9 +151,7 @@ export class updateProduct {
     for (const value of row1Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
       if (customID === 'paymentBuy') {
-        const { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-
-        if (status !== undefined && status === true) {
+        if (data?.status !== undefined && data.status === true) {
           value.setDisabled(false)
         } else {
           value.setDisabled(true)

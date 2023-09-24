@@ -1,176 +1,130 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, type TextChannel, type CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction, type Guild, type User } from 'discord.js'
+import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction } from 'discord.js'
 import { db } from '@/app'
 import { setSystem } from './setSystem'
 
-export async function setDatabase (interaction: CommandInteraction<CacheType>, typeChannel: TextChannel | CategoryChannel, typeData: string, typeString: string, text: string): Promise<void> {
-  const { user, guild, channel } = interaction
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
+export class Database {
+  /**
+   * Seta inforamções no database
+   */
+  public static async set (options: {
+    interaction: CommandInteraction<CacheType>
+    data: TextChannel | CategoryChannel | string
+    typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
+    pathDB: string
+    text?: string
+  }): Promise<void> {
+    const { interaction, data, text, typeDB, pathDB } = options
+    const { user, guildId, channel } = interaction
+    try {
+      if (typeof data === 'string') {
+        const { user, guildId, channel } = interaction
+        await db[typeDB ?? 'guilds'].set(`${guildId}.${pathDB}`, data)
 
-  console.log(`${guild?.id}.${typeData}.${typeString}`, (typeChannel?.id))
+        try {
+          const embedCategoriaSet = new EmbedBuilder()
+            .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${text ?? 'foi atribuído a propriedade'} ${pathDB}!**`)
+            .setColor('Green')
+            .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
 
-  await db.guilds.set(`${guild?.id}.${typeData}.${typeString}`, typeChannel?.id)
-  try {
-    const embedCategoriaSet = new EmbedBuilder()
-      .setDescription(`**✅ - ${typeData === 'channel' ? 'Canal' : 'Categoria'} ` + '``' + typeChannel?.name + '`` ' + text + '!**')
-      .setColor('Green')
-      .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
+          await interaction.editReply({ embeds: [embedCategoriaSet] })
+        } catch (error) {
+          console.log(error)
+          await channel?.send({
+            content: 'Ocorreu um erro!'
+          })
+        }
+      } else if (data instanceof TextChannel || data instanceof CategoryChannel) {
+        await db.guilds.set(`${guildId}.${pathDB}`, data.id)
+        const embedCategoriaSet = new EmbedBuilder({
+          description: `**✅ - ${data instanceof TextChannel ? 'Canal' : 'Categoria'} ` + '``' + data.name + '`` ' + (text ?? 'foi atribuído a propriedade') + '!**',
+          author: { name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` }
+        }).setColor('Green')
 
-    const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setLabel(`Click aqui para ir ao ${typeChannel?.name}`)
-        .setURL(`https://discord.com/channels/${guild?.id}/${typeChannel.id}`)
-        .setStyle(ButtonStyle.Link)
-    )
-
-    if (typeData === 'channel') {
-      await interaction?.editReply({ embeds: [embedCategoriaSet], components: [button] })
-    } else {
-      await interaction?.editReply({ embeds: [embedCategoriaSet] })
-    }
-  } catch (error) {
-    console.log(error)
-    await channel?.send({
-      content: 'Ocorreu um erro!'
-    })
-  }
-}
-
-export async function setDatabaseString (interaction: CommandInteraction<CacheType>, data: string, typeData: string, systemName: string, displayText: string): Promise<void> {
-  const { user, guild, channel } = interaction
-  await db.guilds.set(`${guild?.id}.${typeData}.${systemName}`, data)
-
-  try {
-    const embedCategoriaSet = new EmbedBuilder()
-      .setDescription('**✅ - Informação ' + '``' + data + '`` ' + `${displayText} ${typeData}.${systemName}!**`)
-      .setColor('Green')
-      .setAuthor({ name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` })
-
-    await interaction?.editReply({ embeds: [embedCategoriaSet] })
-  } catch (error) {
-    console.log(error)
-    await channel?.send({
-      content: 'Ocorreu um erro!'
-    })
-  }
-}
-
-async function updateSystemStatusAndClearOthers (
-  interaction: ButtonInteraction<CacheType>,
-  guild: Guild | null,
-  typeData: string,
-  systemName: string,
-  enabledType: string | null,
-  displayName: string,
-  user: User,
-  otherSystemNames: string[]
-): Promise<void> {
-  const statusKey = `${guild?.id}.${typeData}.${systemName}`
-  const status = await db.system.get(statusKey) as boolean
-  let activate: string | boolean
-  let datatype: boolean = true
-
-  if (enabledType === 'switch') {
-    activate = true
-  } else if (typeof enabledType === 'string') {
-    activate = enabledType
-  } else {
-    datatype = (!status)
-    activate = (!status)
-  }
-
-  await db.system.set(statusKey, activate)
-
-  if (typeof activate === 'string' || activate) datatype = true
-
-  const statusMsg = datatype
-    ? `✅ | Sistema **\`${systemName}\`** foi definido como **${displayName}**!`
-    : `❌ | Sistema **\`${displayName}\`** foi Desativado!`
-
-  const embedCategoriaSet = new EmbedBuilder()
-    .setDescription(statusMsg)
-    .setColor(datatype ? 'Green' : 'Red')
-    .setAuthor({ name: user.username, iconURL: user.displayAvatarURL() })
-
-  for (const otherSystem of otherSystemNames) {
-    const key = `${guild?.id}.${typeData}.${otherSystem}`
-    console.log(`Deletando database: ${key}`)
-    await db.system.delete(key)
-    const result = await db.system.get(key)
-    if (result !== undefined) {
-      console.log(`Erro ao excluir a chave: ${key}`)
-    }
-  }
-
-  await interaction.editReply({ embeds: [embedCategoriaSet] })
-}
-
-export async function setDatabaseSystem (
-  interaction: ButtonInteraction<CacheType>,
-  typeData: string,
-  systemName: string,
-  displayName: string
-): Promise<void> {
-  await interaction.deferReply({ ephemeral: true })
-  const { user, guild } = interaction
-
-  type SystemActions = Record<string, () => Promise<void>>
-
-  try {
-    const systemActions: SystemActions = {
-      systemStatusMinecraft: async () => {
-        await updateSystemStatusAndClearOthers(
-          interaction,
-          guild,
-          typeData,
-          'systemStatusMinecraft',
-          'switch',
-          displayName,
-          user,
-          ['systemStatusString']
+        const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setLabel(`Click aqui para ir ao ${data.name}`)
+            .setURL(`https://discord.com/channels/${guildId}/${data.id}`)
+            .setStyle(ButtonStyle.Link)
         )
-      },
-      systemStatusString: async () => {
-        await updateSystemStatusAndClearOthers(
-          interaction,
-          guild,
-          typeData,
-          'systemStatusString',
-          'switch',
-          displayName,
-          user,
-          ['systemStatusMinecraft']
-        )
-      },
-      systemStatusType: async () => {
-        await updateSystemStatusAndClearOthers(
-          interaction,
-          guild,
-          typeData,
-          systemName,
-          displayName,
-          displayName,
-          user,
-          []
-        )
+
+        if (data instanceof TextChannel) {
+          await interaction.editReply({ embeds: [embedCategoriaSet], components: [button] })
+        } else {
+          await interaction.editReply({ embeds: [embedCategoriaSet] })
+        }
       }
+    } catch (error) {
+      console.log(error)
+      await channel?.send({
+        content: 'Ocorreu um erro!'
+      })
     }
+  }
 
-    if (systemName in systemActions) {
-      await systemActions[systemName]()
-    } else {
-      await updateSystemStatusAndClearOthers(
-        interaction,
-        guild,
-        typeData,
-        systemName,
-        null,
-        displayName,
-        user,
-        []
-      )
+  /**
+   * Seta e remove um determinada informação
+   */
+  public static async setDelete (options: {
+    interaction: ButtonInteraction<CacheType>
+    typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
+    pathDB: string
+    systemName: string
+    displayName?: string
+    enabledType: 'switch' | string
+    otherSystemNames?: string[]
+  }): Promise<void> {
+    const { interaction, typeDB, pathDB, displayName, systemName, enabledType, otherSystemNames } = options
+    const dbInstance = db[typeDB ?? 'guilds']
+    await interaction.deferReply({ ephemeral: true })
+    const { guildId, user } = interaction
+
+    try {
+      const statusKey = `${guildId}.${pathDB}.${systemName}`
+      const status = await dbInstance.get(statusKey) as boolean
+      let activate: string | boolean
+      let datatype: boolean = true
+
+      if (enabledType === 'switch') {
+        activate = true
+      } else if (typeof enabledType === 'string') {
+        activate = enabledType
+      } else {
+        datatype = (!status)
+        activate = (!status)
+      }
+
+      await dbInstance.set(statusKey, activate)
+
+      if (typeof activate === 'string' || activate) datatype = true
+
+      const statusMsg = datatype
+        ? `✅ | Sistema **\`${displayName ?? systemName}\`** foi definido como **${activate}**!`
+        : `❌ | Sistema **\`${systemName}\`** foi Desativado!`
+
+      const embedCategoriaSet = new EmbedBuilder({
+        description: statusMsg,
+        author: { name: user.username, iconURL: user.displayAvatarURL() }
+      }).setColor(datatype ? 'Green' : 'Red')
+
+      if (otherSystemNames !== undefined) {
+        for (const otherSystem of otherSystemNames) {
+          const key = `${guildId}.${pathDB}.${otherSystem}`
+          console.log(`Deletando database: ${key}`)
+          await dbInstance.delete(key)
+          const result = await dbInstance.get(key)
+          if (result !== undefined) {
+            console.log(`Erro ao excluir a chave: ${key}`)
+          }
+        }
+      }
+
+      await interaction.editReply({ embeds: [embedCategoriaSet] })
+
+      console.log(`Dados atuais do System: ${typeDB ?? 'system'}`, await dbInstance.get(`${guildId}.${pathDB}`))
+      await setSystem(interaction)
+    } catch (error) {
+      console.log(error)
     }
-    console.log('Dados atuais do System:', await db.system.get(`${guild?.id}.${typeData}`))
-    await setSystem(interaction)
-  } catch (error) {
-    console.log(error)
   }
 }

@@ -1,4 +1,4 @@
-import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock } from 'discord.js'
+import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
 
 export interface Data {
   product?: string
@@ -30,11 +30,10 @@ export class updateCard {
     user?: User
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
-  }): Promise<{ rEmbeds: EmbedBuilder[], rComponents: Array<ActionRowBuilder<ButtonBuilder>> }> {
+  }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
     const { interaction, data, user, message, typeEdit } = options
+    console.log(data)
     const { typeEmbed, typeRedeem, cupom, creditos, amount, quantity, product } = data
-
-    console.log(typeEmbed, cupom, typeRedeem, creditos, amount, quantity)
 
     let titulo
     let descrição
@@ -76,7 +75,7 @@ export class updateCard {
           inline: true
         },
         {
-          name: '**💰 Valor (Individual):**',
+          name: '**💰 Valor:**',
           value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`,
           inline: true
         },
@@ -91,7 +90,7 @@ export class updateCard {
           inline: true
         },
         {
-          name: '**🛒 Valor Total (sem taxas):**',
+          name: '**🛒 Valor Total (Sem taxas):**',
           value: `R$${(cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)}`,
           inline: true
         },
@@ -124,7 +123,7 @@ export class updateCard {
       )
     }
 
-    const embeds = [mainEmbed, infoPayment]
+    const embedsPayment = [mainEmbed, infoPayment]
 
     if (user !== undefined) {
       const userEmbed = new EmbedBuilder()
@@ -148,7 +147,7 @@ export class updateCard {
           }
         )
 
-      embeds.push(userEmbed)
+      embedsPayment.push(userEmbed)
     }
 
     if (typeEmbed === 2) {
@@ -160,28 +159,26 @@ export class updateCard {
           { name: '**💳 Cartão de Débito:**', value: '1.99%', inline: false },
           { name: '**💳 Cartão de Crédito:**', value: '4.98%', inline: false }
         )
-      embeds.push(infoTax)
+      embedsPayment.push(infoTax)
     }
 
     const components = await updateCard.buttons({
       data
     })
 
+    const embeds = embedsPayment.map((embedBuilder) =>
+      embedBuilder.toJSON()
+    )
+
     if (message !== undefined) {
-      const embedsEdit = embeds.map((embedBuilder) =>
-        embedBuilder.toJSON()
-      )
-      const componentsEdit = components.map((componentsBuilder) =>
-        componentsBuilder.toJSON()
-      )
       if (typeEdit === 'update') {
-        await message.edit({ embeds: embedsEdit, components: componentsEdit })
+        await message.edit({ embeds, components })
       } else {
         await message.edit({ components: [] })
-        await message.edit({ embeds: embedsEdit, components: componentsEdit })
+        await message.edit({ embeds, components })
       }
     }
-    return { rEmbeds: embeds, rComponents: components }
+    return { embeds, components }
   }
 
   public static async buttons (options: {

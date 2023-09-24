@@ -6,7 +6,7 @@ import {
   type TextChannel
 } from 'discord.js'
 import { Command, Component } from '@/discord/base'
-import { setDatabase, setDatabaseString, setDatabaseSystem } from './utils/setDatabase'
+import { Database } from './utils/setDatabase'
 import { db } from '@/app'
 import { setSystem } from './utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
@@ -18,8 +18,8 @@ const system = {
   systemPayments: { info: 'Pagamentos' },
   systemWelcomer: { info: 'Boas vindas' },
   systemStatus: { info: 'Status' },
-  systemStatusMinecraft: { info: 'Status' },
-  systemStatusString: { info: 'Status' },
+  systemStatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
+  systemStatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
   systemLogs: { info: 'Logs' },
   systemStatusOnline: { type: 'systemStatusType', info: 'online' },
   systemStatusAusente: { type: 'systemStatusType', info: 'idle' },
@@ -57,10 +57,7 @@ new Command({
         {
           name: 'logs-equipe',
           description: '[ 📃 Logs ] Use para definir o canal de logs.',
-          type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText | ChannelType.GuildAnnouncement
-          ]
+          type: ApplicationCommandOptionType.Channel
         },
         {
           name: 'logs-geral',
@@ -224,23 +221,48 @@ new Command({
           const saída = options.getChannel('saída') as TextChannel
 
           if (banKick !== null) {
-            await setDatabase(interaction, banKick, 'channel', 'banKick', 'setado para o banimento ou a expulsão de usuários')
+            await Database.set({
+              interaction,
+              data: banKick,
+              pathDB: 'channel.banKick',
+              text: 'setado para o banimento ou a expulsão de usuários'
+            })
           }
           if (entrada !== null) {
-            await setDatabase(interaction, entrada, 'channel', 'entrada', 'setado para a entrada de novos usuários')
+            await Database.set({
+              interaction,
+              data: entrada,
+              pathDB: 'channel.entrada',
+              text: 'setado para a entrada de novos usuários'
+            })
           }
           if (logsEquipe !== null) {
-            await setDatabase(interaction, logsEquipe, 'channel', 'staff_logs', 'setado para as logs de entrada e saída da equipe')
+            await Database.set({
+              interaction,
+              data: logsEquipe,
+              pathDB: 'channel.staff_logs',
+              text: 'setado para as logs de entrada e saída da equipe'
+            })
           }
           if (logsGeral !== null) {
-            await setDatabase(interaction, logsGeral, 'channel', 'logs', 'setado para os logs')
+            await Database.set({
+              interaction,
+              data: logsGeral,
+              pathDB: 'channel.logs',
+              text: 'setado para os logs'
+            })
           }
           if (panel !== null) {
             await db.guilds.set(`${interaction.guild.id}.channel.system`, panel.id)
             await setSystem(interaction)
           }
           if (saída !== null) {
-            await setDatabase(interaction, saída, 'channel', 'saída', 'setado para a saída de usuários')
+            await Database.set({
+              interaction,
+              data: saída,
+              pathDB: 'channel.saída',
+              text: 'setado para a saída de usuários'
+            })
           }
 
           break
@@ -255,10 +277,19 @@ new Command({
             await sendEmbed(interaction, addProduto)
           }
           if (carrinho !== null) {
-            await setDatabase(interaction, carrinho, 'payments', 'category', 'foi atribuído a propriedade')
+            await Database.set({
+              interaction,
+              data: carrinho,
+              pathDB: 'payments.category'
+            })
           }
           if (autenticação !== null) {
-            await setDatabaseString(interaction, autenticação, 'payments', 'category', 'setado para os autenticação')
+            await Database.set({
+              interaction,
+              data: autenticação,
+              pathDB: 'payments.category',
+              text: 'setado para os autenticação'
+            })
           }
 
           break
@@ -271,16 +302,32 @@ new Command({
           const ctrlPanel = options.getString('ctrlPanel')
 
           if (site !== null) {
-            await setDatabaseString(interaction, site, 'urls', 'site', 'foi atribuído a propriedade')
+            await Database.set({
+              interaction,
+              data: site,
+              pathDB: 'urls.site'
+            })
           }
           if (loja !== null) {
-            await setDatabaseString(interaction, loja, 'urls', 'loja', 'foi atribuído a propriedade')
+            await Database.set({
+              interaction,
+              data: loja,
+              pathDB: 'urls.loja'
+            })
           }
           if (ptero !== null) {
-            await setDatabaseString(interaction, ptero, 'urls', 'ptero', 'foi atribuído a propriedade')
+            await Database.set({
+              interaction,
+              data: ptero,
+              pathDB: 'urls.ptero'
+            })
           }
           if (ctrlPanel !== null) {
-            await setDatabaseString(interaction, ctrlPanel, 'urls', 'ctrl', 'foi atribuído a propriedade')
+            await Database.set({
+              interaction,
+              data: ctrlPanel,
+              pathDB: 'urls.ctrl'
+            })
           }
           break
         }
@@ -309,16 +356,34 @@ new Command({
               const porta = options.getString('porta') as string
 
               if (canal !== null) {
-                await setDatabase(interaction, canal, 'channel', 'minecraft', 'setado para o status do servidor de minecraft')
+                await Database.set({
+                  interaction,
+                  data: canal,
+                  typeDB: 'guilds',
+                  pathDB: 'channel.minecraft',
+                  text: 'setado para o status do servidor de minecraft'
+                })
               }
               if (desc !== null) {
-                await setDatabaseString(interaction, desc, 'minecraft', 'desc', 'foi atribuído a propriedade')
+                await Database.set({
+                  interaction,
+                  data: desc,
+                  pathDB: 'minecraft.desc'
+                })
               }
               if (ip !== null) {
-                await setDatabaseString(interaction, ip, 'minecraft', 'ip', 'foi atribuído a propriedade')
+                await Database.set({
+                  interaction,
+                  data: ip,
+                  pathDB: 'minecraft.ip'
+                })
               }
               if (porta !== null) {
-                await setDatabaseString(interaction, porta, 'minecraft', 'porta', 'foi atribuído a propriedade')
+                await Database.set({
+                  interaction,
+                  data: porta,
+                  pathDB: 'minecraft.porta'
+                })
               }
             }
           }
@@ -345,9 +410,33 @@ Object.entries(system).map(([key, value]) => {
     type: 'Button',
     async run (buttonInteraction) {
       if ('type' in value) {
-        await setDatabaseSystem(buttonInteraction, 'status', value.type, value.info)
+        await Database.setDelete({
+          interaction: buttonInteraction,
+          systemName: value.type,
+          pathDB: 'status',
+          displayName: key,
+          typeDB: 'system',
+          enabledType: value.info
+        })
+      } else if ('remove' in value) {
+        await Database.setDelete({
+          interaction: buttonInteraction,
+          systemName: key,
+          pathDB: 'status',
+          displayName: value.info,
+          typeDB: 'system',
+          enabledType: 'switch',
+          otherSystemNames: [value.remove]
+        })
       } else {
-        await setDatabaseSystem(buttonInteraction, 'status', key, value.info)
+        await Database.setDelete({
+          interaction: buttonInteraction,
+          systemName: key,
+          pathDB: 'status',
+          displayName: value.info,
+          typeDB: 'system',
+          enabledType: 'switch'
+        })
       }
     }
   })

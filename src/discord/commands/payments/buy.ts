@@ -3,6 +3,20 @@ import { ApplicationCommandType } from 'discord.js'
 import collectorButtons from './collector/collectorButtons'
 import collectorModal from './collector/collectorModal'
 
+new Command({
+  name: 'comprar',
+  nameLocalizations:
+    {
+      'en-US': 'buy'
+    },
+  description: '[ 🛒 Pagamentos ] Comprar um determinado valor',
+  dmPermission,
+  type: ApplicationCommandType.ChatInput,
+  async run (interaction) {
+    await interaction.reply({ content: 'Olá', ephemeral: true })
+  }
+})
+
 const buttonsModals = {
   paymentSetPrice: {
     title: '❓| Qual será o preço do produto?',
@@ -31,22 +45,14 @@ const buttonsModals = {
   },
   paymentBuy: {
     modal: false
+  },
+  paymentSetCtrlPanel: {
+    modal: false
+  },
+  paymentSetEstoque: {
+    modal: false
   }
 }
-
-new Command({
-  name: 'comprar',
-  nameLocalizations:
-    {
-      'en-US': 'buy'
-    },
-  description: '[ 🛒 Pagamentos ] Comprar um determinado valor',
-  dmPermission,
-  type: ApplicationCommandType.ChatInput,
-  async run (interaction) {
-    await interaction.reply({ content: 'Olá', ephemeral: true })
-  }
-})
 
 // eslint-disable-next-line array-callback-return
 Object.entries(buttonsModals).map(([key, value]) => {

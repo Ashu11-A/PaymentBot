@@ -25,7 +25,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
     try {
       const { embed } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
       const product: string = embed?.title
-      const amount: number = embed?.fields[0]?.value
+      const amount = (embed?.fields[0]?.value).replace(',', '.')
       const enabled = await db.system.get(`${guildId}.status.systemPayments`)
       if (enabled !== undefined && enabled === false) {
         await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
@@ -53,7 +53,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
         parent: await db.guilds.get(`${guild?.id}.payments.category`)
       })
 
-      const { rEmbeds, rComponents } = await updateCard.embedAndButtons({
+      const { embeds, components } = await updateCard.embedAndButtons({
         interaction,
         data: {
           product,
@@ -62,15 +62,6 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
           quantity: 1
         }
       })
-
-      /* Transforma as embeds recebidas em algo valido */
-      const embeds = rEmbeds.map((embedBuilder) =>
-        embedBuilder.toJSON()
-      )
-      const components = rComponents.map((componentsBuilder) =>
-        componentsBuilder.toJSON()
-      )
-      /* --------------------------------------------- */
 
       if (paymentChannel !== undefined) {
         await paymentChannel.send({
@@ -95,7 +86,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
               channelId: paymentChannel.id,
               messageId: msg.id,
               product,
-              amount: embed?.fields[0]?.value,
+              amount,
               quantity: 1,
               typeEmbed: 0
             })
