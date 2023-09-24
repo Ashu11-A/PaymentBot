@@ -5,6 +5,7 @@ import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { ticketButtonsConfig } from '@/discord/commands/tickets/utils/ticketUpdateConfig'
 import { Event } from '@/discord/base'
 import { validarCorHex } from '@/functions'
+import { EmbedBuilder } from 'discord.js'
 
 const buttonsModals: any = {
   SetName: {
@@ -45,8 +46,6 @@ export default new Event({
 
       const { type: modalType } = buttonsModals[button]
       let messageModal = fields.getTextInputValue('content')
-      console.log('type:', type)
-      console.log('messageModal:', messageModal)
 
       if (messageModal.toLowerCase() === 'vazio') {
         messageModal = ''
@@ -63,29 +62,47 @@ export default new Event({
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${modalType}`, messageModal)
       await channel?.messages.fetch(String(message?.id))
         .then(async (message) => {
-          const { embed, role: roleID } = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message?.id}`)
-          console.log(embed)
+          const data = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message?.id}`)
+          const updateEmbed = new EmbedBuilder(data?.embed)
 
-          if (roleID !== undefined && roleID !== '') {
-            embed.fields[1] = {
+          if (type === 'payments') {
+            if (data?.price !== undefined && data.price !== '') {
+              updateEmbed.addFields(
+                {
+                  name: '💵 | Preço:',
+                  value: `R$${data.price}`
+                }
+              )
+            }
+            if (data?.coins !== undefined && data.coins !== '') {
+              updateEmbed.addFields({
+                name: '🪙 | Coins:',
+                value: data.coins
+              })
+            }
+          }
+
+          if (data?.role !== undefined && data.role !== '') {
+            updateEmbed.addFields({
               name: '🛂 | Você receberá o cargo:',
-              value: `<@&${roleID}>`
-            }
-          } else if (embed.fields[1] !== undefined || embed.fields[1]?.value === '<@&>') {
-            embed.fields.splice(1, 1)
+              value: `<@&${data.role}>`
+            })
           }
-          if (typeof embed?.color === 'string') {
-            if (embed?.color?.startsWith('#') === true) {
-              embed.color = parseInt(embed?.color.slice(1), 16)
+
+          if (data?.embed !== undefined) {
+            if (data.embed?.color !== undefined && typeof data.embed?.color === 'string') {
+              if (data.embed.color?.startsWith('#') === true) {
+                updateEmbed.setColor(parseInt(data.embed.color.slice(1), 16))
+              }
             }
           }
-          await message.edit({ embeds: [embed] })
+          await message.edit({ embeds: [updateEmbed] })
             .then(async () => {
               await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.properties.${customId}`, true)
                 .then(async () => {
                   if (type === 'ticket') {
                     await ticketButtonsConfig(interaction, message)
-                  } else {
+                  } else if (type === 'payments') {
                     await updateProduct.buttonsConfig({
                       interaction,
                       message

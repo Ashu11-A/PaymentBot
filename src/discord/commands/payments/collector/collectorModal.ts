@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { validarValor } from '@/functions'
-import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
+import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, channelId, message, fields } = interaction
@@ -10,8 +10,30 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     const { type } = value
     let messageModal = fields.getTextInputValue('content')
-    console.log('type:', type)
-    console.log('messageModal:', messageModal)
+
+    if (key === 'paymentImport') {
+      const json = JSON.parse(messageModal.replace(/\\\\`/g, '`'))
+      delete json.id
+      console.log(json)
+      const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
+      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}`, {
+        id: data.id,
+        ...json
+      })
+      if (message !== null) {
+        await updateProduct.embed({
+          interaction,
+          message
+        })
+        await interaction.editReply({
+          embeds: [new EmbedBuilder({
+            title: 'Dados Atualizados!',
+            description: 'As informações do produto foram alteradas!'
+          })]
+        })
+      }
+      return
+    }
 
     if (messageModal.toLowerCase() === 'vazio') {
       messageModal = ''
@@ -28,32 +50,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.${type}`, messageModal)
     await channel?.messages.fetch(String(message?.id))
       .then(async (msg) => {
-        const { role: roleID, embed } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
-
-        if (roleID !== undefined && roleID !== '') {
-          embed.fields[1] = {
-            name: '🛂 | Você receberá o cargo:',
-            value: `<@&${roleID}>`
-          }
-        } else if (embed.fields[1] !== undefined || embed.fields[1]?.value === '<@&>') {
-          embed.fields.splice(1, 1)
-        }
-        if (typeof embed?.color === 'string') {
-          if (embed?.color?.startsWith('#') === true) {
-            embed.color = parseInt(embed?.color.slice(1), 16)
-          }
-        }
-
-        await msg.edit({ embeds: [embed] })
+        await updateProduct.embed({
+          interaction,
+          message: msg
+        })
           .then(async () => {
-            await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.properties.${customId}`, true)
-              .then(async () => {
-                await updateProduct.buttonsConfig({
-                  interaction,
-                  message: msg
-                })
-                await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
-              })
+            await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
           })
       })
       .catch(async (err: Error) => {

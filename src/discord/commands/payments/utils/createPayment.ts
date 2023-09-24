@@ -24,9 +24,9 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
     })
   } else {
     try {
-      const { embed } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-      const product: string = embed?.title
-      const amount = (embed?.fields[0]?.value).replace(',', '.')
+      const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
+      const product: string = data?.embed?.title
+      const amount = (data?.price).replace(',', '.')
       const status = await db.system.get(`${guildId}.status`)
       const payments = await db.guilds.get(`${guildId}.payments`)
 

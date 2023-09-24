@@ -5,22 +5,22 @@ import { updateProduct } from './updateProduct'
 
 export default async function sendEmbed (interaction: CommandInteraction<'cached'>, channel: TextChannel): Promise<void> {
   const { guildId, channelId } = interaction
-  const embed = new EmbedBuilder()
-    .setTitle('Plano')
-    .setDescription('```' + 'Sem nenhuma descrição' + '```')
-    .addFields(
-      { name: '💵 | Preço:', value: '0' }
-    )
-    .setThumbnail(interaction.guild.iconURL({ size: 512 }))
-    .setImage(interaction.guild.iconURL({ size: 2048 }))
-    .setColor('Blue')
+  const icon = interaction.guild.iconURL({ size: 2048 }) as string ?? undefined
+  const embed = new EmbedBuilder({
+    title: 'Plano',
+    description: '```' + 'Sem nenhuma descrição' + '```',
+    thumbnail: { url: icon },
+    image: { url: icon }
+  }).setColor('Blue')
 
-  await channel.send({ embeds: [embed] })
+  const embedJson = embed.toJSON()
+
+  await channel.send({ embeds: [embed.addFields({ name: '💵 | Preço:', value: 'R$0,00' })] })
     .then(async (message: Message<true>) => {
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}`,
         {
           id: message.id,
-          embed: embed.toJSON()
+          embed: embedJson
         })
       await updateProduct.buttonsConfig({
         interaction,

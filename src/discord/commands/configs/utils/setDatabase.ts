@@ -98,15 +98,6 @@ export class Database {
 
       if (typeof activate === 'string' || activate) datatype = true
 
-      const statusMsg = datatype
-        ? `✅ | Sistema **\`${displayName ?? systemName}\`** foi definido como **${activate}**!`
-        : `❌ | Sistema **\`${systemName}\`** foi Desativado!`
-
-      const embedCategoriaSet = new EmbedBuilder({
-        description: statusMsg,
-        author: { name: user.username, iconURL: user.displayAvatarURL() }
-      }).setColor(datatype ? 'Green' : 'Red')
-
       if (otherSystemNames !== undefined) {
         for (const otherSystem of otherSystemNames) {
           const key = `${guildId}.${pathDB}.${otherSystem}`
@@ -119,10 +110,18 @@ export class Database {
         }
       }
 
-      await interaction.editReply({ embeds: [embedCategoriaSet] })
-
       console.log(`Dados atuais do System: ${typeDB ?? 'system'}`, await dbInstance.get(`${guildId}.${pathDB}`))
       await setSystem(interaction)
+
+      const statusMsg = datatype
+        ? `✅ | Sistema **\`${displayName ?? systemName}\`** foi definido como **${activate}**!`
+        : `❌ | Sistema **\`${systemName}\`** foi Desativado!`
+      await interaction.editReply({
+        embeds: [new EmbedBuilder({
+          description: statusMsg,
+          author: { name: user.username, iconURL: user.displayAvatarURL() }
+        }).setColor(datatype ? 'Green' : 'Red')]
+      })
     } catch (error) {
       console.log(error)
     }

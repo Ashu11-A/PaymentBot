@@ -10,7 +10,7 @@ import { Database } from './utils/setDatabase'
 import { db } from '@/app'
 import { setSystem } from './utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
-import sendEmbed from '@/discord/commands/payments/utils/createEmbed'
+import sendEmbed from '@/discord/commands/payments/utils/createProduct'
 import { Discord } from '@/functions/Discord'
 
 const system = {

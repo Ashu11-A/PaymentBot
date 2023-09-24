@@ -24,7 +24,15 @@ const buttonsModals = {
     placeholder: 'Ex: 14,50',
     style: 1,
     maxLength: 6,
-    type: 'embed.fields[0].value'
+    type: 'price'
+  },
+  paymentAddCoins: {
+    title: '❓| Quantas moedas será dado na compra?',
+    label: 'Moedas do plano',
+    placeholder: 'Ex: 2000',
+    style: 1,
+    maxLength: 10,
+    type: 'coins'
   },
   paymentSetRole: {
     title: '❓| Qual será o id a ser adquirido na compra?',
@@ -51,6 +59,15 @@ const buttonsModals = {
   },
   paymentSetEstoque: {
     modal: false
+  },
+  paymentExport: {
+    modal: false
+  },
+  paymentImport: {
+    title: '❓| Informe o Json do produto',
+    label: 'JSON do Produto',
+    style: 2,
+    maxLength: 4000
   }
 }
 
