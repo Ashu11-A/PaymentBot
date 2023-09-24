@@ -25,7 +25,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     const customIdHandler = customIdHandlers[customId]
 
     if (typeof customIdHandler === 'function') {
-      await customIdHandler() // Now you can call the function
+      await customIdHandler()
     } else {
       const textValue = await db.payments.get(`${guildId}.process.${user.id}.${type}`)
       const modal = new ModalBuilder({ customId: key, title })

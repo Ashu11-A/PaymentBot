@@ -4,6 +4,7 @@ import { updateCard } from './updateCard'
 
 export async function createPayment (interaction: ButtonInteraction<CacheType>): Promise<void> {
   await interaction.deferReply({ ephemeral })
+
   const { channelId, guild, guildId, user, message } = interaction
   const name = `🛒-${user.id}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === name)
@@ -26,8 +27,10 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       const { embed } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
       const product: string = embed?.title
       const amount = (embed?.fields[0]?.value).replace(',', '.')
-      const enabled = await db.system.get(`${guildId}.status.systemPayments`)
-      if (enabled !== undefined && enabled === false) {
+      const status = await db.system.get(`${guildId}.status`)
+      const payments = await db.guilds.get(`${guildId}.payments`)
+
+      if (status?.systemPayments !== undefined && status.systemPayments === false) {
         await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
         return
       }
@@ -50,7 +53,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
         type: ChannelType.GuildText,
         topic: `Carrinho do(a) ${user.username}, ID: ${user.id}`,
         permissionOverwrites,
-        parent: await db.guilds.get(`${guild?.id}.payments.category`)
+        parent: payments?.category
       })
 
       const { embeds, components } = await updateCard.embedAndButtons({

@@ -6,12 +6,12 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome)
   if (sendChannel !== undefined) {
     const buttonChannel = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder()
-        .setLabel('Clique para ir ao seu ticket')
-        .setURL(
-            `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-        )
-        .setStyle(ButtonStyle.Link)
+      new ButtonBuilder({
+        label: 'Ir ao Ticket',
+        emoji: '🎫',
+        url: `https://discord.com/channels/${guild?.id}/${sendChannel.id}`,
+        style: ButtonStyle.Link
+      })
     )
 
     await interaction.reply({
@@ -26,14 +26,14 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
     })
   } else {
     await interaction.deferReply({ ephemeral: true })
+    const status = await db.system.get(`${interaction.guild?.id}.status`)
+    const ticket = await db.guilds.get(`${interaction.guild?.id}.ticket`)
 
-    const enabled = await db.system.get(`${interaction.guild?.id}.status.systemTicket`)
-    if (enabled !== undefined && enabled === false) {
+    if (status?.systemTicket !== undefined && status.systemTicket === false) {
       await interaction.editReply({ content: '❌ | Os tickets estão desativados no momento!' })
       return
     }
 
-    const roleDB = await db.guilds.get(`${interaction.guild?.id}.ticket.role`)
     try {
       const permissionOverwrites = [
         {
@@ -50,15 +50,15 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
         type: ChannelType.GuildText,
         topic: `Ticket do(a) ${user.username}, ID: ${user.id}`,
         permissionOverwrites,
-        parent: await db.guilds.get(`${guild?.id}.ticket.category`)
+        parent: ticket?.category
       })
       const channel = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setLabel('Clique para ir ao seu ticket')
-          .setURL(
-              `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`
-          )
-          .setStyle(ButtonStyle.Link)
+        new ButtonBuilder({
+          label: 'Ir ao Ticket',
+          emoji: '🎫',
+          url: `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`,
+          style: ButtonStyle.Link
+        })
       )
       await interaction.editReply({
         embeds: [
@@ -88,14 +88,15 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) })
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId('del-ticket')
-          .setEmoji({ name: '✖️' })
-          .setLabel('Fechar Ticket')
-          .setStyle(ButtonStyle.Danger)
+        new ButtonBuilder({
+          customId: 'del-ticket',
+          label: 'Fechar Ticket',
+          emoji: '✖️',
+          style: ButtonStyle.Danger
+        })
       )
-      if (roleDB !== undefined) {
-        await ch?.send({ content: `<@&${roleDB}>`, embeds: [embed], components: [botao] }).catch(console.error)
+      if (ticket?.role !== undefined) {
+        await ch?.send({ content: `<@&${ticket.role}>`, embeds: [embed], components: [botao] }).catch(console.error)
       } else {
         await ch?.send({ embeds: [embed], components: [botao] }).catch(console.error)
       }

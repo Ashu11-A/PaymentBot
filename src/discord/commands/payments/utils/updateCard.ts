@@ -32,7 +32,6 @@ export class updateCard {
     typeEdit?: 'update' | 'remover&update'
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
     const { interaction, data, user, message, typeEdit } = options
-    console.log(data)
     const { typeEmbed, typeRedeem, cupom, creditos, amount, quantity, product } = data
 
     let titulo

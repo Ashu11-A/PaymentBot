@@ -4,52 +4,52 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type Comman
 
 export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
-
+  const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
+  const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
   const [row1] = await createRowEdit(interaction, message, 'ticket')
 
   const row2Buttons = [
-    new ButtonBuilder()
-      .setCustomId('ticketSetRole')
-      .setLabel('Add Cargo')
-      .setEmoji('🛂'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetSelect')
-      .setLabel('SelectMenu')
-      .setEmoji('🗄️'),
-    new ButtonBuilder()
-      .setCustomId('ticketAddSelect')
-      .setLabel('Add Select')
-      .setDisabled(true)
-      .setEmoji('📝'),
-    new ButtonBuilder()
-      .setCustomId('ticketSetButton')
-      .setLabel('Botão')
-      .setEmoji('🔘')
+    new ButtonBuilder({
+      customId: 'ticketSetRole',
+      label: 'Add Cargo',
+      emoji: '🛂'
+    }),
+    new ButtonBuilder({
+      customId: 'ticketSetSelect',
+      label: 'SelectMenu',
+      emoji: '🗄️'
+    }),
+    new ButtonBuilder({
+      customId: 'ticketAddSelect',
+      label: 'Add Select',
+      emoji: '📝',
+      disabled: true
+    }),
+    new ButtonBuilder({
+      customId: 'ticketSetButton',
+      label: 'Botão',
+      emoji: '🔘'
+    })
   ]
 
   const row3Buttons = [
-    new ButtonBuilder()
-      .setCustomId('ticketSendSave')
-      .setLabel('Enviar')
-      .setStyle(ButtonStyle.Success)
-      .setEmoji('✔️'),
-    new ButtonBuilder()
-      .setCustomId('ticketEmbedDelete')
-      .setLabel('Apagar')
-      .setStyle(ButtonStyle.Danger)
-      .setEmoji('✖️')
+    new ButtonBuilder({
+      customId: 'ticketSendSave',
+      label: 'Enviar',
+      emoji: '✔️',
+      style: ButtonStyle.Success
+    }),
+    new ButtonBuilder({
+      customId: 'ticketEmbedDelete',
+      label: 'Apagar',
+      emoji: '✖️',
+      style: ButtonStyle.Danger
+    })
   ]
-  const { select: dataDB } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
-  const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
-
-  console.log('Select: ' + dataDB, 'MessageID: ' + message.id)
 
   let number = 0
-  if (dataDB !== undefined) {
-    dataDB.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
-      console.log(`Title: ${title}`)
-      console.log(`Description: ${description}`)
-      console.log(`Emoji: ${emoji}`)
+  if (data?.select !== undefined) {
+    data.select.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
       options.push({
         label: title,
         description,
@@ -80,15 +80,11 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
   const row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row4Buttons)
 
-  const { properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
-
   for (const value of row2Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
-      console.log('customID: ' + customID)
-      console.log('properties: ' + properties)
-      const enabled = properties?.ticketSetSelect
+      const enabled = data?.properties?.ticketSetSelect
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -96,7 +92,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       }
     }
 
-    if (properties !== undefined && properties[customID] !== undefined) {
+    if (data?.properties !== undefined && data?.properties[customID] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
@@ -119,7 +115,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   }
 
   for (const value of row4Buttons) {
-    const result = properties?.config
+    const result = data?.properties?.config
 
     if (result === undefined || result === true) {
       value.setPlaceholder('Modo edição, selecione um valor para remover.')
@@ -128,17 +124,11 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     }
   }
 
-  const clearData = { components: [] }
-  await message.edit({ ...clearData })
-
-  const button = properties?.ticketSetButton
-  const select = properties?.ticketSetSelect
-
-  console.log('select', select, 'button', button)
+  await message.edit({ components: [] })
   try {
-    if (select === true && dataDB !== undefined) {
+    if (data?.properties?.ticketSetSelect === true && data?.select !== undefined) {
       await message.edit({ components: [row1, row2, row3, row4] })
-    } else if (button === true) {
+    } else if (data?.properties?.ticketSetButton === true) {
       await message.edit({ components: [row1, row2, row3, botao] })
     } else {
       await message.edit({ components: [row1, row2, row3] })
@@ -154,16 +144,12 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
 export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>, originID: string | undefined, messageSend: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
 
-  const { select: dataDB } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
+  const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
 
-  console.log('Select: ' + dataDB, 'MessageID: ' + messageSend.id)
   let number = 0
-  if (dataDB !== undefined) {
-    dataDB.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
-      console.log(`Title: ${title}`)
-      console.log(`Description: ${description}`)
-      console.log(`Emoji: ${emoji}`)
+  if (data?.select !== undefined) {
+    data?.select.forEach(({ title, description, emoji }: { title: string, description: string, emoji: string }) => {
       options.push({
         label: title,
         description,
@@ -183,29 +169,26 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
   ]
 
   const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId('ticketOpen')
-      .setEmoji({ name: '📩' })
-      .setLabel('Abra seu ticket')
-      .setStyle(ButtonStyle.Success)
+    new ButtonBuilder({
+      customId: 'ticketOpen',
+      label: 'Abra seu ticket',
+      emoji: '📩',
+      style: ButtonStyle.Success
+    })
   )
 
   const selectRow = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row1Buttons)
 
-  const clearData = { components: [] }
-  await messageSend.edit({ ...clearData })
-  const { embed, properties } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${originID}`)
-  const select = properties?.ticketSetSelect
-
+  await messageSend.edit({ components: [] })
   try {
-    if (select === true && dataDB !== undefined) {
-      await messageSend.edit({ embeds: [embed], components: [selectRow] })
+    if (data?.properties?.ticketSetSelect === true && data?.select !== undefined) {
+      await messageSend.edit({ embeds: [data?.embed], components: [selectRow] })
         .then(async () => {
           await interaction.reply({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true })
             .catch(async () => await interaction.followUp({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true }))
         })
     } else {
-      await messageSend.edit({ embeds: [embed], components: [botao] })
+      await messageSend.edit({ embeds: [data?.embed], components: [botao] })
         .then(async () => {
           await interaction.reply({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true })
             .catch(async () => await interaction.followUp({ content: '✅ | Mensagem atualizada com sucesso', ephemeral: true }))

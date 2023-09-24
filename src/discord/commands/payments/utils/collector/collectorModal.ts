@@ -5,6 +5,8 @@ import { updateCard } from '../updateCard'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, message, fields, user } = interaction
+  const { type } = value
+  const messageModal = fields.getTextInputValue('content')
   if (customId === key) {
     await interaction.deferReply({ ephemeral: true })
 
@@ -13,11 +15,6 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       const type = 2
       await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, type)
     }
-
-    const { type } = value
-    const messageModal = fields.getTextInputValue('content')
-    console.log('type:', type)
-    console.log('messageModal:', messageModal)
 
     if (customId === 'paymentSetPrice') {
       const [validador, message] = validarValor(messageModal)
