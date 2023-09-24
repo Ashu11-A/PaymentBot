@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { validarValor } from '@/functions'
+import { validarEmail, validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { updateCard } from '../updateCard'
 
@@ -12,8 +12,14 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     // typeRedeem
     if (customId === 'paymentUserDirect') {
-      const type = 2
-      await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, type)
+      const [validador, message] = validarEmail(messageModal)
+      if (validador) {
+        const type = 2
+        await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, type)
+      } else {
+        await interaction.editReply({ content: message })
+        return
+      }
     }
 
     if (customId === 'paymentSetPrice') {

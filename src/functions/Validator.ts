@@ -39,3 +39,15 @@ export function validarCorHex (cor: string): any[] {
 
   return [true]
 }
+
+export function validarEmail (email: string): [boolean, string] {
+  // Expressão regular para validar o formato do email
+  const regex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/
+
+  // Testar o email em relação à expressão regular
+  if (!regex.test(email)) {
+    return [false, '❌ | E-mail informado não é valido!']
+  } else {
+    return [true, '']
+  }
+}
