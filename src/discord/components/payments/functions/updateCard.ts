@@ -1,26 +1,5 @@
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
-
-export interface Data {
-  product?: string
-  amount?: number
-  creditos?: number
-  quantity?: number
-  typeEmbed?: number
-  typeRedeem?: number
-  properties?: any
-  cupom?: {
-    name?: string
-    porcent?: number
-    cupomAmount?: number
-  }
-  fields?: Array<{ value: string }>
-}
-
-interface User {
-  name: string
-  email: string
-  credits: number
-}
+import { type Data, type User } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {

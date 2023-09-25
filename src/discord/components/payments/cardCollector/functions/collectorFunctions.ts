@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
-import { type Data, updateCard } from '../../updateCard'
+import { type Data, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -24,7 +24,8 @@ export class PaymentFunction {
     })
     await updateCard.displayData({
       interaction,
-      data
+      data,
+      type: 'editReply'
     })
   }
 
@@ -121,7 +122,7 @@ export class PaymentFunction {
         .setTitle('Etapa [2]')
         .setDescription('Selecione o método de pagamento:\nExistem 3 metodos, e suas taxas:\n- 💠 PIX (1%).\n- 💳 Cartão de Débito (1.99%)\n- 💳 Cartão de Crédito (4.98%)\n \n> Essa taxa é imposta pelo Mercado Pago.')
     }
-    await interaction.reply({ embeds: [embed], ephemeral })
+    await interaction.editReply({ embeds: [embed] })
       .then(async () => {
         await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}_${typeEmbed}`, true)
         const data = await db.payments.get(`${guildId}.process.${user.id}`)
@@ -152,7 +153,7 @@ export class PaymentFunction {
     } else if (type === 'Rem' && quantity > 1) {
       await db.payments.sub(`${guildId}.process.${user.id}.quantity`, 1)
     } else {
-      await interaction.reply({ content: '❌ | Não foi possivel completar a ação.', ephemeral })
+      await interaction.editReply({ content: '❌ | Não foi possivel completar a ação.' })
       return
     }
 
@@ -166,7 +167,8 @@ export class PaymentFunction {
 
     await updateCard.displayData({
       interaction,
-      data
+      data,
+      type: 'editReply'
     })
   }
 
@@ -214,8 +216,7 @@ export class PaymentFunction {
           const number = await db.payments.add(`${guildId}.process.${user.id}.typeEmbed`, 1)
           const typeString = stringNextBefore(number)
 
-          await interaction.reply({
-            ephemeral,
+          await interaction.editReply({
             embeds: [
               new EmbedBuilder({
                 title: 'Proxima Etapa',
@@ -224,8 +225,7 @@ export class PaymentFunction {
             ]
           })
         } else {
-          await interaction.reply({
-            ephemeral,
+          await interaction.editReply({
             embeds: [
               new EmbedBuilder({
                 title: '😶 | Desculpe-me',
@@ -241,8 +241,7 @@ export class PaymentFunction {
         const number = await db.payments.sub(`${guildId}.process.${user.id}.typeEmbed`, 1)
         const typeString = stringNextBefore(number)
 
-        await interaction.reply({
-          ephemeral,
+        await interaction.editReply({
           embeds: [
             new EmbedBuilder({
               title: 'Etapa Anterior',

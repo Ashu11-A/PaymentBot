@@ -25,6 +25,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     const customIdHandler = customIdHandlers[customId]
 
     if (typeof customIdHandler === 'function') {
+      await interaction.deferReply({ ephemeral })
       await customIdHandler()
     } else {
       const textValue = await db.payments.get(`${guildId}.process.${user.id}.${type}`)

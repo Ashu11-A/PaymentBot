@@ -1,8 +1,8 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
 import { db } from '@/app'
-import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
-import { ticketButtonsConfig } from '@/discord/commands/tickets/utils/ticketUpdateConfig'
+import { updateProduct } from '@/discord/components/payments'
+import { ticketButtonsConfig } from '@/discord/components/tickets'
 import { Event } from '@/discord/base'
 import { validarCorHex } from '@/functions'
 import { EmbedBuilder } from 'discord.js'

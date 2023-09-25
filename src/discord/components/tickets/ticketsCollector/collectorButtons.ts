@@ -1,8 +1,7 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type CacheType, ModalBuilder, TextInputBuilder, type ButtonInteraction, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type TextChannel } from 'discord.js'
-import { createTicket } from '../utils/createTicket'
+import { createTicket, ticketButtonsConfig, buttonsUsers } from '@/discord/components/tickets'
 import { Discord, createRow } from '@/functions'
-import { ticketButtonsConfig, buttonsUsers } from '@/discord/commands/tickets/utils/ticketUpdateConfig'
 
 const listItens = {
   SetName: {

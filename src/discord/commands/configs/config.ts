@@ -6,11 +6,11 @@ import {
   type TextChannel
 } from 'discord.js'
 import { Command, Component } from '@/discord/base'
-import { Database } from './utils/setDatabase'
+import { Database } from '@/functions'
 import { db } from '@/app'
-import { setSystem } from './utils/setSystem'
+import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
-import sendEmbed from '@/discord/commands/payments/utils/createProduct'
+import { sendEmbed } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
 
 const system = {

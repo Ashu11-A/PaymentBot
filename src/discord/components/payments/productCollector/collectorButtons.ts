@@ -1,9 +1,8 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
+import { updateProduct, createPayment } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
-import { createPayment } from '../utils/createPayment'
-import { Database } from '../../configs/utils/setDatabase'
+import { Database } from '@/functions'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
@@ -69,6 +68,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     const customIdHandler = customIdHandlers[customId]
 
     if (typeof customIdHandler === 'function') {
+      await interaction.deferReply({ ephemeral })
       await customIdHandler()
     } else {
       const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${type}`)

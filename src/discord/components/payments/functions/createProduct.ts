@@ -1,9 +1,8 @@
 import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message } from 'discord.js'
-
 import { db } from '@/app'
 import { updateProduct } from './updateProduct'
 
-export default async function sendEmbed (interaction: CommandInteraction<'cached'>, channel: TextChannel): Promise<void> {
+export async function sendEmbed (interaction: CommandInteraction<'cached'>, channel: TextChannel): Promise<void> {
   const { guildId, channelId } = interaction
   const icon = interaction.guild.iconURL({ size: 2048 }) as string ?? undefined
   const embed = new EmbedBuilder({

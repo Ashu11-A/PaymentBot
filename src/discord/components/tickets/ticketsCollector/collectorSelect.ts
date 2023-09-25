@@ -1,7 +1,6 @@
 import { db } from '@/app'
 import { type StringSelectMenuInteraction, type CacheType } from 'discord.js'
-import { ticketButtonsConfig } from '../utils/ticketUpdateConfig'
-import { createTicket } from '../utils/createTicket'
+import { ticketButtonsConfig, createTicket } from '@/discord/components/tickets'
 
 export async function deleteSelect (interaction: StringSelectMenuInteraction<CacheType>): Promise<void> {
   const { guildId, channelId, message } = interaction

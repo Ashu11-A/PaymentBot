@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { validarEmail, validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
-import { updateCard } from '../updateCard'
+import { updateCard } from '@/discord/components/payments'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, message, fields, user } = interaction

@@ -1,6 +1,6 @@
 import { Component } from '@/discord/base'
-import collectorButtons from './collector/collectorButtons'
-import collectorModal from './collector/collectorModal'
+import collectorButtons from './cardCollector/collectorButtons'
+import collectorModal from './cardCollector/collectorModal'
 
 const buttons = {
   paymentUserDirect: {

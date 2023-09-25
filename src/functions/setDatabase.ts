@@ -1,6 +1,6 @@
 import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction } from 'discord.js'
 import { db } from '@/app'
-import { setSystem } from './setSystem'
+import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Database {

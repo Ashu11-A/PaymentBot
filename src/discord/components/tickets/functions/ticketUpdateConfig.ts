@@ -6,9 +6,11 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const { guildId, channelId } = interaction
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
   const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
-  const [row1] = await createRowEdit(interaction, message, 'ticket')
+  console.log(data)
 
-  const row2Buttons = [
+  const [embedEdit] = await createRowEdit(interaction, message, 'ticket')
+
+  const setSystem = [
     new ButtonBuilder({
       customId: 'ticketSetRole',
       label: 'Add Cargo',
@@ -32,7 +34,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     })
   ]
 
-  const row3Buttons = [
+  const saveDelete = [
     new ButtonBuilder({
       customId: 'ticketSendSave',
       label: 'Enviar',
@@ -60,31 +62,35 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     })
   }
 
-  const row4Buttons = [
-    new StringSelectMenuBuilder({
-      custom_id: 'ticketRowSelect',
-      placeholder: 'Escolha qual tipo de ticket deseja abrir!',
-      options
-    })
-  ]
+  let row4
+  const enabled = data?.properties?.ticketSetSelect
 
-  const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder()
-      .setCustomId('ticketOpen')
-      .setEmoji({ name: '📩' })
-      .setLabel('Abra seu ticket')
-      .setStyle(ButtonStyle.Success)
-  )
+  if (enabled !== undefined && enabled === true) {
+    row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
+      new StringSelectMenuBuilder({
+        custom_id: 'ticketRowSelect',
+        placeholder: 'Escolha qual tipo de ticket deseja abrir!',
+        options
+      })
+    )
+  } else {
+    row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder()
+        .setCustomId('ticketOpen')
+        .setEmoji({ name: '📩' })
+        .setLabel('Abra seu ticket')
+        .setStyle(ButtonStyle.Success)
+    )
+  }
 
-  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
-  const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
-  const row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(...row4Buttons)
+  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...setSystem)
+  const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...saveDelete)
 
-  for (const value of row2Buttons) {
+  for (const value of setSystem) {
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
-      const enabled = data?.properties?.ticketSetSelect
+      console.log('Botão:', customID, 'Enabled:', enabled)
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -92,14 +98,14 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       }
     }
 
-    if (data?.properties !== undefined && data?.properties[customID] !== undefined) {
+    if (data?.properties !== undefined && data?.properties[customID] === true) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
   }
 
-  for (const value of row3Buttons) {
+  for (const value of saveDelete) {
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketSendSave') {
@@ -114,29 +120,26 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     }
   }
 
-  for (const value of row4Buttons) {
-    const result = data?.properties?.config
+  for (const value of row4.components) {
+    if (value instanceof StringSelectMenuBuilder) {
+      const result = data?.properties?.config
 
-    if (result === undefined || result === true) {
-      value.setPlaceholder('Modo edição, selecione um valor para remover.')
-    } else {
-      value.setPlaceholder('Escolha qual tipo de ticket deseja abrir!')
+      if (result === undefined || result === true) {
+        value.setPlaceholder('Modo edição, selecione um valor para remover.')
+      } else {
+        value.setPlaceholder('Escolha qual tipo de ticket deseja abrir!')
+      }
     }
   }
 
   await message.edit({ components: [] })
   try {
-    if (data?.properties?.ticketSetSelect === true && data?.select !== undefined) {
-      await message.edit({ components: [row1, row2, row3, row4] })
-    } else if (data?.properties?.ticketSetButton === true) {
-      await message.edit({ components: [row1, row2, row3, botao] })
-    } else {
-      await message.edit({ components: [row1, row2, row3] })
-    }
+    await message.edit({ components: [embedEdit, row2, row3, row4] })
+
     await interaction.editReply({ content: '✅ | Salvado com sucesso!' })
   } catch (err) {
     console.log(err)
-    await message.edit({ components: [row1, row2, row3] })
+    await message.edit({ components: [embedEdit, row2, row3] })
     await interaction.editReply({ content: '❌ | SelectMenu ficou sem nenhum item...!' })
   }
 }

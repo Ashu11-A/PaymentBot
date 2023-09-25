@@ -246,7 +246,7 @@ export class updateProduct {
     message: Message<boolean>
   }): Promise<void> {
     const { interaction, message } = options
-    const { guildId, channelId, user, customId } = interaction
+    const { guildId, channelId } = interaction
 
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
     const jsonData = JSON.stringify(data, (key, value) => {
@@ -257,8 +257,7 @@ export class updateProduct {
     }, 4)
     const buffer = Buffer.from(jsonData, 'utf-8')
     const attachment = new AttachmentBuilder(buffer, { name: `product_${message.id}.json` })
-    await interaction.reply({
-      ephemeral,
+    await interaction.editReply({
       files: [attachment]
     })
   }
@@ -276,8 +275,7 @@ export class updateProduct {
     const futureTime = new Date(
       now.getTime() + 60000
     )
-    const messageCollector = await interaction.reply({
-      ephemeral,
+    const messageCollector = await interaction.editReply({
       embeds: [new EmbedBuilder({
         title: 'Envie o arquivo Json.',
         description: `Tempo restante: <t:${Math.floor(
