@@ -64,10 +64,7 @@ const buttonsModals = {
     modal: false
   },
   paymentImport: {
-    title: '❓| Informe o Json do produto',
-    label: 'JSON do Produto',
-    style: 2,
-    maxLength: 4000
+    modal: false
   }
 }
 

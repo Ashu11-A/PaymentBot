@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder, EmbedBuilder, codeBlock } from 'discord.js'
+import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
 import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { Discord } from '@/functions/Discord'
 import { createPayment } from '../utils/createPayment'
@@ -25,10 +25,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       }
 
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
-      await updateProduct.buttonsConfig({
-        interaction,
-        message
-      })
+      await updateProduct.buttonsConfig({ interaction, message })
     },
     paymentBuy: async () => { await createPayment(interaction) },
     paymentSetEstoque: async () => {
@@ -56,28 +53,16 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'switch',
         otherSystemNames: ['paymentSetEstoque']
       })
-      await updateProduct.buttonsConfig({
-        interaction,
-        message
-      })
+      await updateProduct.buttonsConfig({ interaction, message })
     },
     paymentExport: async () => {
-      const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-      await interaction.reply({
-        ephemeral,
-        embeds: [
-          new EmbedBuilder({
-            title: 'Json referente ao Produto',
-            description: '📑 Dados:\n' + codeBlock('json', JSON.stringify(data, (key, value) => {
-              if (typeof value === 'string') {
-                return value.replace(/`/g, '\\`')
-              }
-              return value
-            }, 4))
-          })
-        ]
-      })
+      await updateProduct.export({ interaction, message })
+      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${customId}`, true)
+    },
+    paymentImport: async () => {
+      await updateProduct.import({ interaction, message })
     }
+
   }
 
   if (customId === key) {

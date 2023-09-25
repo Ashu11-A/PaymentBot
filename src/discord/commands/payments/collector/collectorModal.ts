@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { updateProduct } from '@/discord/commands/payments/utils/updateProduct'
 import { validarValor } from '@/functions'
-import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
+import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   const { customId, guildId, channel, channelId, message, fields } = interaction
@@ -10,30 +10,6 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     const { type } = value
     let messageModal = fields.getTextInputValue('content')
-
-    if (key === 'paymentImport') {
-      const json = JSON.parse(messageModal.replace(/\\\\`/g, '`'))
-      delete json.id
-      console.log(json)
-      const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
-      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}`, {
-        id: data.id,
-        ...json
-      })
-      if (message !== null) {
-        await updateProduct.embed({
-          interaction,
-          message
-        })
-        await interaction.editReply({
-          embeds: [new EmbedBuilder({
-            title: 'Dados Atualizados!',
-            description: 'As informações do produto foram alteradas!'
-          })]
-        })
-      }
-      return
-    }
 
     if (messageModal.toLowerCase() === 'vazio') {
       messageModal = ''
