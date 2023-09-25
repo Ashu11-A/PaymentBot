@@ -409,6 +409,7 @@ Object.entries(system).map(([key, value]) => {
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
+      await buttonInteraction.deferReply({ ephemeral })
       if ('type' in value) {
         await Database.setDelete({
           interaction: buttonInteraction,

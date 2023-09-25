@@ -76,7 +76,6 @@ export class Database {
   }): Promise<void> {
     const { interaction, typeDB, pathDB, displayName, systemName, enabledType, otherSystemNames } = options
     const dbInstance = db[typeDB ?? 'guilds']
-    await interaction.deferReply({ ephemeral: true })
     const { guildId, user } = interaction
 
     try {
