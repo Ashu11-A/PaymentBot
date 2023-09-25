@@ -275,87 +275,89 @@ export class updateProduct {
     const futureTime = new Date(
       now.getTime() + 60000
     )
-    const messageCollector = await interaction.editReply({
+    await interaction.editReply({
       embeds: [new EmbedBuilder({
         title: 'Envie o arquivo Json.',
         description: `Tempo restante: <t:${Math.floor(
           futureTime.getTime() / 1000
         )}:R>`
       }).setColor('Blue')]
-    })
+    }).then(async () => {
+      const collector = new MessageCollector(interaction.channel as TextBasedChannel, {
+        max: 1,
+        time: 60000
+      })
 
-    const collector = new MessageCollector(interaction.channel as TextBasedChannel, {
-      max: 1,
-      time: 60000
-    })
+      collector.on('collect', async (subInteraction) => {
+        try {
+          const file = subInteraction.attachments.first()
+          console.log(file)
 
-    collector.on('collect', async (subInteraction) => {
-      try {
-        const file = subInteraction.attachments.first()
-        console.log(file)
+          if (file === undefined) {
+            await interaction.followUp({ ephemeral, content: 'Isso não me parece um arquivo!' })
+            await subInteraction.delete()
+            return
+          }
 
-        if (file === undefined) {
-          await messageCollector.edit({ content: 'Isso não me parece um arquivo!' })
-          await subInteraction.delete()
-          return
-        }
+          const fileName = file.name
+          if (!fileName.endsWith('.json')) {
+            await interaction.followUp({ ephemeral, content: 'O arquivo enviado não é um JSON válido.' })
+            await subInteraction.delete()
+            return
+          }
 
-        const fileName = file.name
-        if (!fileName.endsWith('.json')) {
-          await messageCollector.edit({ content: 'O arquivo enviado não é um JSON válido.' })
-          await subInteraction.delete()
-          return
-        }
+          const fileUrl = file.url
+          const response = await fetch(fileUrl)
 
-        const fileUrl = file.url
-        const response = await fetch(fileUrl)
+          if (response.ok) {
+            const jsonData = await response.json()
+            const cleanedJsonData = JSON.stringify(jsonData).replace(/\\\\`/g, '`')
 
-        if (response.ok) {
-          const jsonData = await response.json()
-          const cleanedJsonData = JSON.stringify(jsonData).replace(/\\\\`/g, '`')
-
-          await messageCollector.edit({
-            embeds: [new EmbedBuilder({
-              title: 'Arquivo JSON recebido!'
-            }).setColor('Green')]
-          })
-
-          await subInteraction.delete()
-          collector.stop()
-
-          const json = JSON.parse(cleanedJsonData)
-          delete json.id
-          console.log(json)
-          const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
-          await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}`, {
-            id: data.id,
-            ...json
-          })
-          if (message !== null) {
-            await updateProduct.embed({
-              interaction,
-              message
-            })
             await interaction.followUp({
               ephemeral,
               embeds: [new EmbedBuilder({
-                title: 'Dados Atualizados!',
-                description: 'As informações do produto foram alteradas!'
+                title: 'Arquivo JSON recebido!'
               }).setColor('Green')]
             })
+
+            await subInteraction.delete()
+            collector.stop()
+
+            const json = JSON.parse(cleanedJsonData)
+            delete json.id
+            console.log(json)
+            const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
+            await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}`, {
+              id: data.id,
+              ...json
+            })
+            if (message !== null) {
+              await updateProduct.embed({
+                interaction,
+                message
+              })
+              await interaction.followUp({
+                ephemeral,
+                embeds: [new EmbedBuilder({
+                  title: 'Dados Atualizados!',
+                  description: 'As informações do produto foram alteradas!'
+                }).setColor('Green')]
+              })
+            }
           }
+        } catch (error) {
+          console.error(error)
+          await interaction.followUp({ ephemeral, content: 'Ocorreu um erro ao coletar o arquivo.' })
+          await subInteraction.delete()
         }
-      } catch (error) {
-        console.error(error)
-        await messageCollector.edit('Ocorreu um erro ao coletar o arquivo.')
-        await subInteraction.delete()
-      }
-    })
-    collector.on('end', async () => {
-      await messageCollector.edit({
-        embeds: [new EmbedBuilder({
-          title: 'Coletor foi desativado.'
-        })]
+      })
+      collector.on('end', async () => {
+        await interaction.followUp({
+          ephemeral,
+          embeds: [new EmbedBuilder({
+            title: 'Coletor foi desativado.'
+          })]
+        })
       })
     })
   }
