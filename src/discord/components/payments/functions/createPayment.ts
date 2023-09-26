@@ -32,14 +32,20 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
     try {
       const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
       const product: string = data?.embed?.title
-      const amount = (data?.price).replace(',', '.')
+      let amount = data?.price
       const status = await db.system.get(`${guildId}.status`)
       const payments = await db.guilds.get(`${guildId}.payments`)
 
+      if (amount === undefined || parseFloat(amount?.replace(',', '.')) === 0) {
+        await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
+        return
+      }
       if (status?.systemPayments !== undefined && status.systemPayments === false) {
         await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
         return
       }
+
+      amount = amount.replace(',', '.')
 
       // Permissões de visualização do novo channel
       const permissionOverwrites = [

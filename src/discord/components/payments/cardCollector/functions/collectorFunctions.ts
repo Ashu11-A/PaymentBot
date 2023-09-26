@@ -37,7 +37,6 @@ export class PaymentFunction {
   }): Promise<void> {
     const { interaction } = options
     const { message, guildId, user } = interaction
-    await interaction.deferReply({ ephemeral: true })
 
     const embed = new EmbedBuilder()
       .setColor('Gold')
