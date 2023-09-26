@@ -6,7 +6,7 @@ import { updateCard } from '@/discord/components/payments'
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
   if (!interaction.inGuild()) return
 
-  const { customId, guildId, channel, message, fields, user } = interaction
+  const { customId, guildId, channel, message, fields } = interaction
   const { type } = value
   const messageModal = fields.getTextInputValue('content')
   if (customId === key) {
@@ -14,12 +14,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     // typeRedeem
     if (customId === 'paymentUserDirect') {
-      const [validador, message] = validarEmail(messageModal)
+      const [validador, messageInfo] = validarEmail(messageModal)
       if (validador) {
         const type = 2
-        await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, type)
+        await db.payments.set(`${guildId}.process.${message?.id}.typeRedeem`, type)
       } else {
-        await interaction.editReply({ content: message })
+        await interaction.editReply({ content: messageInfo })
         return
       }
     }
@@ -32,16 +32,16 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       }
     }
 
-    await db.payments.set(`${guildId}.process.${user.id}.${type}`, messageModal)
+    await db.payments.set(`${guildId}.process.${message?.id}.${type}`, messageModal)
     await channel?.messages.fetch(String(message?.id))
-      .then(async (message) => {
-        await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
-        await db.payments.get(`${guildId}.process.${user.id}`)
+      .then(async (msg) => {
+        await db.payments.set(`${guildId}.process.${msg.id}.properties.${customId}`, true)
+        await db.payments.get(`${guildId}.process.${msg.id}`)
           .then(async (data) => {
             await updateCard.embedAndButtons({
               interaction,
               data,
-              message
+              message: msg
             })
             await updateCard.displayData({
               interaction,

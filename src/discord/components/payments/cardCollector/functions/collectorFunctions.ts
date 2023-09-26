@@ -12,11 +12,11 @@ export class PaymentFunction {
     interaction: ButtonInteraction<CacheType>
   }): Promise<void> {
     const { interaction } = options
-    const { guildId, user, customId, message } = interaction
-    await db.payments.set(`${guildId}.process.${user.id}.typeRedeem`, 1)
-    await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}`, true)
-    await db.payments.delete(`${guildId}.process.${user.id}.properties.paymentUserDirect`)
-    const data = await db.payments.get(`${guildId}.process.${user.id}`)
+    const { guildId, customId, message } = interaction
+    await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 1)
+    await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
+    await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDirect`)
+    const data = await db.payments.get(`${guildId}.process.${message.id}`)
     await updateCard.embedAndButtons({
       interaction,
       data,
@@ -36,7 +36,7 @@ export class PaymentFunction {
     interaction: ButtonInteraction<CacheType>
   }): Promise<void> {
     const { interaction } = options
-    const { message, guildId, user } = interaction
+    const { message, guildId } = interaction
 
     const embed = new EmbedBuilder()
       .setColor('Gold')
@@ -76,7 +76,7 @@ export class PaymentFunction {
 
         try {
           await message.delete()
-          await db.payments.delete(`${guildId}.process.${user.id}`)
+          await db.payments.delete(`${guildId}.process.${message.id}`)
 
           setTimeout(() => {
             subInteraction?.channel?.delete().catch(console.error)
@@ -95,8 +95,8 @@ export class PaymentFunction {
     interaction: ButtonInteraction<CacheType>
   }): Promise<void> {
     const { interaction } = options
-    const { guildId, user, message, customId } = interaction
-    const { typeEmbed } = await db.payments.get(`${guildId}.process.${user.id}`)
+    const { guildId, message, customId } = interaction
+    const { typeEmbed } = await db.payments.get(`${guildId}.process.${message.id}`)
     const embed = new EmbedBuilder().setColor('Purple')
     if (typeEmbed === 0 || typeEmbed === undefined) {
       embed
@@ -123,8 +123,8 @@ export class PaymentFunction {
     }
     await interaction.editReply({ embeds: [embed] })
       .then(async () => {
-        await db.payments.set(`${guildId}.process.${user.id}.properties.${customId}_${typeEmbed}`, true)
-        const data = await db.payments.get(`${guildId}.process.${user.id}`)
+        await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}_${typeEmbed}`, true)
+        const data = await db.payments.get(`${guildId}.process.${message.id}`)
 
         await updateCard.embedAndButtons({
           interaction,
@@ -143,20 +143,20 @@ export class PaymentFunction {
     type: 'Add' | 'Rem'
   }): Promise<void> {
     const { interaction, type } = options
-    const { guildId, user, message } = interaction
+    const { guildId, message } = interaction
 
-    const { quantity } = await db.payments.get(`${guildId}.process.${user.id}`)
+    const { quantity } = await db.payments.get(`${guildId}.process.${message.id}`)
 
     if (type === 'Add') {
-      await db.payments.add(`${guildId}.process.${user.id}.quantity`, 1)
+      await db.payments.add(`${guildId}.process.${message.id}.quantity`, 1)
     } else if (type === 'Rem' && quantity > 1) {
-      await db.payments.sub(`${guildId}.process.${user.id}.quantity`, 1)
+      await db.payments.sub(`${guildId}.process.${message.id}.quantity`, 1)
     } else {
       await interaction.editReply({ content: '❌ | Não foi possivel completar a ação.' })
       return
     }
 
-    const data = await db.payments.get(`${guildId}.process.${user.id}`)
+    const data = await db.payments.get(`${guildId}.process.${message.id}`)
 
     await updateCard.embedAndButtons({
       interaction,
@@ -181,7 +181,7 @@ export class PaymentFunction {
     const { interaction, type } = options
     const { guildId, user, message } = interaction
 
-    let data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
+    let data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
 
     function stringNextBefore (numberType: number): string {
       let typeString
@@ -212,7 +212,7 @@ export class PaymentFunction {
           (data.typeEmbed === 1 && data?.typeRedeem !== undefined && data.typeRedeem >= 1) ||
           (data.typeEmbed === 2)
         ) {
-          const number = await db.payments.add(`${guildId}.process.${user.id}.typeEmbed`, 1)
+          const number = await db.payments.add(`${guildId}.process.${message.id}.typeEmbed`, 1)
           const typeString = stringNextBefore(number)
 
           await interaction.editReply({
@@ -237,7 +237,7 @@ export class PaymentFunction {
       }
     } else {
       if (data?.typeEmbed !== undefined && data.typeEmbed > 0) {
-        const number = await db.payments.sub(`${guildId}.process.${user.id}.typeEmbed`, 1)
+        const number = await db.payments.sub(`${guildId}.process.${message.id}.typeEmbed`, 1)
         const typeString = stringNextBefore(number)
 
         await interaction.editReply({
@@ -250,7 +250,7 @@ export class PaymentFunction {
         })
       }
     }
-    data = await db.payments.get(`${guildId}.process.${user.id}`) as Data
+    data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
     await updateCard.embedAndButtons({
       interaction,
       data,

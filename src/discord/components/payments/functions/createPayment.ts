@@ -101,7 +101,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
                 })
               ]
             })
-            await db.payments.set(`${guildId}.process.${user.id}`, {
+            await db.payments.set(`${guildId}.process.${msg.id}`, {
               userID: user.id,
               channelId: paymentChannel.id,
               messageId: msg.id,

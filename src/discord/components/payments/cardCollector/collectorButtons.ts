@@ -7,7 +7,7 @@ type CustomIdHandlers = Record<string, () => Promise<void> | void>
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
   if (!interaction.inGuild()) return
 
-  const { guildId, user, customId } = interaction
+  const { guildId, customId, message } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
 
   const customIdHandlers: CustomIdHandlers = {
@@ -30,7 +30,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       await interaction.deferReply({ ephemeral })
       await customIdHandler()
     } else {
-      const textValue = await db.payments.get(`${guildId}.process.${user.id}.${type}`)
+      const textValue = await db.payments.get(`${guildId}.process.${message.id}.${type}`)
       const modal = new ModalBuilder({ customId: key, title })
       const content = new ActionRowBuilder<TextInputBuilder>({
         components: [
