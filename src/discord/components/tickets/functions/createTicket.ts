@@ -1,20 +1,12 @@
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
 import { db } from '@/app'
+import { Discord } from '@/functions'
 
 export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | StringSelectMenuInteraction<CacheType>, about: string): Promise<void> {
-  const { guild, user } = interaction
+  const { guild, user, guildId } = interaction
   const nome = `🎫-${user.id}`
   const sendChannel = guild?.channels.cache.find((c) => c.name === nome)
   if (sendChannel !== undefined) {
-    const buttonChannel = new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder({
-        label: 'Ir ao Ticket',
-        emoji: '🎫',
-        url: `https://discord.com/channels/${guild?.id}/${sendChannel.id}`,
-        style: ButtonStyle.Link
-      })
-    )
-
     await interaction.reply({
       embeds: [
         new EmbedBuilder()
@@ -22,7 +14,14 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
           .setDescription('❌ | Você já possui um ticket aberto!')
           .setColor('Red')
       ],
-      components: [buttonChannel],
+      components: [
+        await Discord.buttonRedirect({
+          guildId,
+          channelId: sendChannel.id,
+          emoji: '🎫',
+          label: 'Ir ao Ticket'
+        })
+      ],
       ephemeral: true
     })
   } else {
@@ -53,14 +52,7 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
         permissionOverwrites,
         parent: ticket?.category
       })
-      const channel = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder({
-          label: 'Ir ao Ticket',
-          emoji: '🎫',
-          url: `https://discord.com/channels/${ch?.guild.id}/${ch?.id}`,
-          style: ButtonStyle.Link
-        })
-      )
+
       await interaction.editReply({
         embeds: [
           new EmbedBuilder()
@@ -68,7 +60,14 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
             .setDescription('✅ | Seu ticket foi criado com sucesso!')
             .setColor('Green')
         ],
-        components: [channel]
+        components: [
+          await Discord.buttonRedirect({
+            guildId,
+            channelId: ch?.id,
+            emoji: '🎫',
+            label: 'Ir ao Ticket'
+          })
+        ]
       })
       const embed = new EmbedBuilder()
         .setColor('Green')

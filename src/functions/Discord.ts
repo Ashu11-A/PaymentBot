@@ -1,41 +1,26 @@
 import { db } from '@/app'
-import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction } from 'discord.js'
+import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): any {
   return new ActionRowBuilder<Component>({ components })
 }
 
+// eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Discord {
-  private readonly interaction?: CommandInteraction<CacheType> | MessageInteraction | ButtonInteraction<CacheType>
-  public readonly guild?: Guild
-  public readonly type?: string
-  public readonly cause?: string
-  public readonly color?: ColorResolvable
-  public readonly infos?: any
-
-  constructor (
-    interaction: CommandInteraction<CacheType> | MessageInteraction | ButtonInteraction<CacheType>,
-    guild: Guild,
-    type: string,
-    cause: string,
-    color: ColorResolvable,
-    infos: any
-  ) {
-    this.interaction = interaction
-    this.guild = guild
-    this.type = type
-    this.cause = cause
-    this.color = color
-    this.infos = infos
-  }
-
   /**
      * Registra um log de aviso no canal de logs do Discord.
      * @param message A mensagem do log.
      */
-  public async sendLog (): Promise<void> {
+  public static async sendLog (options: {
+    interaction: CommandInteraction<CacheType> | MessageInteraction | ButtonInteraction<CacheType> | MessageInteraction | null
+    guild: Guild | null
+    type: string
+    cause: string
+    color: ColorResolvable
+    infos: any
+  }): Promise<void> {
     try {
-      const { interaction, guild, type, cause, color, infos } = this
+      const { interaction, guild, type, cause, color, infos } = options
 
       let title = ''
       let name = ''
@@ -90,18 +75,6 @@ export class Discord {
     }
   }
 
-  public static async logGenerator (
-    interaction: CommandInteraction<CacheType> | MessageInteraction | ButtonInteraction<CacheType>,
-    guild: Guild,
-    type: string,
-    cause: string,
-    color: ColorResolvable,
-    infos: any
-  ): Promise<void> {
-    const logsDiscord = new Discord(interaction, guild, type, cause, color, infos)
-    await logsDiscord.sendLog()
-  }
-
   public static async Permission (
     interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
     typePermission: PermissionResolvable,
@@ -114,14 +87,14 @@ export class Discord {
           content: '**❌ - Você não possui permissão para executar essa ação.**',
           ephemeral: true
         })
-        await Discord.logGenerator(
+        await Discord.sendLog({
           interaction,
           guild,
-          'warn',
-          typeLog ?? 'noPermission',
-          'Orange',
-          []
-        )
+          type: 'warn',
+          cause: typeLog ?? 'noPermission',
+          color: 'Orange',
+          infos: []
+        })
         return true
       }
       return false
@@ -129,5 +102,25 @@ export class Discord {
       console.error(`Erro ao verificar permissão: ${err}`)
       return false
     }
+  }
+
+  /**
+   * Cria um botão de Redirecionamento
+   */
+  public static async buttonRedirect (options: {
+    guildId?: string
+    channelId?: string
+    emoji?: string
+    label: string
+  }): Promise<ActionRowBuilder<ButtonBuilder>> {
+    const { guildId, channelId, emoji, label } = options
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(
+      new ButtonBuilder({
+        emoji,
+        label,
+        url: `https://discord.com/channels/${guildId}/${channelId}`,
+        style: ButtonStyle.Link
+      })
+    )
   }
 }

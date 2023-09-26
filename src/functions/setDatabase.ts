@@ -1,6 +1,7 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle, type ButtonInteraction } from 'discord.js'
+import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, type ButtonInteraction } from 'discord.js'
 import { db } from '@/app'
 import { setSystem } from '@/discord/commands/configs/utils/setSystem'
+import { Discord } from './Discord'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Database {
@@ -41,15 +42,18 @@ export class Database {
           author: { name: `${user.username}`, iconURL: `${user.displayAvatarURL()}` }
         }).setColor('Green')
 
-        const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-          new ButtonBuilder()
-            .setLabel(`Click aqui para ir ao ${data.name}`)
-            .setURL(`https://discord.com/channels/${guildId}/${data.id}`)
-            .setStyle(ButtonStyle.Link)
-        )
-
         if (data instanceof TextChannel) {
-          await interaction.editReply({ embeds: [embedCategoriaSet], components: [button] })
+          await interaction.editReply({
+            embeds: [embedCategoriaSet],
+            components: [
+              await Discord.buttonRedirect({
+                guildId,
+                channelId: data.id,
+                emoji: '🗨️',
+                label: `Click aqui para ir ao ${data.name}`
+              })
+            ]
+          })
         } else {
           await interaction.editReply({ embeds: [embedCategoriaSet] })
         }

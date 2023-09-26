@@ -3,7 +3,6 @@
 import { db } from '@/app'
 import { Event } from '@/discord/base'
 import { Discord } from '@/functions'
-import { type Guild, type MessageInteraction } from 'discord.js'
 
 export default new Event({
   name: 'messageDelete',
@@ -19,14 +18,14 @@ export default new Event({
       if (await db.messages.has(key)) {
         await db.messages.delete(key)
           .then(async () => {
-            await Discord.logGenerator(
-              interaction as MessageInteraction,
-              guild as Guild,
-              'warn',
-              'messageDelete',
-              'Red',
-              []
-            )
+            await Discord.sendLog({
+              interaction,
+              guild,
+              type: 'warn',
+              cause: 'messageDelete',
+              color: 'Red',
+              infos: []
+            })
             console.log(`Mensagem apagada em ${category}: ${id}`)
           })
       }

@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, ActionRowBuilder, Collection, ModalBuilder, TextInputStyle, type Attachment, AttachmentBuilder } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ButtonBuilder, ButtonStyle, ComponentType, codeBlock, type ColorResolvable, Collection, ModalBuilder, TextInputStyle, type Attachment, AttachmentBuilder } from 'discord.js'
 import { Command, Component } from '@/discord/base'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
 import { Discord } from '@/functions'
@@ -112,7 +112,7 @@ new Component({
   cache: 'cached',
   async run (interaction) {
     await interaction.deferReply({ ephemeral: true })
-    const { fields, guild, user, member } = interaction
+    const { fields, guild, guildId, user, member } = interaction
     const fieldNames = ['title', 'description', 'cor', 'cargo']
 
     const messageProps = members.get(member.id)
@@ -206,14 +206,12 @@ new Component({
                   .setColor('Green')
               ],
               components: [
-                new ActionRowBuilder<ButtonBuilder>().addComponents(
-                  new ButtonBuilder()
-                    .setLabel('Clique para ir ao canal')
-                    .setURL(
-                  `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-                    )
-                    .setStyle(ButtonStyle.Link)
-                )
+                await Discord.buttonRedirect({
+                  guildId,
+                  channelId: sendChannel.id,
+                  emoji: '🗨️',
+                  label: 'Ir ao canal'
+                })
               ]
             })
           })

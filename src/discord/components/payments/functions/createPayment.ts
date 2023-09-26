@@ -1,6 +1,7 @@
 import { db } from '@/app'
-import { type ButtonInteraction, type CacheType, ButtonBuilder, ActionRowBuilder, ButtonStyle, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
+import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
 import { updateCard } from './updateCard'
+import { Discord } from '@/functions'
 
 export async function createPayment (interaction: ButtonInteraction<CacheType>): Promise<void> {
   await interaction.deferReply({ ephemeral })
@@ -19,7 +20,12 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
           .setColor('Red')
       ],
       components: [
-        await buttonRedirect(guildId as string, sendChannel.id)
+        await Discord.buttonRedirect({
+          guildId,
+          channelId: sendChannel.id,
+          emoji: '🛒',
+          label: 'Ir ao carrinho'
+        })
       ]
     })
   } else {
@@ -81,7 +87,12 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
                   .setColor('Green')
               ],
               components: [
-                await buttonRedirect(guildId as string, paymentChannel.id)
+                await Discord.buttonRedirect({
+                  guildId,
+                  channelId: paymentChannel.id,
+                  emoji: '🛒',
+                  label: 'Ir ao carrinho'
+                })
               ]
             })
             await db.payments.set(`${guildId}.process.${user.id}`, {
@@ -110,15 +121,4 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       console.log(err)
     }
   }
-}
-
-async function buttonRedirect (guildId: string, channelId: string): Promise<ActionRowBuilder<ButtonBuilder>> {
-  return new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder({
-      emoji: '🛒',
-      label: 'Ir ao carrinho',
-      url: `https://discord.com/channels/${guildId}/${channelId}`,
-      style: ButtonStyle.Link
-    })
-  )
 }

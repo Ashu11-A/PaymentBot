@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, ActionRowBuilder, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel } from 'discord.js'
 import { Command } from '@/discord/base'
 import { db } from '@/app'
 import { ticketButtonsConfig, createTicket } from '@/discord/components/tickets'
@@ -56,14 +56,12 @@ new Command({
                   .setColor('Green')
               ],
               components: [
-                new ActionRowBuilder<ButtonBuilder>().addComponents(
-                  new ButtonBuilder()
-                    .setLabel('Clique para ir ao canal')
-                    .setURL(
-                `https://discord.com/channels/${guild?.id}/${sendChannel.id}`
-                    )
-                    .setStyle(ButtonStyle.Link)
-                )
+                await Discord.buttonRedirect({
+                  guildId,
+                  channelId: sendChannel.id,
+                  emoji: '🗨️',
+                  label: 'Ir ao canal'
+                })
               ]
             })
           })
