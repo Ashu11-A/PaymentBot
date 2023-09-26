@@ -7,6 +7,8 @@ import { Database } from '@/functions'
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
+  if (!interaction.inGuild()) return
+
   const { guildId, message, channelId, customId } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
   const havePermision = await Discord.Permission(interaction, 'Administrator')

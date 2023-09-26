@@ -5,6 +5,8 @@ import { PaymentFunction } from './functions/collectorFunctions'
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
 export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
+  if (!interaction.inGuild()) return
+
   const { guildId, user, customId } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
 

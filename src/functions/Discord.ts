@@ -108,8 +108,8 @@ export class Discord {
    * Cria um botão de Redirecionamento
    */
   public static async buttonRedirect (options: {
-    guildId?: string
-    channelId?: string
+    guildId: string | null
+    channelId: string | null
     emoji?: string
     label: string
   }): Promise<ActionRowBuilder<ButtonBuilder>> {

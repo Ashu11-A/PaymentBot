@@ -4,7 +4,7 @@ import { updateCard } from './updateCard'
 import { Discord } from '@/functions'
 
 export async function createPayment (interaction: ButtonInteraction<CacheType>): Promise<void> {
-  await interaction.deferReply({ ephemeral })
+  if (!interaction.inGuild()) return
 
   const { channelId, guild, guildId, user, message } = interaction
   const name = `🛒-${user.id}`

@@ -11,7 +11,6 @@ export async function sendEmbed (interaction: CommandInteraction<'cached'>, chan
     thumbnail: { url: icon },
     image: { url: icon }
   }).setColor('Blue')
-
   const embedJson = embed.toJSON()
 
   await channel.send({ embeds: [embed.addFields({ name: '💵 | Preço:', value: 'R$0,00' })] })

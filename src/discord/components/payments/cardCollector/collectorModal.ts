@@ -4,6 +4,8 @@ import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { updateCard } from '@/discord/components/payments'
 
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
+  if (!interaction.inGuild()) return
+
   const { customId, guildId, channel, message, fields, user } = interaction
   const { type } = value
   const messageModal = fields.getTextInputValue('content')
