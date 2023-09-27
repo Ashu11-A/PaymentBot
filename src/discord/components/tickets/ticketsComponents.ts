@@ -2,6 +2,7 @@ import { Component } from '@/discord/base'
 import collectorButtons from './ticketsCollector/collectorButtons'
 import collectorModal from './ticketsCollector/collectorModal'
 import { deleteSelect, collectorSelect } from './ticketsCollector/collectorSelect'
+import { Discord } from '@/functions'
 
 const buttonsModals = {
   ticketSetRole: {
@@ -55,25 +56,33 @@ const buttonsModals = {
   }
 }
 
-Object.entries(buttonsModals).map(([key, value]) => {
-  return new Component({
+Object.entries(buttonsModals).map(async ([key, value]) => {
+  await Discord.registerComponent({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
       if (value.button || !value.modal) {
+        const start = Date.now()
         await collectorButtons(buttonInteraction, key, value)
+        const end = Date.now()
+        const timeSpent = (end - start) / 1000 + 's'
+        console.log('Botão: ' + key, timeSpent)
       }
     }
   })
 })
 
-Object.entries(buttonsModals).map(([key, value]) => {
-  return new Component({
+Object.entries(buttonsModals).map(async ([key, value]) => {
+  await Discord.registerComponent({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {
       if (!value.button || value.modal) {
+        const start = Date.now()
         await collectorModal(modalInteraction, key, value)
+        const end = Date.now()
+        const timeSpent = (end - start) / 1000 + 's'
+        console.log('Modal: ' + key, timeSpent)
       }
     }
   })

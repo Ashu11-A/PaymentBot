@@ -1,6 +1,7 @@
 import { Component } from '@/discord/base'
 import collectorButtons from './cardCollector/collectorButtons'
 import collectorModal from './cardCollector/collectorModal'
+import { Discord } from '@/functions'
 
 const buttons = {
   paymentUserDirect: {
@@ -48,8 +49,8 @@ const buttons = {
 }
 
 // eslint-disable-next-line array-callback-return
-Object.entries(buttons).map(([key, value]) => {
-  new Component({
+Object.entries(buttons).map(async ([key, value]) => {
+  await Discord.registerComponent({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {
@@ -59,7 +60,7 @@ Object.entries(buttons).map(([key, value]) => {
       }
     }
   })
-  new Component({
+  await Discord.registerComponent({
     customId: key,
     type: 'Modal',
     async run (modalInteraction) {

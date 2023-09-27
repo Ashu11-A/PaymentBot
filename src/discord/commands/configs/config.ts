@@ -404,8 +404,8 @@ new Command({
   }
 })
 
-Object.entries(system).map(([key, value]) => {
-  return new Component({
+Object.entries(system).map(async ([key, value]) => {
+  await Discord.registerComponent({
     customId: key,
     type: 'Button',
     async run (buttonInteraction) {

@@ -1,4 +1,5 @@
 import { db } from '@/app'
+import { Component } from '@/discord/base'
 import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle } from 'discord.js'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): any {
@@ -122,5 +123,27 @@ export class Discord {
         style: ButtonStyle.Link
       })
     )
+  }
+
+  /**
+   * Calcula o tempo que demora para um component responder.
+   */
+  public static async registerComponent (options: {
+    type: 'Button' | 'StringSelect' | 'RoleSelect' | 'ChannelSelect' | 'UserSelect' | 'MentionableSelect' | 'Modal'
+    customId: string
+    run: (interaction: any) => any
+  }): Promise<Component> {
+    const { customId, type, run: runCallback } = options
+    return new Component({
+      customId,
+      type,
+      async run (interaction: any) {
+        const start = Date.now()
+        await runCallback(interaction)
+        const end = Date.now()
+        const timeSpent = (end - start) / 1000 + 's'
+        console.log(type, interaction.customId, timeSpent)
+      }
+    })
   }
 }
