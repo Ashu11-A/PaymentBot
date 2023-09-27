@@ -1,7 +1,7 @@
 import { createClient } from './discord/base'
 import { log } from './settings'
 import Loggings from '@/controllers/Loggings'
-import { LogsDiscord, dirCR } from '@/functions'
+import { dirCR } from '@/functions'
 import { QuickDB } from 'quick.db'
 import { join } from 'path'
 
@@ -27,4 +27,4 @@ const db = {
   tokens: new QuickDB<any>({ filePath: join(rootDir, 'database/tokens.sqlite'), table: 'tokens' })
 }
 
-export { client, core, LogsDiscord, db }
+export { client, core, db }

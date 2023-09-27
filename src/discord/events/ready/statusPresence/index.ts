@@ -10,7 +10,6 @@ async function updateStatus (ip: string, type: PresenceStatusData): Promise<void
         ? `Online | Players: ${res.data.players.online ?? 0}/${res.data.players.max ?? 0}`
         : 'Offline'
     }`
-    console.log(`[ 'Status' ] - "${formatRes}".`)
     client?.user?.setPresence({
       activities: [{ name: formatRes, type: ActivityType.Playing }],
       status: `${type ?? 'online'}`
