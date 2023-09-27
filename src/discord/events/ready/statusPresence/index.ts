@@ -43,13 +43,11 @@ export default async function statusPresence (): Promise<void> {
           currentMessage = 0
           await db.messages.set(`${guild.id}.system.status.currentMessage`, 0)
         }
-        console.log(messages, currentMessage)
         const newStatus = messages[currentMessage]
         client?.user?.setPresence({
           activities: [{ name: newStatus, type: ActivityType.Playing }],
           status: type
         })
-        console.log(`[ 'Status' ] - "${newStatus}".`)
         await db.messages.add(`${guild.id}.system.status.currentMessage`, 1)
       }
     }
