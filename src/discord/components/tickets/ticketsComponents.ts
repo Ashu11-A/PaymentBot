@@ -62,11 +62,7 @@ Object.entries(buttonsModals).map(async ([key, value]) => {
     type: 'Button',
     async run (buttonInteraction) {
       if (value.button || !value.modal) {
-        const start = Date.now()
         await collectorButtons(buttonInteraction, key, value)
-        const end = Date.now()
-        const timeSpent = (end - start) / 1000 + 's'
-        console.log('Botão: ' + key, timeSpent)
       }
     }
   })
@@ -78,11 +74,7 @@ Object.entries(buttonsModals).map(async ([key, value]) => {
     type: 'Modal',
     async run (modalInteraction) {
       if (!value.button || value.modal) {
-        const start = Date.now()
         await collectorModal(modalInteraction, key, value)
-        const end = Date.now()
-        const timeSpent = (end - start) / 1000 + 's'
-        console.log('Modal: ' + key, timeSpent)
       }
     }
   })
