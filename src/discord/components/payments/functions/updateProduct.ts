@@ -64,8 +64,9 @@ export class updateProduct {
   public static async buttonsConfig (options: {
     interaction: CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
     message: Message<boolean>
+    switchBotton?: boolean
   }): Promise<void> {
-    const { interaction, message } = options
+    const { interaction, message, switchBotton } = options
     const { guildId, channelId } = interaction
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
 
@@ -180,11 +181,13 @@ export class updateProduct {
       const { custom_id: customID } = Object(value.toJSON())
       if (customID === 'paymentStatus') {
         if (data?.status !== undefined && data?.status === true) {
-          value.setLabel('Desativar')
-          value.setStyle(ButtonStyle.Secondary)
+          value.setLabel('Ativado')
+            .setEmoji('✅')
+            .setStyle(ButtonStyle.Primary)
         } else {
-          value.setLabel('Ativar')
-          value.setStyle(ButtonStyle.Primary)
+          value.setLabel('Desativado')
+            .setEmoji('❌')
+            .setStyle(ButtonStyle.Secondary)
         }
       }
     }
@@ -193,6 +196,16 @@ export class updateProduct {
     await message.edit({ ...clearData })
 
     await message.edit({ components: [row1, row2, row3, row4] })
+
+    if (switchBotton === true) {
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: 'Modo de Edição Ativado.'
+          }).setColor('Green')
+        ]
+      })
+    }
   }
 
   /**
@@ -233,9 +246,14 @@ export class updateProduct {
 
     const clearData = { components: [] }
 
-    await message.edit({ ...clearData })
-
-    await message.edit({ components: [row1] })
+    await message.edit({ ...clearData, components: [row1] })
+    await interaction.editReply({
+      embeds: [
+        new EmbedBuilder({
+          title: 'Modo de Produção Ativado.'
+        }).setColor('Green')
+      ]
+    })
   }
 
   /**
@@ -360,5 +378,37 @@ export class updateProduct {
         })
       })
     })
+  }
+
+  /**
+   * name
+   */
+  public static async paymentStatus (options: {
+    interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>
+    message: Message<boolean>
+  }): Promise<void> {
+    const { interaction, message } = options
+    const { guildId, channelId } = interaction
+    let { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
+    if (status === undefined || status === false) {
+      status = true
+    } else {
+      status = false
+    }
+
+    await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
+    await updateProduct.buttonsConfig({ interaction, message })
+    const embed = new EmbedBuilder({
+      title: `Produto ${status === true ? 'Ativado' : 'Desativado'} com sucesso.`
+    })
+    if (status === true) {
+      embed.setColor('Green')
+    } else {
+      embed.setColor('Red')
+    }
+    await interaction.editReply({
+      embeds: [embed]
+    }
+    )
   }
 }

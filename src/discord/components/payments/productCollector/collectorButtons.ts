@@ -16,18 +16,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   const customIdHandlers: CustomIdHandlers = {
     paymentSave: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
-    paymentConfig: async () => { await updateProduct.buttonsConfig({ interaction, message }) },
-    paymentStatus: async () => {
-      let { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-      if (status === undefined || status === false) {
-        status = true
-      } else {
-        status = false
-      }
-
-      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
-      await updateProduct.buttonsConfig({ interaction, message })
-    },
+    paymentConfig: async () => { await updateProduct.buttonsConfig({ interaction, message, switchBotton: true }) },
+    paymentStatus: async () => { await updateProduct.paymentStatus({ interaction, message }) },
     paymentBuy: async () => { await createPayment(interaction) },
     paymentSetEstoque: async () => {
       await Database.setDelete({
@@ -39,10 +29,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'switch',
         otherSystemNames: ['paymentSetCtrlPanel']
       })
-      await updateProduct.buttonsConfig({
-        interaction,
-        message
-      })
+      await updateProduct.buttonsConfig({ interaction, message })
     },
     paymentSetCtrlPanel: async () => {
       await Database.setDelete({
