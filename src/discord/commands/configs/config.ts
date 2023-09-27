@@ -5,27 +5,13 @@ import {
   type CategoryChannel,
   type TextChannel
 } from 'discord.js'
-import { Command, Component } from '@/discord/base'
+import { Command } from '@/discord/base'
 import { Database } from '@/functions'
 import { db } from '@/app'
 import { setSystem } from '@/discord/commands/configs/utils/setSystem'
-import { modelPresence, setPresence, delModalPresence, delPresence } from './utils/Presence'
+import { modelPresence, delPresence } from './utils/Presence'
 import { sendEmbed } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
-
-const system = {
-  systemTicket: { info: 'Tickets' },
-  systemPayments: { info: 'Pagamentos' },
-  systemWelcomer: { info: 'Boas vindas' },
-  systemStatus: { info: 'Status' },
-  systemStatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
-  systemStatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
-  systemLogs: { info: 'Logs' },
-  systemStatusOnline: { type: 'systemStatusType', info: 'online' },
-  systemStatusAusente: { type: 'systemStatusType', info: 'idle' },
-  systemStatusNoPerturbe: { type: 'systemStatusType', info: 'dnd' },
-  systemStatusInvisível: { type: 'systemStatusType', info: 'invisible' }
-}
 
 new Command({
   name: 'config',
@@ -401,60 +387,5 @@ new Command({
         })
       }
     }
-  }
-})
-
-Object.entries(system).map(async ([key, value]) => {
-  await Discord.registerComponent({
-    customId: key,
-    type: 'Button',
-    async run (buttonInteraction) {
-      await buttonInteraction.deferReply({ ephemeral })
-      if ('type' in value) {
-        await Database.setDelete({
-          interaction: buttonInteraction,
-          systemName: value.type,
-          pathDB: 'status',
-          displayName: key,
-          typeDB: 'system',
-          enabledType: value.info
-        })
-      } else if ('remove' in value) {
-        await Database.setDelete({
-          interaction: buttonInteraction,
-          systemName: key,
-          pathDB: 'status',
-          displayName: value.info,
-          typeDB: 'system',
-          enabledType: 'switch',
-          otherSystemNames: [value.remove]
-        })
-      } else {
-        await Database.setDelete({
-          interaction: buttonInteraction,
-          systemName: key,
-          pathDB: 'status',
-          displayName: value.info,
-          typeDB: 'system',
-          enabledType: 'switch'
-        })
-      }
-    }
-  })
-})
-
-new Component({
-  customId: 'MessagePresence',
-  type: 'Modal',
-  async run (modalInteraction) {
-    await setPresence(modalInteraction)
-  }
-})
-
-new Component({
-  customId: 'messagesStatusArray',
-  type: 'StringSelect',
-  async run (selectInteraction) {
-    await delModalPresence(selectInteraction)
   }
 })
