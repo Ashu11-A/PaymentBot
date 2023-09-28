@@ -242,7 +242,7 @@ export class updateProduct {
           ...message.components
         ]
         components[rowNumber - 1] = updatedRow
-        // components[0] = row1.toJSON()
+        components[0] = row1.toJSON()
 
         await message.edit({ components })
       }
