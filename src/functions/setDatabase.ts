@@ -104,7 +104,7 @@ export class Database {
       if (otherSystemNames !== undefined) {
         for (const otherSystem of otherSystemNames) {
           const key = `${guildId}.${pathDB}.${otherSystem}`
-          console.log(`Deletando database: ${key}`)
+          // console.log(`Deletando database: ${key}`)
           await dbInstance.delete(key)
           const result = await dbInstance.get(key)
           if (result !== undefined) {
@@ -113,7 +113,7 @@ export class Database {
         }
       }
 
-      console.log(`Dados atuais do System: ${typeDB ?? 'system'}`, await dbInstance.get(`${guildId}.${pathDB}`))
+      // console.log(`Dados atuais do System: ${typeDB ?? 'system'}`, await dbInstance.get(`${guildId}.${pathDB}`))
       await setSystem(interaction)
 
       const statusMsg = datatype

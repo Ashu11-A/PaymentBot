@@ -5,6 +5,8 @@ import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type Comman
 
 export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: string): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
   const { guildId, channelId } = interaction
+  const data = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message.id}`)
+
   const rowButtons = [
     new ButtonBuilder()
       .setCustomId(`${type}_SetName`)
@@ -30,11 +32,9 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
 
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...rowButtons)
 
-  const { properties } = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message.id}`)
-
   for (const value of rowButtons) {
     const { custom_id: customID } = Object(value.toJSON())
-    if (properties !== undefined && properties[customID] !== undefined) {
+    if (data?.properties !== undefined && data?.properties[customID] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)

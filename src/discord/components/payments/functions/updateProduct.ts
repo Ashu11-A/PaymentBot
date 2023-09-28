@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { createRowEdit } from '@/discord/events/SUEE/utils/createRowEdit'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, EmbedBuilder, MessageCollector, type TextBasedChannel, AttachmentBuilder } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, EmbedBuilder, MessageCollector, type TextBasedChannel, AttachmentBuilder, type APIActionRowComponent, type APIButtonComponent } from 'discord.js'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateProduct {
@@ -59,152 +59,209 @@ export class updateProduct {
   }
 
   /**
-   * Atualiza/Cria os botões de configuração do Produto
-   */
+ * Atualiza/Cria os botões de configuração do Produto
+ */
   public static async buttonsConfig (options: {
-    interaction: CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
+    interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
     message: Message<boolean>
     switchBotton?: boolean
   }): Promise<void> {
     const { interaction, message, switchBotton } = options
-    const { guildId, channelId } = interaction
+    const { guildId, channelId, customId } = interaction
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
 
     const [row1] = await createRowEdit(interaction, message, 'payments')
 
-    const row2Buttons = [
-      new ButtonBuilder({
-        customId: 'paymentSetPrice',
-        label: 'Preço',
-        emoji: '💰'
-      }),
-      new ButtonBuilder({
-        customId: 'paymentSetRole',
-        label: 'Add Cargo',
-        emoji: '🛂'
-      }),
-      new ButtonBuilder({
-        customId: 'paymentExport',
-        label: 'Exportar',
-        emoji: '📤'
-      }),
-      new ButtonBuilder({
-        customId: 'paymentImport',
-        label: 'Importar',
-        emoji: '📥'
-      })
-    ]
+    function createSecondaryRow (): ActionRowBuilder<ButtonBuilder> {
+      const row2Buttons = [
+        new ButtonBuilder({
+          customId: 'paymentSetPrice',
+          label: 'Preço',
+          emoji: '💰'
+        }),
+        new ButtonBuilder({
+          customId: 'paymentSetRole',
+          label: 'Add Cargo',
+          emoji: '🛂'
+        }),
+        new ButtonBuilder({
+          customId: 'paymentExport',
+          label: 'Exportar',
+          emoji: '📤'
+        }),
+        new ButtonBuilder({
+          customId: 'paymentImport',
+          label: 'Importar',
+          emoji: '📥'
+        })
+      ]
 
-    const redeemSystem = [
-      new ButtonBuilder({
-        customId: 'paymentSetEstoque',
-        label: 'Estoque',
-        emoji: '🗃️',
-        style: ButtonStyle.Secondary
-      }),
-      new ButtonBuilder({
-        customId: 'paymentAddEstoque',
-        label: 'Add Estoque',
-        emoji: '➕',
-        style: ButtonStyle.Secondary,
-        disabled: true
-      }),
-      new ButtonBuilder({
-        customId: 'paymentSetCtrlPanel',
-        label: 'CrtlPanel',
-        emoji: '💻',
-        style: ButtonStyle.Secondary
-      }),
-      new ButtonBuilder({
-        customId: 'paymentAddCoins',
-        label: 'Moedas',
-        emoji: '🪙',
-        style: ButtonStyle.Secondary,
-        disabled: true
-      })
-    ]
-
-    const footerBar = [
-      new ButtonBuilder({
-        customId: 'paymentSave',
-        label: 'Salvar',
-        emoji: '✔️',
-        style: ButtonStyle.Success
-      }),
-      new ButtonBuilder({
-        customId: 'paymentStatus',
-        label: 'Ativar/Desativar'
-      }),
-      new ButtonBuilder({
-        customId: 'paymentDelete',
-        label: 'Apagar Produto',
-        emoji: '✖️',
-        style: ButtonStyle.Danger
-      })
-    ]
-
-    const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
-    const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
-    const row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(...footerBar)
-
-    for (const value of redeemSystem) {
-      const { custom_id: customID } = Object(value.toJSON())
-      if (data?.properties !== undefined && data.properties[customID] !== undefined && data.properties[customID] === true) {
-        value.setStyle(ButtonStyle.Primary)
-      } else {
-        value.setStyle(ButtonStyle.Secondary)
-      }
-
-      if (customID === 'paymentAddEstoque' && data?.properties !== undefined && data.properties?.paymentSetEstoque === true) {
-        value.setDisabled(false)
-      }
-      if (customID === 'paymentAddCoins' && data?.properties !== undefined && data.properties?.paymentSetCtrlPanel === true) {
-        value.setDisabled(false)
-        if (data?.coins !== undefined && data?.coins !== '') {
+      let componetUpdate: string = ''
+      for (const value of row2Buttons) {
+        const { custom_id: customID } = Object(value.toJSON())
+        if (data?.properties?.[customID] !== undefined) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
+        componetUpdate += (customID + ' ')
       }
+      console.log('Atualizando os componentes: ', componetUpdate)
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
     }
 
-    for (const value of row2Buttons) {
-      const { custom_id: customID } = Object(value.toJSON())
-      if (data?.properties !== undefined && data.properties[customID] !== undefined) {
-        value.setStyle(ButtonStyle.Primary)
-      } else {
-        value.setStyle(ButtonStyle.Secondary)
-      }
-    }
-
-    for (const value of footerBar) {
-      const { custom_id: customID } = Object(value.toJSON())
-      if (customID === 'paymentStatus') {
-        if (data?.status !== undefined && data?.status === true) {
-          value.setLabel('Ativado')
-            .setEmoji('✅')
-            .setStyle(ButtonStyle.Primary)
+    function createThirdRow (): ActionRowBuilder<ButtonBuilder> {
+      const redeemSystem = [
+        new ButtonBuilder({
+          customId: 'paymentSetEstoque',
+          label: 'Estoque',
+          emoji: '🗃️',
+          style: ButtonStyle.Secondary
+        }),
+        new ButtonBuilder({
+          customId: 'paymentAddEstoque',
+          label: 'Add Estoque',
+          emoji: '➕',
+          style: ButtonStyle.Secondary,
+          disabled: true
+        }),
+        new ButtonBuilder({
+          customId: 'paymentSetCtrlPanel',
+          label: 'CrtlPanel',
+          emoji: '💻',
+          style: ButtonStyle.Secondary
+        }),
+        new ButtonBuilder({
+          customId: 'paymentAddCoins',
+          label: 'Moedas',
+          emoji: '🪙',
+          style: ButtonStyle.Secondary,
+          disabled: true
+        })
+      ]
+      let componetUpdate: string = ''
+      for (const value of redeemSystem) {
+        const { custom_id: customID } = Object(value.toJSON())
+        if (data?.properties[customID] === true) {
+          value.setStyle(ButtonStyle.Primary)
         } else {
-          value.setLabel('Desativado')
-            .setEmoji('❌')
-            .setStyle(ButtonStyle.Secondary)
+          value.setStyle(ButtonStyle.Secondary)
+        }
+
+        if (customID === 'paymentAddEstoque' && data?.properties?.paymentSetEstoque === true) {
+          value.setDisabled(false)
+        }
+        if (customID === 'paymentAddCoins' && data?.properties?.paymentSetCtrlPanel === true) {
+          value.setDisabled(false)
+          if (data?.coins !== undefined && data?.coins !== '') {
+            value.setStyle(ButtonStyle.Primary)
+          } else {
+            value.setStyle(ButtonStyle.Secondary)
+          }
+        }
+        componetUpdate += (customID + ' ')
+      }
+      console.log('Atualizando os componentes: ', componetUpdate)
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
+    }
+
+    function createFooterRow (): ActionRowBuilder<ButtonBuilder> {
+      const footerBar = [
+        new ButtonBuilder({
+          customId: 'paymentSave',
+          label: 'Salvar',
+          emoji: '✔️',
+          style: ButtonStyle.Success
+        }),
+        new ButtonBuilder({
+          customId: 'paymentStatus',
+          label: 'Ativar/Desativar'
+        }),
+        new ButtonBuilder({
+          customId: 'paymentDelete',
+          label: 'Apagar Produto',
+          emoji: '✖️',
+          style: ButtonStyle.Danger
+        })
+      ]
+      let componetUpdate: string = ''
+      for (const value of footerBar) {
+        const { custom_id: customID } = Object(value.toJSON())
+        if (customID === 'paymentStatus') {
+          if (data?.status === true) {
+            value.setLabel('Ativado')
+              .setEmoji('✅')
+              .setStyle(ButtonStyle.Primary)
+          } else {
+            value.setLabel('Desativado')
+              .setEmoji('❌')
+              .setStyle(ButtonStyle.Secondary)
+          }
+        }
+        componetUpdate += (customID + ' ')
+      }
+      console.log('Atualizando os componentes: ', componetUpdate)
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(...footerBar)
+    }
+
+    // Mapeia o customId para o número da fileira
+    const buttonRowMap: any = {
+      paymentSetPrice: 2,
+      paymentSetRole: 2,
+      paymentExport: 2,
+      paymentImport: 2,
+      paymentSetEstoque: 3,
+      paymentAddEstoque: 3,
+      paymentSetCtrlPanel: 3,
+      paymentAddCoins: 3,
+      paymentSave: 4,
+      paymentStatus: 4,
+      paymentDelete: 4
+    }
+
+    const rowNumber: number | undefined = buttonRowMap[customId]
+
+    if (typeof rowNumber === 'number') {
+    // Chama a função apropriada com base no número da fileira
+      let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
+
+      switch (rowNumber) {
+        case 2:
+          updatedRow = createSecondaryRow().toJSON()
+          break
+        case 3:
+          updatedRow = createThirdRow().toJSON()
+          break
+        case 4:
+          updatedRow = createFooterRow().toJSON()
+          break
+      }
+      if (updatedRow !== null) {
+        // Atualize apenas a fileira relevante
+        const components: any[] = [
+          ...message.components
+        ]
+        components[rowNumber - 1] = updatedRow
+        // components[0] = row1.toJSON()
+
+        await message.edit({ components })
+      }
+    } else {
+      if (message.components[1] === undefined) {
+        const row2 = createSecondaryRow()
+        const row3 = createThirdRow()
+        const row4 = createFooterRow()
+        await message.edit({ components: [row1, row2, row3, row4] })
+        if (switchBotton === true) {
+          await interaction.editReply({
+            embeds: [
+              new EmbedBuilder({
+                title: 'Modo de Edição Ativado.'
+              }).setColor('Green')
+            ]
+          })
         }
       }
-    }
-
-    const clearData = { components: [] }
-    await message.edit({ ...clearData })
-
-    await message.edit({ components: [row1, row2, row3, row4] })
-
-    if (switchBotton === true) {
-      await interaction.editReply({
-        embeds: [
-          new EmbedBuilder({
-            title: 'Modo de Edição Ativado.'
-          }).setColor('Green')
-        ]
-      })
     }
   }
 
@@ -384,7 +441,7 @@ export class updateProduct {
    * name
    */
   public static async paymentStatus (options: {
-    interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>
+    interaction: ButtonInteraction<CacheType>
     message: Message<boolean>
   }): Promise<void> {
     const { interaction, message } = options
