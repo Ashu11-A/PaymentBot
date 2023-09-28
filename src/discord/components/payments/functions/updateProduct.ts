@@ -62,15 +62,19 @@ export class updateProduct {
  * Atualiza/Cria os botões de configuração do Produto
  */
   public static async buttonsConfig (options: {
-    interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
+    interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<'cached'>
     message: Message<boolean>
     switchBotton?: boolean
   }): Promise<void> {
     const { interaction, message, switchBotton } = options
-    const { guildId, channelId, customId } = interaction
+    const { guildId, channelId } = interaction
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-
     const [row1] = await createRowEdit(interaction, message, 'payments')
+
+    let customId: string | undefined
+    if (interaction.isButton() || interaction.isModalSubmit()) {
+      customId = interaction.customId
+    }
 
     function createSecondaryRow (): ActionRowBuilder<ButtonBuilder> {
       const row2Buttons = [
@@ -142,7 +146,7 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
         const { custom_id: customID } = Object(value.toJSON())
-        if (data?.properties[customID] === true) {
+        if (data?.properties?.[customID] === true) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
@@ -219,48 +223,52 @@ export class updateProduct {
       paymentDelete: 4
     }
 
-    const rowNumber: number | undefined = buttonRowMap[customId]
+    if (message.components[1] !== undefined || (customId !== undefined && customId !== 'paymentConfig')) {
+      const rowNumber: number | undefined = customId === undefined ? undefined : buttonRowMap[customId]
 
-    if (typeof rowNumber === 'number') {
-    // Chama a função apropriada com base no número da fileira
-      let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
+      if (typeof rowNumber === 'number') {
+        // Chama a função apropriada com base no número da fileira
+        let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
 
-      switch (rowNumber) {
-        case 2:
-          updatedRow = createSecondaryRow().toJSON()
-          break
-        case 3:
-          updatedRow = createThirdRow().toJSON()
-          break
-        case 4:
-          updatedRow = createFooterRow().toJSON()
-          break
-      }
-      if (updatedRow !== null) {
+        switch (rowNumber) {
+          case 2:
+            updatedRow = createSecondaryRow().toJSON()
+            break
+          case 3:
+            updatedRow = createThirdRow().toJSON()
+            break
+          case 4:
+            updatedRow = createFooterRow().toJSON()
+            break
+        }
+        if (updatedRow !== null) {
         // Atualize apenas a fileira relevante
-        const components: any[] = [
-          ...message.components
-        ]
-        components[rowNumber - 1] = updatedRow
-        components[0] = row1.toJSON()
+          const components: any[] = [
+            ...message.components
+          ]
+          components[rowNumber - 1] = updatedRow
+          components[0] = row1.toJSON()
 
-        await message.edit({ components })
+          await message.edit({ components })
+        }
+      } else {
+        await interaction.editReply({
+          content: '❌ | Ocorreu um erro!'
+        })
       }
     } else {
-      if (message.components[1] === undefined) {
-        const row2 = createSecondaryRow()
-        const row3 = createThirdRow()
-        const row4 = createFooterRow()
-        await message.edit({ components: [row1, row2, row3, row4] })
-        if (switchBotton === true) {
-          await interaction.editReply({
-            embeds: [
-              new EmbedBuilder({
-                title: 'Modo de Edição Ativado.'
-              }).setColor('Green')
-            ]
-          })
-        }
+      const row2 = createSecondaryRow()
+      const row3 = createThirdRow()
+      const row4 = createFooterRow()
+      await message.edit({ components: [row1, row2, row3, row4] })
+      if (switchBotton === true) {
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: 'Modo de Edição Ativado.'
+            }).setColor('Green')
+          ]
+        })
       }
     }
   }
