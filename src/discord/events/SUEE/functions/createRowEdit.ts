@@ -3,7 +3,7 @@
 import { db } from '@/app'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, type StringSelectMenuInteraction } from 'discord.js'
 
-export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: string): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
+export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: string): Promise<ActionRowBuilder<ButtonBuilder>> {
   const { guildId, channelId } = interaction
   const data = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message.id}`)
 
@@ -29,9 +29,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       .setLabel('Cor')
       .setEmoji('🎨')
   ]
-
-  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...rowButtons)
-
+  let componetUpdate: string = ''
   for (const value of rowButtons) {
     const { custom_id: customID } = Object(value.toJSON())
     if (data?.properties !== undefined && data?.properties[customID] !== undefined) {
@@ -39,7 +37,8 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
+    componetUpdate += (customID + ' ')
   }
-
-  return [row]
+  console.log('Atualizando os componentes: ', componetUpdate)
+  return new ActionRowBuilder<ButtonBuilder>().addComponents(...rowButtons)
 }

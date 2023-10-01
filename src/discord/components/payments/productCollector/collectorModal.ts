@@ -33,7 +33,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         message: msg
       })
         .then(async () => {
-          await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
+          await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
         })
     })
     .catch(async (err: Error) => {

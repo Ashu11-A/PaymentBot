@@ -1,4 +1,3 @@
-import { Component } from '@/discord/base'
 import collectorButtons from './cardCollector/collectorButtons'
 import collectorModal from './cardCollector/collectorModal'
 import { Discord } from '@/functions'

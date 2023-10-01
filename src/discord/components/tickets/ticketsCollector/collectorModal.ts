@@ -113,7 +113,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
             await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
               .then(async () => {
                 await ticketButtonsConfig(interaction, msg)
-                await interaction.editReply({ content: `${type} alterado para ${messageModal}` })
+                await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
               })
           })
       })

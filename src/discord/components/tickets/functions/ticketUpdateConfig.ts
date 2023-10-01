@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { createRowEdit } from '@/discord/events/SUEE/utils/createRowEdit'
+import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
 export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
@@ -8,7 +8,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
   console.log(data)
 
-  const [embedEdit] = await createRowEdit(interaction, message, 'ticket')
+  const embedEdit = await createRowEdit(interaction, message, 'ticket')
 
   const setSystem = [
     new ButtonBuilder({
@@ -132,7 +132,6 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     }
   }
 
-  await message.edit({ components: [] })
   try {
     await message.edit({ components: [embedEdit, row2, row3, row4] })
 

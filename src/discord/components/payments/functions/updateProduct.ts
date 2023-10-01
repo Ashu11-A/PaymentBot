@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { createRowEdit } from '@/discord/events/SUEE/utils/createRowEdit'
+import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, EmbedBuilder, MessageCollector, type TextBasedChannel, AttachmentBuilder, type APIActionRowComponent, type APIButtonComponent } from 'discord.js'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -10,8 +10,9 @@ export class updateProduct {
   public static async embed (options: {
     interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
     message: Message<boolean>
+    button?: string
   }): Promise<void> {
-    const { interaction, message } = options
+    const { interaction, message, button } = options
     const { guildId, channelId, customId } = interaction
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
     const updateEmbed = new EmbedBuilder(data?.embed)
@@ -52,7 +53,8 @@ export class updateProduct {
           .then(async () => {
             await updateProduct.buttonsConfig({
               interaction,
-              message
+              message,
+              button
             })
           })
       })
@@ -65,14 +67,16 @@ export class updateProduct {
     interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<'cached'>
     message: Message<boolean>
     switchBotton?: boolean
+    button?: string // Isso é somente para o sistema de Edição de embeds
   }): Promise<void> {
-    const { interaction, message, switchBotton } = options
+    const { interaction, message, switchBotton, button } = options
     const { guildId, channelId } = interaction
     const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-    const [row1] = await createRowEdit(interaction, message, 'payments')
 
     let customId: string | undefined
-    if (interaction.isButton() || interaction.isModalSubmit()) {
+    if (button !== undefined) {
+      customId = button
+    } else if (interaction.isButton() || interaction.isModalSubmit()) {
       customId = interaction.customId
     }
 
@@ -210,6 +214,11 @@ export class updateProduct {
 
     // Mapeia o customId para o número da fileira
     const buttonRowMap: any = {
+      SetName: 1,
+      SetDesc: 1,
+      SetMiniature: 1,
+      SetBanner: 1,
+      SetColor: 1,
       paymentSetPrice: 2,
       paymentSetRole: 2,
       paymentExport: 2,
@@ -231,6 +240,9 @@ export class updateProduct {
         let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
 
         switch (rowNumber) {
+          case 1:
+            updatedRow = (await createRowEdit(interaction, message, 'payments')).toJSON()
+            break
           case 2:
             updatedRow = createSecondaryRow().toJSON()
             break
@@ -247,7 +259,6 @@ export class updateProduct {
             ...message.components
           ]
           components[rowNumber - 1] = updatedRow
-          components[0] = row1.toJSON()
 
           await message.edit({ components })
         }
@@ -257,6 +268,7 @@ export class updateProduct {
         })
       }
     } else {
+      const row1 = await createRowEdit(interaction, message, 'payments')
       const row2 = createSecondaryRow()
       const row3 = createThirdRow()
       const row4 = createFooterRow()
