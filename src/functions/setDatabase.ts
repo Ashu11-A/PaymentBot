@@ -10,7 +10,7 @@ export class Database {
    */
   public static async set (options: {
     interaction: CommandInteraction<CacheType> | ModalSubmitInteraction<'cached' | 'raw'>
-    data: TextChannel | CategoryChannel | string
+    data: TextChannel | CategoryChannel | string | number
     typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
     pathDB: string
     text?: string
