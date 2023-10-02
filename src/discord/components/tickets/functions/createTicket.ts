@@ -45,12 +45,15 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
           allow: [PermissionsBitField.Flags.ViewChannel]
         }
       ] as OverwriteResolvable[] | Collection<Snowflake, OverwriteResolvable>
+
+      /* Cria o chat do Ticket */
+      const category = interaction.guild?.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === ticket?.category)
       const ch = await guild?.channels.create({
         name: `🎫-${user.id}`,
         type: ChannelType.GuildText,
         topic: `Ticket do(a) ${user.username}, ID: ${user.id}`,
         permissionOverwrites,
-        parent: ticket?.category
+        parent: category?.id
       })
 
       await interaction.editReply({

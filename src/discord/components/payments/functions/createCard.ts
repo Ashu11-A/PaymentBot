@@ -60,12 +60,13 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       ] as OverwriteResolvable[] | Collection<string, OverwriteResolvable>
 
       /* Cria o chat de Pagamento */
+      const category = interaction.guild?.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === payments?.category)
       const paymentChannel = await guild?.channels.create({
         name,
         type: ChannelType.GuildText,
         topic: `Carrinho do(a) ${user.username}, ID: ${user.id}`,
         permissionOverwrites,
-        parent: payments?.category
+        parent: category?.id
       })
 
       const { embeds, components } = await updateCard.embedAndButtons({
