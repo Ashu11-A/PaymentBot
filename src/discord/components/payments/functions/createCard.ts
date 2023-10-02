@@ -33,7 +33,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
       const product: string = data?.embed?.title
       const status = await db.system.get(`${guildId}.status`)
-      const payments = await db.guilds.get(`${guildId}.payments`)
+      const paymentsConfig = await db.payments.get(`${guildId}.config`)
 
       const coins = data?.coins
       let amount = data?.price
@@ -62,7 +62,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
       ] as OverwriteResolvable[] | Collection<string, OverwriteResolvable>
 
       /* Cria o chat de Pagamento */
-      const category = interaction.guild?.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === payments?.category)
+      const category = interaction.guild?.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === paymentsConfig?.category)
       const paymentChannel = await guild?.channels.create({
         name,
         type: ChannelType.GuildText,

@@ -153,8 +153,8 @@ new Command({
           ]
         },
         {
-          name: 'autenticação',
-          description: '[ 🔐 ] Autenticar no sistema de pagamento desejado.',
+          name: 'config',
+          description: '[ ⚙️ ] Configurar sistemas de pagamentos desejado.',
           type: ApplicationCommandOptionType.String,
           choices: [
             { name: 'Mercado Pago', value: 'mp' }
@@ -257,7 +257,7 @@ new Command({
         case 'pagamentos': {
           const addProduto = options.getChannel('add-produto') as TextChannel
           const carrinho = options.getChannel('carrinho') as CategoryChannel
-          const autenticação = options.getString('autenticação')
+          const config = options.getString('config')
 
           if (addProduto !== null) {
             await interaction.deferReply({ ephemeral: true })
@@ -271,7 +271,7 @@ new Command({
               pathDB: 'payments.category'
             })
           }
-          if (autenticação !== null) {
+          if (config !== null) {
             await paymentConfig.token({ interaction })
           }
 
