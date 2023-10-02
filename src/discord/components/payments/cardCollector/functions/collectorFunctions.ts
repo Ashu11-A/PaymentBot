@@ -177,8 +177,9 @@ export class PaymentFunction {
   public static async NextOrBefore (options: {
     interaction: ButtonInteraction<CacheType>
     type: 'next' | 'before'
+    update?: 'Yes' | 'No'
   }): Promise<void> {
-    const { interaction, type } = options
+    const { interaction, type, update } = options
     const { guildId, user, message } = interaction
 
     let data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
@@ -196,6 +197,10 @@ export class PaymentFunction {
         }
         case 2: {
           typeString = 'Forma de Pagamento'
+          break
+        }
+        case 3: {
+          typeString = 'Pagamento'
           break
         }
         default: {
@@ -250,11 +255,13 @@ export class PaymentFunction {
         })
       }
     }
-    data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
-    await updateCard.embedAndButtons({
-      interaction,
-      data,
-      message
-    })
+    if (update === undefined || update === 'Yes') {
+      data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
+      await updateCard.embedAndButtons({
+        interaction,
+        data,
+        message
+      })
+    }
   }
 }

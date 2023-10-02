@@ -1,6 +1,8 @@
 import { db } from '@/app'
 import mc from 'mercadopago'
-import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder } from 'discord.js'
+import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
+import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
+import { updateCard } from './updateCard'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class createPayment {
@@ -13,59 +15,62 @@ export class createPayment {
   }): Promise<void> {
     const { interaction, method } = options
     const { message, guildId } = interaction
+    const tax = await db.payments.get(`${guildId}.config.taxes.${method}`) ?? 0
+    await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
     const amount = Number(data.amount) * data.quantity
+    const amountTax = amount + (amount * (Number(tax) / 100))
 
-    const embeds: EmbedBuilder[] = []
+    let embeds: Array<APIEmbed | JSONEncodable<APIEmbed>> = [] // Inicialize embeds como um array vazio
+    let components: Array<ActionRowBuilder<ButtonBuilder>> = []
+
     const files: AttachmentBuilder[] = []
 
     if (method === 'pix') {
       await createPayment.pix({
-        data,
-        interaction
+        interaction,
+        amountTax
       }).then(async ([unixTimestamp, payment, buf, id]) => {
+        const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
+          data,
+          interaction,
+          paymentData: payment,
+          taxa: tax
+        })
+
+        embeds = newEmbeds
+        components = newComponents
+
         const attachment = new AttachmentBuilder(buf, { name: `${id}.png` })
         const pixEmbed = new EmbedBuilder({
           title: '✅ QR Code gerado com sucesso!',
           description: 'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
-          thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
           fields: [
-            {
-              name: '**🛒 Resumo:** ',
-              value: `
-                  (~) Valor Inicial: R$${amount ?? 0}
-                  (-) Cupom: R$${data?.cupom?.desconto ?? 0} (${
-                      data?.cupom?.porcent ?? 0
-                  }%)
-                  (+) Taxas: R$${(
-                    payment.transaction_amount -
-                    (data?.cupom?.cupomAmount ?? amount)
-                  ).toFixed(2)} (1%)
-                  (=) Total: R$${payment.transaction_amount ?? 0}`
-            },
-            {
-              name: '**🪙 Créditos:** ',
-              value: `${data.coins}`
-            },
             {
               name: '**📆 Pague até:** ',
               value: `<t:${unixTimestamp}:f>`
             }
           ],
+          thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
           image: { url: `attachment://${id}.png` },
           footer: { text: `ID: ${id}` }
-        })
-          .setColor('Red')
+        }).setColor('Green')
 
-        const pixCodeEmbed = new EmbedBuilder({
-          title: 'Pix copia e cola',
-          description: data.body.point_of_interaction.transaction_data.qr_code,
-          footer: { text: 'No celular, pressione para copiar o código.', iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) }
-        })
+        embeds.push(pixEmbed.toJSON())
 
-        embeds.push(pixEmbed, pixCodeEmbed)
+        const pixCode = payment?.body?.point_of_interaction.transaction_data?.qr_code
+        if (pixCode !== undefined) {
+          const pixCodeEmbed = new EmbedBuilder({
+            title: 'Pix copia e cola',
+            description: pixCode,
+            footer: { text: 'No celular, pressione para copiar.', iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) }
+          })
+          embeds.push(pixCodeEmbed.toJSON())
+        }
 
         files.push(attachment)
+
+        components[0].components[0].setURL(payment.body.point_of_interaction.transaction_data.ticket_url)
       }).catch(async (err) => {
         console.log(err)
         await interaction.editReply({
@@ -78,39 +83,34 @@ export class createPayment {
       })
     } else if (method === 'debit_card' || method === 'credit_card') {
       await createPayment.card({
-        data,
         interaction,
-        method
-      }).then(async ([unixTimestamp, payment, taxa]) => {
+        method,
+        amountTax
+      }).then(async ([unixTimestamp, payment]) => {
+        const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
+          data,
+          interaction,
+          paymentData: payment,
+          taxa: tax
+        })
+
+        embeds = newEmbeds
+        components = newComponents
+
         const cardEmbed = new EmbedBuilder({
           title: '✅ URL de pagamento gerado com sucesso!',
           description: 'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
           thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
           fields: [
             {
-              name: '**🛒 Resumo:** ',
-              value: `
-                (~) Valor Inicial: R$${amount ?? 0}
-                (-) Cupom: R$${data?.cupom?.desconto ?? 0} (${
-                    data?.cupom?.porcent ?? 0
-                }%)
-                (+) Taxas: R$${(
-                  payment.response.items[0].unit_price -
-                  (data?.cupom?.cupomAmount ?? data?.amount)
-                ).toFixed(2)} (${taxa}%)
-                (=) Total: R$${payment.response.items[0].unit_price ?? 0}`
-            },
-            {
-              name: '**🪙 Créditos:** ',
-              value: `${data.coins}`
-            },
-            {
               name: '**📆 Pague até:** ',
               value: `<t:${unixTimestamp}:f>`
             }
           ]
-        })
-        embeds.push(cardEmbed)
+        }).setColor('Green')
+
+        embeds.push(cardEmbed.toJSON())
+        components[0].components[0].setURL(payment.body.init_point)
       }).catch(async (err) => {
         console.log(err)
         await interaction.editReply({
@@ -126,6 +126,7 @@ export class createPayment {
     await message.edit({
       ...clearData,
       embeds,
+      components,
       files
     })
   }
@@ -135,12 +136,11 @@ export class createPayment {
    */
   public static async pix (options: {
     interaction: ButtonInteraction<CacheType>
-    data: any
+    amountTax: number
   }): Promise<any[]> {
-    const { interaction, data } = options
+    const { interaction, amountTax } = options
     const { guildId } = interaction
-    const token = await db.guilds.get(`${guildId}.payments.mcToken`)
-    const amount = Number(data.amount) * data.quantity
+    const token = await db.payments.get(`${guildId}.config.mcToken`)
 
     mc.configure({
       access_token: token
@@ -152,10 +152,8 @@ export class createPayment {
         last_name: interaction.user.id,
         email: `${interaction.user.id}@gmail.com`
       },
-      description: `Pagamento Via Discord | ${interaction.user.username} | R$${(
-        amount + amount * 0.01
-      ).toFixed(2)}`,
-      transaction_amount: amount + amount * 0.01,
+      description: `Pagamento Via Discord | ${interaction.user.username} | R$${(amountTax).toFixed(2)}`,
+      transaction_amount: amountTax,
       payment_method_id: 'pix',
       installments: 0
     }
@@ -171,7 +169,7 @@ export class createPayment {
     expirationDate.setMinutes(expirationDate.getMinutes())
     const unixTimestamp = Math.floor(expirationDate.getTime() / 1000)
 
-    return [unixTimestamp, paymentData, buf, id]
+    return [unixTimestamp, payment, buf, id]
   }
 
   /**
@@ -179,12 +177,12 @@ export class createPayment {
    */
   public static async card (options: {
     interaction: ButtonInteraction<CacheType>
-    data: any
     method: 'debit_card' | 'credit_card'
+    amountTax: number
   }): Promise<any[]> {
-    const { interaction, data, method } = options
+    const { interaction, method, amountTax } = options
     const { guildId } = interaction
-    const token = await db.guilds.get(`${guildId}.payments.mcToken`)
+    const token = await db.payments.get(`${guildId}.config.mcToken`)
     const date = new Date()
     date.setDate(date.getDate() + 3)
     const isoDate = date.toISOString()
@@ -192,12 +190,6 @@ export class createPayment {
     mc.configure({
       access_token: token
     })
-
-    let taxa: number = 0.02
-    if (method === 'credit_card') {
-      taxa = 0.05
-    }
-    const amount = (Number(data.amount) * data.quantity) * taxa
 
     const payment = await mc.preferences.create({
       payer: {
@@ -208,8 +200,8 @@ export class createPayment {
       items: [
         {
           title: 'Pagamento Via Discord',
-          description: `${interaction.user.username} | R$${amount.toFixed(2)}`,
-          unit_price: amount,
+          description: `${interaction.user.username} | R$${amountTax.toFixed(2)}`,
+          unit_price: amountTax,
           quantity: 1,
           currency_id: 'BRL'
         }
@@ -232,6 +224,6 @@ export class createPayment {
     expirationDate.setMinutes(expirationDate.getMinutes())
     const unixTimestamp = Math.floor(expirationDate.getTime() / 1000)
 
-    return [unixTimestamp, payment, taxa]
+    return [unixTimestamp, payment]
   }
 }

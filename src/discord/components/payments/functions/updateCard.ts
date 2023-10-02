@@ -9,26 +9,30 @@ export class updateCard {
     user?: User
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
+    paymentData?: any
+    taxa?: number
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
-    const { interaction, data, user, message, typeEdit } = options
+    const { interaction, data, user, message, typeEdit, paymentData, taxa } = options
     const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product } = data
+
+    console.log(paymentData)
 
     let titulo
     let descrição
     let type
 
     if (typeEmbed === 0 || typeEmbed === undefined) {
-      titulo = 'Checkout e Quantidade'
+      titulo = 'Checkout & Quantidade.'
       descrição = 'Selecione quantos produtos deseja no seu carrinho, e se quer aplicar algum cupom.'
     } else if (typeEmbed === 1 || typeEmbed === undefined) {
-      titulo = 'Checkout e Envio'
+      titulo = 'Checkout & Envio.'
       descrição = `<@${interaction?.user.id}> Confira as informações sobre os produtos e escolha a forma que deseja receber seus créditos:`
     } else if (typeEmbed === 2) {
-      titulo = 'Checkout e Pagamento'
+      titulo = 'Checkout & Tipo de pagamento.'
       descrição = 'Confira as informações sobre os produtos e gere o link para o pagamento:'
     } else {
-      titulo = 'Indefinido'
-      descrição = 'Indefinido'
+      titulo = 'Pagamento.'
+      descrição = 'Realize o pagamento abaixo para adquirir o seu produto!'
     }
     if (typeRedeem === 1) {
       type = 'DM'
@@ -45,21 +49,16 @@ export class updateCard {
 
     const infoPayment = new EmbedBuilder()
       .setColor('LightGrey')
-      .setTitle('Informações do Pagamento')
+      .setTitle('Informações do Pedido')
       .addFields(
         {
           name: 'Produto:',
           value: (product ?? 'Indefinido'),
-          inline: true
+          inline: false
         },
         {
           name: '**💰 Valor:**',
           value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`,
-          inline: true
-        },
-        {
-          name: '\u200b',
-          value: '\u200b',
           inline: true
         },
         {
@@ -68,8 +67,18 @@ export class updateCard {
           inline: true
         },
         {
+          name: '\u200b',
+          value: '\u200b',
+          inline: true
+        },
+        {
           name: '**🛒 Valor Total (Sem taxas):**',
           value: `R$${(cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)}`,
+          inline: true
+        },
+        {
+          name: '**🍃 Taxas:**',
+          value: `R$${((paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? data?.cupom?.cupomAmount ?? ((amount ?? 0) * (quantity ?? 1))) - (cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)).toFixed(2)} (${taxa ?? 0}%)`,
           inline: true
         },
         {
@@ -103,7 +112,7 @@ export class updateCard {
 
     const embedsPayment = [mainEmbed, infoPayment]
 
-    if (user !== undefined) {
+    if (user !== undefined && typeEmbed !== 3) {
       const userEmbed = new EmbedBuilder()
         .setColor('LightGrey')
         .setTitle('Informações do Usuário')
@@ -225,6 +234,26 @@ export class updateCard {
       })
     ]
 
+    const Payment = [
+      new ButtonBuilder({
+        label: 'Pagar',
+        url: 'https://www.mercadopago.com.br/',
+        style: ButtonStyle.Link
+      }),
+      new ButtonBuilder({
+        customId: 'paymentVerify',
+        label: 'Verificar Pagamento',
+        emoji: '✔️',
+        style: ButtonStyle.Success
+      }),
+      new ButtonBuilder({
+        customId: 'paymentUserCancelar',
+        label: 'Cancelar',
+        emoji: '✖️',
+        style: ButtonStyle.Danger
+      })
+    ]
+
     const footerBar = [
       new ButtonBuilder({
         customId: 'paymentUserBefore',
@@ -252,18 +281,24 @@ export class updateCard {
       })
     ]
 
-    const row1 = new ActionRowBuilder<ButtonBuilder>()
-    const row2 = new ActionRowBuilder<ButtonBuilder>()
+    const components: Array<ActionRowBuilder<ButtonBuilder>> = []
 
-    if (type === 0 || type === undefined) {
-      row1.setComponents(...Primary)
-      row2.setComponents(...footerBar)
-    } else if (type === 1) {
-      row1.setComponents(...Secondary)
-      row2.setComponents(...footerBar)
-    } else if (type === 2) {
-      row1.setComponents(...Third)
-      row2.setComponents(...footerBar)
+    components[0] = new ActionRowBuilder()
+    if (type === undefined || type <= 2) {
+      components[1] = new ActionRowBuilder()
+
+      if (type === 0 || type === undefined) {
+        components[0].setComponents(...Primary)
+        components[1].setComponents(...footerBar)
+      } else if (type === 1) {
+        components[0].setComponents(...Secondary)
+        components[1].setComponents(...footerBar)
+      } else if (type === 2) {
+        components[0].setComponents(...Third)
+        components[1].setComponents(...footerBar)
+      }
+    } else if (type === 3) {
+      components[0].setComponents(...Payment)
     }
 
     for (const value of footerBar) {
@@ -308,7 +343,7 @@ export class updateCard {
       }
     }
 
-    return [row1, row2]
+    return components
   }
 
   public static async displayData (options: {
