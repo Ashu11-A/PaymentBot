@@ -1,4 +1,4 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, type ButtonInteraction } from 'discord.js'
+import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, type ButtonInteraction, type ModalSubmitInteraction } from 'discord.js'
 import { db } from '@/app'
 import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { Discord } from './Discord'
@@ -9,7 +9,7 @@ export class Database {
    * Seta inforamções no database
    */
   public static async set (options: {
-    interaction: CommandInteraction<CacheType>
+    interaction: CommandInteraction<CacheType> | ModalSubmitInteraction<'cached' | 'raw'>
     data: TextChannel | CategoryChannel | string
     typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
     pathDB: string
