@@ -12,6 +12,7 @@ import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { modelPresence, delPresence } from './utils/Presence'
 import { sendEmbed } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
+import { paymentConfig } from '@/discord/components/payments/functions/config'
 
 new Command({
   name: 'config',
@@ -254,15 +255,16 @@ new Command({
           break
         }
         case 'pagamentos': {
-          await interaction.deferReply({ ephemeral: true })
           const addProduto = options.getChannel('add-produto') as TextChannel
           const carrinho = options.getChannel('carrinho') as CategoryChannel
           const autenticação = options.getString('autenticação')
 
           if (addProduto !== null) {
+            await interaction.deferReply({ ephemeral: true })
             await sendEmbed(interaction, addProduto)
           }
           if (carrinho !== null) {
+            await interaction.deferReply({ ephemeral: true })
             await Database.set({
               interaction,
               data: carrinho,
@@ -270,12 +272,7 @@ new Command({
             })
           }
           if (autenticação !== null) {
-            await Database.set({
-              interaction,
-              data: autenticação,
-              pathDB: 'payments.category',
-              text: 'setado para os autenticação'
-            })
+            await paymentConfig.token({ interaction })
           }
 
           break
