@@ -32,9 +32,11 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
     try {
       const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
       const product: string = data?.embed?.title
-      let amount = data?.price
       const status = await db.system.get(`${guildId}.status`)
       const payments = await db.guilds.get(`${guildId}.payments`)
+
+      const coins = data?.coins
+      let amount = data?.price
 
       if (amount === undefined || parseFloat(amount?.replace(',', '.')) === 0) {
         await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
@@ -75,7 +77,8 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
           product,
           amount,
           typeEmbed: 0,
-          quantity: 1
+          quantity: 1,
+          coins
         }
       })
 
@@ -108,6 +111,7 @@ export async function createPayment (interaction: ButtonInteraction<CacheType>):
               messageId: msg.id,
               product,
               amount,
+              coins,
               quantity: 1,
               typeEmbed: 0
             })

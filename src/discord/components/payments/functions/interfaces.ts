@@ -1,7 +1,7 @@
 export interface Data {
   product?: string
   amount?: number
-  creditos?: number
+  coins?: number
   quantity?: number
   typeEmbed?: number
   typeRedeem?: number
