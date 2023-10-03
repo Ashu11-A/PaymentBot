@@ -9,6 +9,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   const { customId, fields } = interaction
   if (customId === 'mcConfig') {
     const token = fields.getTextInputValue('token')
+    const ipnURL = fields.getTextInputValue('ipn')
     const taxaPix = fields.getTextInputValue('taxaPix')
     const taxaCardDebit = fields.getTextInputValue('taxaCardDebit')
     const taxaCardCredit = fields.getTextInputValue('taxaCardCredit')
@@ -22,6 +23,16 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         typeDB: 'payments'
       })
     }
+
+    if (ipnURL !== undefined) {
+      await Database.set({
+        interaction,
+        data: token,
+        pathDB: 'config.ipn',
+        typeDB: 'payments'
+      })
+    }
+
     if (taxaPix !== undefined) {
       await Database.set({
         interaction,

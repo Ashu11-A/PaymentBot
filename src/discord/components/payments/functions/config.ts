@@ -27,6 +27,18 @@ export class paymentConfig {
       ]
     })
 
+    const ipnURL = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'ipn',
+          label: 'URL da IPN',
+          placeholder: data?.ipn,
+          style: 1,
+          required: true
+        })
+      ]
+    })
+
     const taxaPix = new ActionRowBuilder<TextInputBuilder>({
       components: [
         new TextInputBuilder({
@@ -66,7 +78,7 @@ export class paymentConfig {
       ]
     })
 
-    modal.setComponents(token, taxaPix, taxaCardDebit, taxaCardCredit)
+    modal.setComponents(token, ipnURL, taxaPix, taxaCardDebit, taxaCardCredit)
     await interaction.showModal(modal)
   }
 }
