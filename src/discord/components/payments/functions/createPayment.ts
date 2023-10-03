@@ -182,13 +182,14 @@ export class createPayment {
   }): Promise<any[]> {
     const { interaction, method, amountTax } = options
     const { guildId } = interaction
-    const token = await db.payments.get(`${guildId}.config.mcToken`)
+    const data = await db.payments.get(`${guildId}.config`)
+    const { mcToken, ipn } = data
     const date = new Date()
     date.setDate(date.getDate() + 3)
     const isoDate = date.toISOString()
 
     mc.configure({
-      access_token: token
+      access_token: mcToken
     })
 
     const payment = await mc.preferences.create({
@@ -213,11 +214,14 @@ export class createPayment {
         ],
         installments: 1
       },
-      notification_url: 'https://bot.seventyhost.net/ipn',
+      notification_url: ipn ?? undefined,
+      metadata: {
+        user_id: interaction.user.id,
+        amountTax,
+        mcToken
+      },
       date_of_expiration: isoDate
     })
-
-    console.log((payment.response).items)
 
     const dateStr = payment.body.date_of_expiration
     const expirationDate = new Date(dateStr)
