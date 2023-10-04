@@ -1,9 +1,9 @@
 import { db } from '@/app'
-import mc from 'mercadopago'
+import mp from 'mercadopago'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
 import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
 import { updateCard } from './updateCard'
-import { type MercadoPago } from './interfaces'
+import { type Data, type MercadoPago } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Payment {
@@ -18,8 +18,8 @@ export class Payment {
     const { message, guildId } = interaction
     const tax = await db.payments.get(`${guildId}.config.taxes.${method}`) ?? 0
     await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
-    const data = await db.payments.get(`${guildId}.process.${message.id}`)
-    const amount = Number(data.amount) * data.quantity
+    const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
+    const amount = Number(cardData.amount) * cardData.quantity
     const amountTax = amount + (amount * (Number(tax) / 100))
 
     let embeds: Array<APIEmbed | JSONEncodable<APIEmbed>> = [] // Inicialize embeds como um array vazio
@@ -33,7 +33,7 @@ export class Payment {
         amountTax
       }).then(async ([unixTimestamp, payment, buf, id]) => {
         const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
-          data,
+          data: cardData,
           interaction,
           paymentData: payment,
           taxa: tax
@@ -86,10 +86,12 @@ export class Payment {
       await Payment.card({
         interaction,
         method,
-        amountTax
+        amountTax,
+        cardData
       }).then(async ([unixTimestamp, payment]) => {
+        console.log(payment)
         const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
-          data,
+          data: cardData,
           interaction,
           paymentData: payment,
           taxa: tax
@@ -143,15 +145,15 @@ export class Payment {
     const { guildId } = interaction
     const token = await db.payments.get(`${guildId}.config.mcToken`)
 
-    mc.configure({
+    mp.configure({
       access_token: token
     })
 
-    const payment = await mc.payment.create({
+    const payment = await mp.payment.create({
       payer: {
         first_name: interaction.user.username,
         last_name: interaction.user.id,
-        email: `${interaction.user.id}@gmail.com`
+        email: `${interaction.user.username}@gmail.com`
       },
       description: `Pagamento Via Discord | ${interaction.user.username} | R$${(amountTax).toFixed(2)}`,
       transaction_amount: amountTax,
@@ -178,16 +180,18 @@ export class Payment {
     interaction: ButtonInteraction<CacheType>
     method: 'debit_card' | 'credit_card'
     amountTax: number
+    cardData: Data
   }): Promise<any[]> {
-    const { interaction, method, amountTax } = options
-    const { guildId } = interaction
+    const { interaction, method, amountTax, cardData } = options
+    if (!interaction.inGuild()) return
+    const { guildId, message } = interaction
     const data = await db.payments.get(`${guildId}.config`)
     const { mcToken, ipn } = data
     const date = new Date()
     date.setDate(date.getDate() + 3)
     const isoDate = date.toISOString()
 
-    mc.configure({
+    mp.configure({
       access_token: mcToken
     })
 
@@ -195,7 +199,7 @@ export class Payment {
       payer: {
         name: interaction.user.username,
         surname: interaction.user.id,
-        email: `${interaction.user.id}@gmail.com`
+        email: `${interaction.user.username}@gmail.com`
       },
       items: [
         {
@@ -215,14 +219,16 @@ export class Payment {
       },
       notification_url: ipn ?? undefined,
       metadata: {
-        user_id: interaction.user.id,
-        amountTax,
-        mcToken
+        userId: interaction.user.id,
+        guildId,
+        messageId: message.id,
+        price: amountTax,
+        UUID: cardData.UUID
       },
       date_of_expiration: isoDate
     }
 
-    const payment = await mc.preferences.create(PayemntData)
+    const payment = await mp.preferences.create(PayemntData)
 
     const dateStr = payment.body.date_of_expiration
     const expirationDate = new Date(dateStr)

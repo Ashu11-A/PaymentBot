@@ -1,6 +1,7 @@
 import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethods } from 'mercadopago/models/preferences/create-payload.model'
 
 export interface Data {
+  UUID?: string
   product?: string
   amount?: number
   coins?: number
@@ -28,9 +29,11 @@ export interface MercadoPago {
   payment_methods: PreferencePaymentMethods | undefined
   notification_url: string | undefined
   metadata: {
-    user_id: string
-    amountTax: number
-    mcToken: any
+    userId: string
+    guildId: string
+    messageId: string
+    price: number
+    UUID: string | undefined
   }
   date_of_expiration: string | undefined
 }

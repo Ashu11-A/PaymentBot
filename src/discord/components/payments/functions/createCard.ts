@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
 import { updateCard } from './updateCard'
-import { Discord } from '@/functions'
+import { Discord, genv4 } from '@/functions'
 
 export async function createCard (interaction: ButtonInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild()) return
@@ -113,7 +113,8 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
               amount,
               coins,
               quantity: 1,
-              typeEmbed: 0
+              typeEmbed: 0,
+              UUID: genv4()
             })
           })
           .catch(async (err) => {
