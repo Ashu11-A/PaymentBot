@@ -3,13 +3,14 @@ import mc from 'mercadopago'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
 import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
 import { updateCard } from './updateCard'
+import { type MercadoPago } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class createPayment {
+export class Payment {
   /**
     * Método de pagamento
     */
-  public static async embed (options: {
+  public static async create (options: {
     interaction: ButtonInteraction<CacheType>
     method: 'pix' | 'debit_card' | 'credit_card'
   }): Promise<void> {
@@ -27,7 +28,7 @@ export class createPayment {
     const files: AttachmentBuilder[] = []
 
     if (method === 'pix') {
-      await createPayment.pix({
+      await Payment.pix({
         interaction,
         amountTax
       }).then(async ([unixTimestamp, payment, buf, id]) => {
@@ -82,7 +83,7 @@ export class createPayment {
         })
       })
     } else if (method === 'debit_card' || method === 'credit_card') {
-      await createPayment.card({
+      await Payment.card({
         interaction,
         method,
         amountTax
@@ -146,7 +147,7 @@ export class createPayment {
       access_token: token
     })
 
-    const paymentData = {
+    const payment = await mc.payment.create({
       payer: {
         first_name: interaction.user.username,
         last_name: interaction.user.id,
@@ -156,9 +157,7 @@ export class createPayment {
       transaction_amount: amountTax,
       payment_method_id: 'pix',
       installments: 0
-    }
-
-    const payment = await mc.payment.create(paymentData)
+    })
 
     const base64Img = payment.body.point_of_interaction.transaction_data.qr_code_base64
     const buf = Buffer.from(base64Img, 'base64')
@@ -192,7 +191,7 @@ export class createPayment {
       access_token: mcToken
     })
 
-    const payment = await mc.preferences.create({
+    const PayemntData: MercadoPago = {
       payer: {
         name: interaction.user.username,
         surname: interaction.user.id,
@@ -221,7 +220,9 @@ export class createPayment {
         mcToken
       },
       date_of_expiration: isoDate
-    })
+    }
+
+    const payment = await mc.preferences.create(PayemntData)
 
     const dateStr = payment.body.date_of_expiration
     const expirationDate = new Date(dateStr)

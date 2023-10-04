@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
 import { PaymentFunction } from './functions/collectorFunctions'
-import { createPayment } from '../functions/createPayment'
+import { Payment } from '../functions/createPayment'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
@@ -16,12 +16,12 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     paymentUserWTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
     paymentUserAdd: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
     paymentUserRem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
-    paymentUserGerarPix: async () => { await createPayment.embed({ interaction, method: 'pix' }) },
+    paymentUserGerarPix: async () => { await Payment.create({ interaction, method: 'pix' }) },
     paymentUserCancelar: async () => { await PaymentFunction.paymentUserCancelar({ interaction }) },
     paymentUserNext: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
     paymentUserBefore: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
-    paymentUserGerarCardDebito: async () => { await createPayment.embed({ interaction, method: 'debit_card' }) },
-    paymentUserGerarCardCredito: async () => { await createPayment.embed({ interaction, method: 'credit_card' }) }
+    paymentUserGerarCardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
+    paymentUserGerarCardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
   }
 
   if (customId === key) {

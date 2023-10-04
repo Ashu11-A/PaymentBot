@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { updateProduct, createPayment } from '@/discord/components/payments'
+import { updateProduct, createCard } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
 import { Database } from '@/functions'
 
@@ -18,7 +18,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     paymentSave: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
     paymentConfig: async () => { await updateProduct.buttonsConfig({ interaction, message, switchBotton: true }) },
     paymentStatus: async () => { await updateProduct.paymentStatus({ interaction, message }) },
-    paymentBuy: async () => { await createPayment(interaction) },
+    paymentBuy: async () => { await createCard(interaction) },
     paymentSetEstoque: async () => {
       await Database.setDelete({
         interaction,

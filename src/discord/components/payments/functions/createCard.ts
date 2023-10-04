@@ -3,7 +3,7 @@ import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitFie
 import { updateCard } from './updateCard'
 import { Discord } from '@/functions'
 
-export async function createPayment (interaction: ButtonInteraction<CacheType>): Promise<void> {
+export async function createCard (interaction: ButtonInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild()) return
 
   const { channelId, guild, guildId, user, message } = interaction
