@@ -181,10 +181,22 @@ new Command({
           name: 'pterodactyl',
           description: 'Painel Pterodactyl',
           type: ApplicationCommandOptionType.String
+        }
+      ]
+    },
+    {
+      name: 'ctrlpanel',
+      description: '[ 🛒 ] Configure aspectos do ctrlPanel.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'url',
+          description: 'Para as integrações',
+          type: ApplicationCommandOptionType.String
         },
         {
-          name: 'ctrlpanel',
-          description: 'Painel ControlPanel',
+          name: 'token',
+          description: 'Token para fazer as requisições a API',
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -273,7 +285,7 @@ new Command({
             })
           }
           if (config !== null) {
-            await paymentConfig.token({ interaction })
+            await paymentConfig.MPconfig({ interaction })
           }
 
           break
@@ -283,7 +295,6 @@ new Command({
           const site = options.getString('site')
           const loja = options.getString('loja')
           const ptero = options.getString('pterodactyl')
-          const ctrlPanel = options.getString('ctrlPanel')
 
           if (site !== null) {
             await Database.set({
@@ -306,14 +317,29 @@ new Command({
               pathDB: 'urls.ptero'
             })
           }
-          if (ctrlPanel !== null) {
+          break
+        }
+        case 'ctrlpanel': {
+          await interaction.deferReply({ ephemeral: true })
+          const token = options.getString('token')
+          const url = options.getString('url')
+
+          if (url !== null) {
             await Database.set({
               interaction,
-              data: ctrlPanel,
-              pathDB: 'urls.ctrl'
+              data: url,
+              pathDB: 'config.ctrlPanel.url',
+              typeDB: 'payments'
             })
           }
-          break
+          if (token !== null) {
+            await Database.set({
+              interaction,
+              data: token,
+              pathDB: 'config.ctrlPanel.token',
+              typeDB: 'payments'
+            })
+          }
         }
       }
 

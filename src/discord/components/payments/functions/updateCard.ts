@@ -149,7 +149,7 @@ export class updateCard {
       embedsPayment.push(infoTax)
     }
 
-    const components = await updateCard.buttons({
+    const components = await this.buttons({
       data
     })
 

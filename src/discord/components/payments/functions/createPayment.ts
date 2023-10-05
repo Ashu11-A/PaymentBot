@@ -28,7 +28,7 @@ export class Payment {
     const files: AttachmentBuilder[] = []
 
     if (method === 'pix') {
-      await Payment.pix({
+      await this.pix({
         interaction,
         amountTax
       }).then(async ([unixTimestamp, payment, buf, id]) => {
@@ -83,7 +83,7 @@ export class Payment {
         })
       })
     } else if (method === 'debit_card' || method === 'credit_card') {
-      await Payment.card({
+      await this.card({
         interaction,
         method,
         amountTax,

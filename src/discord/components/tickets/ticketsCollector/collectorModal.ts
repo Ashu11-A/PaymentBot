@@ -88,38 +88,36 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       return
     }
   }
-  if (customId === key) {
-    const { type } = value
-    let messageModal = fields.getTextInputValue('content')
-    console.log('type:', type)
-    console.log('messageModal:', messageModal)
+  const { type } = value
+  let messageModal = fields.getTextInputValue('content')
+  console.log('type:', type)
+  console.log('messageModal:', messageModal)
 
-    if (messageModal.toLowerCase() === 'vazio') {
-      messageModal = ''
-    }
-
-    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
-    await channel?.messages.fetch(String(message?.id))
-      .then(async (msg) => {
-      // const roleID = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
-        const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
-        if (typeof embed?.color === 'string') {
-          if (embed?.color?.startsWith('#') === true) {
-            embed.color = parseInt(embed?.color.slice(1), 16)
-          }
-        }
-        await msg.edit({ embeds: [embed] })
-          .then(async () => {
-            await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
-              .then(async () => {
-                await ticketButtonsConfig(interaction, msg)
-                await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
-              })
-          })
-      })
-      .catch(async (err) => {
-        console.log(err)
-        await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
-      })
+  if (messageModal.toLowerCase() === 'vazio') {
+    messageModal = ''
   }
+
+  await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
+  await channel?.messages.fetch(String(message?.id))
+    .then(async (msg) => {
+      // const roleID = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}.role`)
+      const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
+      if (typeof embed?.color === 'string') {
+        if (embed?.color?.startsWith('#') === true) {
+          embed.color = parseInt(embed?.color.slice(1), 16)
+        }
+      }
+      await msg.edit({ embeds: [embed] })
+        .then(async () => {
+          await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${customId}`, true)
+            .then(async () => {
+              await ticketButtonsConfig(interaction, msg)
+              await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
+            })
+        })
+    })
+    .catch(async (err) => {
+      console.log(err)
+      await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
+    })
 }

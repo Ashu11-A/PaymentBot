@@ -46,7 +46,7 @@ export function validarEmail (email: string): [boolean, string] {
 
   // Testar o email em relação à expressão regular
   if (!regex.test(email)) {
-    return [false, '❌ | E-mail informado não é valido!']
+    return [false, `❌ | "${email}" não é um e-mail válido. Por favor, informe um e-mail válido.`]
   } else {
     return [true, '']
   }

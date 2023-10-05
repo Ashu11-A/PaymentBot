@@ -51,7 +51,7 @@ export class updateProduct {
       .then(async () => {
         await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.properties.${customId}`, true)
           .then(async () => {
-            await updateProduct.buttonsConfig({
+            await this.buttonsConfig({
               interaction,
               message,
               button
@@ -427,7 +427,7 @@ export class updateProduct {
               ...json
             })
             if (message !== null) {
-              await updateProduct.embed({
+              await this.embed({
                 interaction,
                 message
               })
@@ -474,7 +474,7 @@ export class updateProduct {
     }
 
     await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
-    await updateProduct.buttonsConfig({ interaction, message })
+    await this.buttonsConfig({ interaction, message })
     const embed = new EmbedBuilder({
       title: `Produto ${status === true ? 'Ativado' : 'Desativado'} com sucesso.`
     })

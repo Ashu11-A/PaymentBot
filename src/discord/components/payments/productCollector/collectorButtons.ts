@@ -53,30 +53,28 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   }
 
-  if (customId === key) {
-    const customIdHandler = customIdHandlers[customId]
+  const customIdHandler = customIdHandlers[customId]
 
-    if (typeof customIdHandler === 'function') {
-      await interaction.deferReply({ ephemeral })
-      await customIdHandler()
-    } else {
-      const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${type}`)
-      const modal = new ModalBuilder({ customId: key, title })
-      const content = new ActionRowBuilder<TextInputBuilder>({
-        components: [
-          new TextInputBuilder({
-            custom_id: 'content',
-            label,
-            placeholder,
-            value: textValue ?? null,
-            style,
-            required: true,
-            maxLength
-          })
-        ]
-      })
-      modal.setComponents(content)
-      await interaction.showModal(modal)
-    }
+  if (typeof customIdHandler === 'function') {
+    await interaction.deferReply({ ephemeral })
+    await customIdHandler()
+  } else {
+    const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${type}`)
+    const modal = new ModalBuilder({ customId: key, title })
+    const content = new ActionRowBuilder<TextInputBuilder>({
+      components: [
+        new TextInputBuilder({
+          custom_id: 'content',
+          label,
+          placeholder,
+          value: textValue ?? null,
+          style,
+          required: true,
+          maxLength
+        })
+      ]
+    })
+    modal.setComponents(content)
+    await interaction.showModal(modal)
   }
 }

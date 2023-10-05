@@ -32,3 +32,25 @@ export function formatBytes (bytes: number, decimals = 2): string {
 
   return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + ' ' + sizes[i]
 }
+
+export function numerosParaLetras (str: string): string {
+  const numeroParaLetra = (numero: number): string => {
+    if (numero >= 1 && numero <= 26) {
+      return String.fromCharCode(96 + numero).toUpperCase()
+    } else {
+      return ''
+    }
+  }
+
+  let resultado = ''
+  for (let i = 0; i < str.length; i++) {
+    const char = str.charAt(i)
+    if (/[0-9]/.test(char)) {
+      resultado += numeroParaLetra(Number(char))
+    } else {
+      resultado += char
+    }
+  }
+
+  return resultado
+}

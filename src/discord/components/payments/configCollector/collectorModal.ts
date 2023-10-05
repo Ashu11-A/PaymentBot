@@ -27,7 +27,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     if (ipnURL !== undefined) {
       await Database.set({
         interaction,
-        data: token,
+        data: ipnURL,
         pathDB: 'config.ipn',
         typeDB: 'payments'
       })
