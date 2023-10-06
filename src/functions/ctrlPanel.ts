@@ -80,7 +80,6 @@ export class ctrlPanel {
             Authorization: `Bearer ${token}`
           }
         }).then(async (response) => {
-          console.log(response.data)
           const data = response.data
           const users = data.data
           const pageNumber = await idURL(urlAPI)
@@ -90,19 +89,36 @@ export class ctrlPanel {
           }
 
           if (pageNumber !== undefined) {
-            await saveUsersToDB(pageNumber)
-            console.log(data.last_page, Number(pageNumber))
-            if (data.last_page === Number(pageNumber)) {
-              const metadata = {
-                last_page: data.last_page,
-                users_per_page: data.per_page,
-                from: data.from,
-                to: data.to,
-                total: data.total
+            if (Number(pageNumber) !== data.last_page) {
+              const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(pageNumber)
+              if (dataBD?.length <= 50 || usersData?.length > 0) {
+                let isDataChanged = false
+                for (let i = 0; i < 50; i++) {
+                  if (usersData !== undefined && i >= 0 && i < usersData.length) {
+                    if (JSON.stringify(usersData[i]) !== JSON.stringify(dataBD[i])) {
+                    // Se houver diferenças, marque como dados alterados
+                      isDataChanged = true
+                      break
+                    }
+                  }
+                }
+                if (!isDataChanged) {
+                  console.log('Mesclando dados...', dataBD?.length, usersData.length)
+                  await saveUsersToDB(pageNumber)
+                  console.log(Number(pageNumber), data.last_page)
+                }
               }
-              console.log(metadata)
-              await db.ctrlPanel.table(numerosParaLetras(guildId)).set('metadata', metadata)
             }
+          } else {
+            const metadata = {
+              last_page: data.last_page,
+              users_per_page: data.per_page,
+              from: data.from,
+              to: data.to,
+              total: data.total
+            }
+            console.log(metadata)
+            await db.ctrlPanel.table(numerosParaLetras(guildId)).set('metadata', metadata)
           }
 
           if (data.next_page_url !== null) {
