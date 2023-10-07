@@ -85,7 +85,7 @@ export class ctrlPanel {
       let foundUsers: any[] = []
 
       async function scan (): Promise<Array<boolean | any[]> | undefined> {
-        for (let page = 1; page < metadata.last_page; page++) {
+        for (let page = 1; page <= metadata.last_page; page++) {
           const dataDB = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(page))
 
           foundUsers = await dataDB.filter(
@@ -145,7 +145,7 @@ export class ctrlPanel {
           }
 
           if (pageNumber !== undefined) {
-            if (Number(pageNumber) !== data.last_page) {
+            if (Number(pageNumber) <= data.last_page) {
               const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(pageNumber)
               if (dataBD?.length <= 50 || usersData?.length > 0) {
                 let isDataChanged = false
