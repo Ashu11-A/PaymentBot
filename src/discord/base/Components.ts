@@ -1,3 +1,4 @@
+import { core } from '@/app'
 import { log } from '@/settings'
 import ck from 'chalk'
 import { type ButtonInteraction, type CacheType, type ChannelSelectMenuInteraction, type MentionableSelectMenuInteraction, type ModalSubmitInteraction, type RoleSelectMenuInteraction, type StringSelectMenuInteraction, type UserSelectMenuInteraction } from 'discord.js'
@@ -43,7 +44,7 @@ export class Component {
   }
 
   constructor (data: ComponentData<any>) {
-    log.successComponent(ck.green(`${ck.cyan.underline(data.customId)} has been successfully saved!`))
+    core.info(ck.green(`${ck.cyan.underline(data.customId)} has been successfully saved!`))
     Component.all.push(data)
   }
 }

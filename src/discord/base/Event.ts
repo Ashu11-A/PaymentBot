@@ -1,3 +1,4 @@
+import { core } from '@/app'
 import { log } from '@/settings'
 import ck from 'chalk'
 import { type ClientEvents } from 'discord.js'
@@ -12,7 +13,7 @@ interface EventData<Key extends keyof ClientEvents> {
 export class Event<Key extends keyof ClientEvents> {
   public static all: Array<EventData<keyof ClientEvents>> = []
   constructor (data: EventData<Key>) {
-    log.successEvent(ck.green(`${ck.cyan.underline(data.name)} has been successfully registered!`))
+    core.info(ck.green(`${ck.cyan.underline(data.name)} has been successfully registered!`))
     Event.all.push(data)
   }
 }

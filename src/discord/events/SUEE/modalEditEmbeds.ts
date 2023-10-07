@@ -1,6 +1,6 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
-import { db } from '@/app'
+import { core, db } from '@/app'
 import { updateProduct } from '@/discord/components/payments'
 import { ticketButtonsConfig } from '@/discord/components/tickets'
 import { Event } from '@/discord/base'
@@ -77,9 +77,9 @@ export default new Event({
         console.log(err)
         await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
       }
+      const end = Date.now()
+      const timeSpent = (end - start) / 1000 + 's'
+      core.info(`Botão | ${button} | ${timeSpent}`)
     }
-    const end = Date.now()
-    const timeSpent = (end - start) / 1000 + 's'
-    console.log('Botão: ' + button, timeSpent)
   }
 })

@@ -1,3 +1,4 @@
+import { core } from '@/app'
 import { log } from '@/settings'
 import ck from 'chalk'
 import {
@@ -41,7 +42,7 @@ type CommandData<DmPermission extends boolean> = CommandProps<DmPermission> & Ap
 export class Command<DmPermission extends boolean = boolean> {
   public static all = new Collection<string, CommandData<boolean>>()
   constructor (public data: CommandData<DmPermission>) {
-    log.successComamnd(ck.green(`${ck.cyan.underline(data.name)} has been successfully registered!`))
+    core.info(ck.green(`${ck.cyan.underline(data.name)} has been successfully registered!`))
     Command.all.set(data.name, data)
   }
 }

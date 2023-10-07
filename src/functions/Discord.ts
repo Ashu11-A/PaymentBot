@@ -1,4 +1,4 @@
-import { db } from '@/app'
+import { core, db } from '@/app'
 import { Component } from '@/discord/base'
 import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle } from 'discord.js'
 
@@ -142,7 +142,7 @@ export class Discord {
         await runCallback(interaction)
         const end = Date.now()
         const timeSpent = (end - start) / 1000 + 's'
-        console.log(type, interaction.customId, timeSpent)
+        core.info(`${type} | ${interaction.customId} | ${timeSpent}`)
       }
     })
   }

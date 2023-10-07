@@ -4,6 +4,7 @@ import { ApplicationCommandType, type AutocompleteInteraction, type BitFieldReso
 import { glob } from 'glob'
 import { join } from 'node:path'
 import { Command, Component, Event } from '.'
+import { core } from '@/app'
 
 export function createClient (options?: ClientOptions): Client {
   const client = new Client({
@@ -92,12 +93,12 @@ export function createClient (options?: ClientOptions): Client {
   })
   client.once('ready', async client => {
     console.log()
-    log.success(`${ck.green('Bot online')} ${ck.blue.underline('discord.js')} 📦 ${ck.yellow(version)}`)
-    log.info(`${ck.greenBright(`➝ Connected with ${ck.underline(client.user.username)}`)}`)
+    core.info(`${ck.green('Bot online')} ${ck.blue.underline('discord.js')} 📦 ${ck.yellow(version)}`)
+    core.info(`${ck.greenBright(`➝ Connected with ${ck.underline(client.user.username)}`)}`)
     console.log()
 
     await client.application.commands.set(Array.from(Command.all.values()))
-      .then((c) => { log.success(ck.green('Commands defined successfully!')) })
+      .then((c) => { core.info(ck.green('Commands defined successfully!')) })
       .catch(log.error)
   })
   return client
