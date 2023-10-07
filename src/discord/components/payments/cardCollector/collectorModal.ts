@@ -11,9 +11,6 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   const { type } = value
   const messageModal = fields.getTextInputValue('content')
 
-  await interaction.deferReply({ ephemeral: true })
-
-  // typeRedeem
   if (customId === 'paymentUserDirect') {
     const [validador, messageInfo] = validarEmail(messageModal)
     if (validador) {
@@ -21,10 +18,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       await ctrlPanel.searchEmail({ interaction, email: messageModal })
       await db.payments.set(`${guildId}.process.${message?.id}.typeRedeem`, 2)
     } else {
-      await interaction.editReply({ content: messageInfo })
+      await interaction.reply({ ephemeral, content: messageInfo })
     }
     return
   }
+
+  await interaction.deferReply({ ephemeral: true })
 
   if (customId === 'paymentSetPrice') {
     const [validador, message] = validarValor(messageModal)
