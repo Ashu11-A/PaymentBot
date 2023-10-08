@@ -21,11 +21,10 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         await db.payments.set(`${guildId}.process.${message?.id}.user`, userData)
 
         if (message !== null) {
-          const data = await db.payments.get(`${guildId}.process.${message.id}`)
-
           await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 2)
           await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
           await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDM`)
+          const data = await db.payments.get(`${guildId}.process.${message.id}`)
           await updateCard.embedAndButtons({
             interaction,
             data,

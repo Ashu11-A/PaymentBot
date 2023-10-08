@@ -25,13 +25,15 @@ class IPN {
 
             const status = await mp.payment.get(data.id)
             console.log(status)
-            await db.payments.set(`${guildId}.process.${messageId}.ipn`, {
-              description: status.body.description,
-              email: status.body.payer.email,
-              ip: status.body.additional_info.ip_address,
-              currency: status.body.currency_id,
-              payment_method_id: status.body.payment_method.id,
-              paymentID: data.id
+            await db.payments.set(`${guildId}.process.${messageId}`, {
+              ipn: {
+                description: status.body.description,
+                email: status.body.payer.email,
+                ip: status.body.additional_info.ip_address,
+                currency: status.body.currency_id,
+                payment_method_id: status.body.payment_method.id
+              },
+              paymentId: data.id
             })
 
             core.info(`Pagamento ${data.id}, foi aprovado.\nUser: ${userId}`)

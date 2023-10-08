@@ -1,5 +1,4 @@
 import { core } from '@/app'
-import { log } from '@/settings'
 import ck from 'chalk'
 import { type ClientEvents } from 'discord.js'
 

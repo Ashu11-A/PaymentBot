@@ -12,6 +12,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   const { title, label, placeholder, style, type, maxLength } = value
 
   const customIdHandlers: CustomIdHandlers = {
+    paymentVerify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
     paymentUserDM: async () => { await PaymentFunction.paymentUserDM({ interaction }) },
     paymentUserWTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
     paymentUserAdd: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },

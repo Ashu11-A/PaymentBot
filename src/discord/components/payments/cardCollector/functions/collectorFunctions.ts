@@ -2,6 +2,7 @@ import { db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { type Data, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
+import mp from 'mercadopago'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
@@ -76,6 +77,18 @@ export class PaymentFunction {
         })
 
         try {
+          const paymentId = await db.payments.get(`${guildId}.process.${message.id}.paymentId`)
+
+          if (paymentId !== undefined) {
+            const token = await db.payments.get(`${guildId}.config.mcToken`)
+
+            mp.configure({
+              access_token: token
+            })
+
+            await mp.payment.cancel(paymentId)
+          }
+
           await message.delete()
           await db.payments.delete(`${guildId}.process.${message.id}`)
 
@@ -262,6 +275,40 @@ export class PaymentFunction {
         interaction,
         data,
         message
+      })
+    }
+  }
+
+  /**
+   * Verificar se o pagamento foi bem sucedido
+   */
+  public static async verifyPayment (options: {
+    interaction: ButtonInteraction<CacheType>
+  }): Promise<any> {
+    const { interaction } = options
+    const { guildId, message } = interaction
+    const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
+
+    if (cardData?.paymentId !== undefined) {
+      const token = await db.payments.get(`${guildId}.config.mcToken`)
+      console.log(cardData.paymentId)
+      console.log(token)
+
+      mp.configure({
+        access_token: token
+      })
+
+      await mp.payment.get(cardData.paymentId).then(async (res) => {
+        const pagamentoStatus = res.body.status
+        await interaction.editReply({ content: pagamentoStatus })
+      }).catch(error => { console.log(error) })
+    } else {
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: '🟠 Pagamento não foi definido, acesse a URL acima.'
+          }).setColor('Orange')
+        ]
       })
     }
   }

@@ -36,7 +36,7 @@ export function Console (controller: string, message: string, color: string, Typ
     const colorTagPattern = /\[([^\]]+)\]\.(\w+)/g
     return message.replace(colorTagPattern, (_, text, color) => {
       const colorFunction = cores[color]
-      if (colorFunction) {
+      if (colorFunction !== undefined) {
         return colorFunction(text)
       } else {
         return text // Retornar o texto original se a cor não for encontrada

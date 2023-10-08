@@ -65,7 +65,7 @@ export class Payment {
             title: 'Pix copia e cola',
             description: pixCode,
             footer: { text: 'No celular, pressione para copiar.', iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) }
-          })
+          }).setColor('Green')
           embeds.push(pixCodeEmbed.toJSON())
         }
 
@@ -142,7 +142,7 @@ export class Payment {
     amountTax: number
   }): Promise<any[]> {
     const { interaction, amountTax } = options
-    const { guildId } = interaction
+    const { guildId, message } = interaction
     const token = await db.payments.get(`${guildId}.config.mcToken`)
 
     mp.configure({
@@ -164,6 +164,8 @@ export class Payment {
     const base64Img = payment.body.point_of_interaction.transaction_data.qr_code_base64
     const buf = Buffer.from(base64Img, 'base64')
     const id = payment.body.id
+
+    await db.payments.set(`${guildId}.process.${message.id}.paymentId`, id)
 
     const dateStr = payment.body.date_of_expiration
     const expirationDate = new Date(dateStr)
