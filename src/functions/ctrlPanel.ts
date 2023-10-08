@@ -4,6 +4,7 @@ import { ButtonBuilder, ButtonStyle, EmbedBuilder, type InteractionResponse, typ
 import { numerosParaLetras } from './Format'
 import { createRow } from '@magicyan/discord'
 import { updateProgressAndEstimation } from '.'
+import { type userData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ctrlPanel {
@@ -41,7 +42,16 @@ export class ctrlPanel {
 
     const [status, userData] = await this.findEmail({ guildId, email, url, token, msg })
 
-    if (status === false) {
+    if (status === true) {
+      await msg.edit({
+        embeds: [
+          new EmbedBuilder({
+            title: `👋 Olá ${userData[0].name}`,
+            description: 'Sabia que seu id é ' + '`' + userData[0].id + '`' + '?'
+          })
+        ]
+      })
+    } else {
       await msg.edit({
         embeds: [
           new EmbedBuilder({
@@ -57,15 +67,6 @@ export class ctrlPanel {
           })
         )]
       })
-    } else {
-      await msg.edit({
-        embeds: [
-          new EmbedBuilder({
-            title: `👋 Olá ${userData[0].name}`,
-            description: 'Sabia que seu id é ' + '`' + userData[0].id + '`' + '?'
-          })
-        ]
-      })
     }
   }
 
@@ -80,15 +81,19 @@ export class ctrlPanel {
     const metadata = await db.ctrlPanel.table(numerosParaLetras(guildId)).get('metadata')
     let runsUpdate: number = 0
 
-    if (metadata?.last_page !== undefined) {
-      core.info(`Procurando: ${email}`)
-      let foundUsers: any[] = []
+    if (metadata?.last_page === undefined) {
+      await this.updateDatabase({ url, token, guildId, msg })
+    }
 
-      async function scan (): Promise<Array<boolean | any[]> | undefined> {
-        for (let page = 1; page <= metadata.last_page; page++) {
-          const dataDB = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(page))
+    core.info(`Procurando: ${email}`)
+    let foundUsers: any[] = []
 
-          foundUsers = await dataDB.filter(
+    async function scan (): Promise<[boolean, any[]] | [boolean] | undefined> {
+      for (let page = 1; page <= metadata.last_page; page++) {
+        const dataDB = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(page))
+
+        if (Array.isArray(dataDB)) {
+          foundUsers = dataDB.filter(
             (user: { email: string }) => user.email.toLowerCase() === email.toLowerCase()
           )
 
@@ -98,20 +103,20 @@ export class ctrlPanel {
           } else {
             core.info(`Pesquisando: ${page}/${metadata.last_page} |`)
           }
-        }
-
-        if (runsUpdate < 1) {
-          await ctrlPanel.updateDatabase({ url, token, guildId, msg })
-          runsUpdate++
-          return await scan()
         } else {
-          return [false]
+          core.error('dataDB não é um array iterável.')
         }
       }
-      return await scan()
-    } else {
-      await this.updateDatabase({ url, token, guildId, msg })
+
+      if (runsUpdate < 1) {
+        await ctrlPanel.updateDatabase({ url, token, guildId, msg })
+        runsUpdate++
+        return await scan()
+      } else {
+        return [false]
+      }
     }
+    return await scan()
   }
 
   private static async updateDatabase (options: {
@@ -121,32 +126,35 @@ export class ctrlPanel {
     msg: InteractionResponse<boolean>
   }): Promise<void> {
     const { url, token, guildId, msg } = options
-    const usersData: any[] = []
+    const usersData: userData[] = []
     const startTime = Date.now()
 
     async function fetchUsers (urlAPI: string): Promise<void> {
-      await axios
-        .get(urlAPI, {
+      try {
+        const response = await axios.get(urlAPI, {
           headers: {
             Accept: 'application/json',
             Authorization: `Bearer ${token}`
           }
-        }).then(async (response) => {
-          const data = response.data
-          const users = data.data
-          const pageNumber = await idURL(urlAPI)
+        })
 
-          for (const user of users) {
-            usersData.push({
-              id: user.id,
-              name: user.name,
-              email: user.email
-            })
-          }
+        const data: any = response.data
+        const users: any[] = data.data
+        const pageNumber = Number(await idURL(urlAPI))
 
-          if (pageNumber !== undefined) {
-            if (Number(pageNumber) <= data.last_page) {
-              const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(pageNumber)
+        for (const user of users) {
+          usersData.push({
+            id: user.id,
+            name: user.name,
+            email: user.email
+          })
+        }
+
+        if (pageNumber !== undefined) {
+          if (pageNumber <= data.last_page) {
+            const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(pageNumber))
+
+            if (Array.isArray(dataBD)) {
               if (dataBD?.length <= 50 || usersData?.length > 0) {
                 let isDataChanged = false
 
@@ -163,36 +171,43 @@ export class ctrlPanel {
                   }
                 }
                 if (isDataChanged) {
-                  core.info(`Tabela: ${Number(pageNumber)}/${data.last_page} | Mesclando`)
+                  core.info(`Tabela: ${pageNumber}/${data.last_page} | Mesclando`)
                   await db.ctrlPanel.table(numerosParaLetras(guildId)).set(`${pageNumber}`, usersData)
                 } else {
-                  core.info(`Tabela: ${Number(pageNumber)}/${data.last_page} | Sincronizado`)
+                  core.info(`Tabela: ${pageNumber}/${data.last_page} | Sincronizado`)
                 }
-                const { progress, estimatedTimeRemaining } = updateProgressAndEstimation({
-                  totalTables: data.last_page,
-                  currentTable: Number(pageNumber),
-                  startTime
-                })
-                await msg.edit({
-                  embeds: [
-                    new EmbedBuilder({
-                      title: 'Fazendo pesquisa avançada...',
-                      fields: [
-                        {
-                          name: 'Tabelas:',
-                          value: `${Number(pageNumber)}/${data.last_page}`
-                        },
-                        {
-                          name: 'Users:',
-                          value: `${data.from} - ${data.to} / ${data.total}`
-                        }
-                      ],
-                      footer: { text: `${progress.toFixed(2)}% | Tempo Restante: ${estimatedTimeRemaining.toFixed(2)}s` }
-                    }).setColor('Green')
-                  ]
-                })
+
+                if (pageNumber % 2 === 0) {
+                  const { progress, estimatedTimeRemaining } = updateProgressAndEstimation({
+                    totalTables: data.last_page,
+                    currentTable: pageNumber,
+                    startTime
+                  })
+                  await msg.edit({
+                    embeds: [
+                      new EmbedBuilder({
+                        title: 'Fazendo pesquisa avançada...',
+                        fields: [
+                          {
+                            name: 'Tabelas:',
+                            value: `${pageNumber}/${data.last_page}`
+                          },
+                          {
+                            name: 'Users:',
+                            value: `${data.from} - ${data.to} / ${data.total}`
+                          }
+                        ],
+                        footer: { text: `${progress.toFixed(2)}% | Tempo Restante: ${estimatedTimeRemaining.toFixed(2)}s` }
+                      }).setColor('Green')
+                    ]
+                  })
+                }
               }
             } else {
+              core.error('dataDB não é um array iterável.')
+            }
+
+            if (pageNumber === data.last_page) {
               const metadata = {
                 last_page: data.last_page,
                 users_per_page: data.per_page,
@@ -204,15 +219,15 @@ export class ctrlPanel {
               await db.ctrlPanel.table(numerosParaLetras(guildId)).set('metadata', metadata)
             }
           }
+        }
 
-          if (data.next_page_url !== null) {
-            usersData.length = 0
-            await fetchUsers(data.next_page_url)
-          }
-        })
-        .catch((error) => {
-          console.error(error)
-        })
+        if (data.next_page_url !== null) {
+          usersData.length = 0
+          await fetchUsers(data.next_page_url)
+        }
+      } catch (err: any) {
+        core.error(err)
+      }
     }
 
     async function idURL (url: string): Promise<string | undefined> {

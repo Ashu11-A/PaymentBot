@@ -25,12 +25,14 @@ export function updateProgressAndEstimation (options: {
   const remainingTables = totalTables - currentTable
   const estimatedTimeRemaining = remainingTables * averageTimePerTable
 
+  /*
   console.log(`
   Tempo decorrido: ${elapsedTime}
   Tempo / Tabela: ${averageTimePerTable}
   estimativa: ${estimatedTimeRemaining}
   Faltam: ${remainingTables} tabelas
   `)
+  */
 
   // Retorne o progresso e a estimativa
   return { progress: (currentTable / totalTables) * 100, estimatedTimeRemaining }
