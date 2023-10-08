@@ -62,7 +62,6 @@ export class ctrlPanel {
           new ButtonBuilder({
             customId: 'deleteMsg',
             label: 'Entendo',
-            emoji: '👍',
             style: ButtonStyle.Success
           })
         )]
@@ -143,10 +142,13 @@ export class ctrlPanel {
         const pageNumber = Number(await idURL(urlAPI))
 
         for (const user of users) {
+          const { id, name, email, credits, pterodactyl_id: pterodactylId } = user
           usersData.push({
-            id: user.id,
-            name: user.name,
-            email: user.email
+            id,
+            name,
+            email,
+            credits,
+            pterodactylId
           })
         }
 
