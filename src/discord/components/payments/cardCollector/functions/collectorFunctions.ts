@@ -16,6 +16,7 @@ export class PaymentFunction {
     await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 1)
     await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
     await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDirect`)
+    await db.payments.delete(`${guildId}.process.${message.id}.user`)
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
     await updateCard.embedAndButtons({
       interaction,

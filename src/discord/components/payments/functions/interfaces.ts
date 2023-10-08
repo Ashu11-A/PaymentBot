@@ -9,6 +9,7 @@ export interface Data {
   typeEmbed?: number
   typeRedeem?: number
   properties?: any
+  user: User
   cupom?: {
     name?: string
     porcent?: number
@@ -18,9 +19,11 @@ export interface Data {
 }
 
 export interface User {
+  id: number
   name: string
   email: string
   credits: number
+  pterodactylId: number
 }
 
 export interface MercadoPago {

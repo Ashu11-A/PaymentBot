@@ -15,8 +15,24 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     const [validador, messageInfo] = validarEmail(messageModal)
     if (validador) {
       core.info(`Solicitação para o E-mail: ${messageModal}`)
-      await ctrlPanel.searchEmail({ interaction, email: messageModal })
-      await db.payments.set(`${guildId}.process.${message?.id}.typeRedeem`, 2)
+      const userData = await ctrlPanel.searchEmail({ interaction, email: messageModal })
+
+      if (userData !== undefined) {
+        await db.payments.set(`${guildId}.process.${message?.id}.user`, userData)
+
+        if (message !== null) {
+          const data = await db.payments.get(`${guildId}.process.${message.id}`)
+
+          await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 2)
+          await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
+          await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDM`)
+          await updateCard.embedAndButtons({
+            interaction,
+            data,
+            message
+          })
+        }
+      }
     } else {
       await interaction.reply({ ephemeral, content: messageInfo })
     }

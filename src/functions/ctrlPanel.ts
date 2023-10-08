@@ -4,7 +4,7 @@ import { ButtonBuilder, ButtonStyle, EmbedBuilder, type InteractionResponse, typ
 import { numerosParaLetras } from './Format'
 import { createRow } from '@magicyan/discord'
 import { updateProgressAndEstimation } from '.'
-import { type userData } from './interfaces'
+import { type User } from '@/discord/components/payments'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ctrlPanel {
@@ -14,7 +14,7 @@ export class ctrlPanel {
   public static async searchEmail (options: {
     interaction: ModalSubmitInteraction<'cached' | 'raw'>
     email: string
-  }): Promise<void> {
+  }): Promise<any> {
     const { interaction, email } = options
     const { guildId } = interaction
     const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
@@ -48,9 +48,17 @@ export class ctrlPanel {
           new EmbedBuilder({
             title: `👋 Olá ${userData[0].name}`,
             description: 'Sabia que seu id é ' + '`' + userData[0].id + '`' + '?'
+          }).setColor('Green')
+        ],
+        components: [createRow(
+          new ButtonBuilder({
+            customId: 'deleteMsg',
+            label: 'Sim, sou eu!',
+            style: ButtonStyle.Success
           })
-        ]
+        )]
       })
+      return userData[0]
     } else {
       await msg.edit({
         embeds: [
@@ -125,7 +133,7 @@ export class ctrlPanel {
     msg: InteractionResponse<boolean>
   }): Promise<void> {
     const { url, token, guildId, msg } = options
-    const usersData: userData[] = []
+    const usersData: User [] = []
     const startTime = Date.now()
 
     async function fetchUsers (urlAPI: string): Promise<void> {

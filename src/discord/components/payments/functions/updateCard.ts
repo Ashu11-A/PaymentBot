@@ -1,19 +1,18 @@
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
-import { type Data, type User } from './interfaces'
+import { type Data } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {
   public static async embedAndButtons (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
     data: Data
-    user?: User
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
     paymentData?: any
     taxa?: number
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
-    const { interaction, data, user, message, typeEdit, paymentData, taxa } = options
-    const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product } = data
+    const { interaction, data, message, typeEdit, paymentData, taxa } = options
+    const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
 
     console.log(paymentData)
 
@@ -111,7 +110,6 @@ export class updateCard {
     }
 
     const embedsPayment = [mainEmbed, infoPayment]
-
     if (user !== undefined && typeEmbed !== 3) {
       const userEmbed = new EmbedBuilder()
         .setColor('LightGrey')
