@@ -85,11 +85,11 @@ export class ctrlPanel {
     msg: InteractionResponse<boolean>
   }): Promise<boolean | any> {
     const { guildId, email, token, url, msg } = options
-    const metadata = await db.ctrlPanel.table(numerosParaLetras(guildId)).get('metadata')
+    let metadata = await db.ctrlPanel.table(numerosParaLetras(guildId)).get('metadata')
     let runsUpdate: number = 0
 
     if (metadata?.last_page === undefined) {
-      await this.updateDatabase({ url, token, guildId, msg })
+      metadata = await this.updateDatabase({ url, token, guildId, msg })
     }
 
     core.info(`Procurando: ${email}`)
@@ -131,12 +131,12 @@ export class ctrlPanel {
     token: string
     guildId: string
     msg: InteractionResponse<boolean>
-  }): Promise<void> {
+  }): Promise<{ last_page: number, users_per_page: number, from: number, to: number, total: number } | undefined> {
     const { url, token, guildId, msg } = options
     const usersData: User [] = []
     const startTime = Date.now()
 
-    async function fetchUsers (urlAPI: string): Promise<void> {
+    async function fetchUsers (urlAPI: string): Promise<{ last_page: number, users_per_page: number, from: number, to: number, total: number } | undefined> {
       try {
         const response = await axios.get(urlAPI, {
           headers: {
@@ -164,76 +164,72 @@ export class ctrlPanel {
           if (pageNumber <= data.last_page) {
             const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(pageNumber))
 
-            if (Array.isArray(dataBD)) {
-              if (dataBD?.length <= 50 || usersData?.length > 0) {
-                let isDataChanged = false
+            if (dataBD?.length <= 50 || usersData?.length > 0) {
+              let isDataChanged = false
 
-                for (let i = 0; i < 50; i++) {
-                  if (usersData?.[i] !== undefined && i >= 0 && i < usersData.length) {
-                    if (
-                      (dataBD?.[i] === undefined) ||
+              for (let i = 0; i < 50; i++) {
+                if (usersData?.[i] !== undefined && i >= 0 && i < usersData.length) {
+                  if (
+                    (dataBD?.[i] === undefined) ||
                       (JSON.stringify(usersData?.[i]) !== JSON.stringify(dataBD?.[i]))
-                    ) {
-                      // Se houver diferenças, marque como dados alterados
-                      isDataChanged = true
-                      break
-                    }
+                  ) {
+                    // Se houver diferenças, marque como dados alterados
+                    isDataChanged = true
+                    break
                   }
                 }
-                if (isDataChanged) {
-                  core.info(`Tabela: ${pageNumber}/${data.last_page} | Mesclando`)
-                  await db.ctrlPanel.table(numerosParaLetras(guildId)).set(`${pageNumber}`, usersData)
-                } else {
-                  core.info(`Tabela: ${pageNumber}/${data.last_page} | Sincronizado`)
-                }
-
-                if (pageNumber % 2 === 0) {
-                  const { progress, estimatedTimeRemaining } = updateProgressAndEstimation({
-                    totalTables: data.last_page,
-                    currentTable: pageNumber,
-                    startTime
-                  })
-                  await msg.edit({
-                    embeds: [
-                      new EmbedBuilder({
-                        title: 'Fazendo pesquisa avançada...',
-                        fields: [
-                          {
-                            name: 'Tabelas:',
-                            value: `${pageNumber}/${data.last_page}`
-                          },
-                          {
-                            name: 'Users:',
-                            value: `${data.from} - ${data.to} / ${data.total}`
-                          }
-                        ],
-                        footer: { text: `${progress.toFixed(2)}% | Tempo Restante: ${estimatedTimeRemaining.toFixed(2)}s` }
-                      }).setColor('Green')
-                    ]
-                  })
-                }
               }
-            } else {
-              core.error('dataDB não é um array iterável.')
+              if (isDataChanged) {
+                core.info(`Tabela: ${pageNumber}/${data.last_page} | Mesclando`)
+                await db.ctrlPanel.table(numerosParaLetras(guildId)).set(`${pageNumber}`, usersData)
+              } else {
+                core.info(`Tabela: ${pageNumber}/${data.last_page} | Sincronizado`)
+              }
+
+              if (pageNumber % 2 === 0) {
+                const { progress, estimatedTimeRemaining } = updateProgressAndEstimation({
+                  totalTables: data.last_page,
+                  currentTable: pageNumber,
+                  startTime
+                })
+                await msg.edit({
+                  embeds: [
+                    new EmbedBuilder({
+                      title: 'Fazendo pesquisa avançada...',
+                      fields: [
+                        {
+                          name: 'Tabelas:',
+                          value: `${pageNumber}/${data.last_page}`
+                        },
+                        {
+                          name: 'Users:',
+                          value: `${data.from} - ${data.to} / ${data.total}`
+                        }
+                      ],
+                      footer: { text: `${progress.toFixed(2)}% | Tempo Restante: ${estimatedTimeRemaining.toFixed(2)}s` }
+                    }).setColor('Green')
+                  ]
+                })
+              }
             }
 
             if (pageNumber === data.last_page) {
+              // eslint-disable-next-line @typescript-eslint/naming-convention
+              const { last_page, per_page: users_per_page, from, to, total } = data
               const metadata = {
-                last_page: data.last_page,
-                users_per_page: data.per_page,
-                from: data.from,
-                to: data.to,
-                total: data.total
+                last_page,
+                users_per_page,
+                from,
+                to,
+                total
               }
-              console.log(metadata)
               await db.ctrlPanel.table(numerosParaLetras(guildId)).set('metadata', metadata)
+              return metadata
+            } else if (data.next_page_url !== null) {
+              usersData.length = 0
+              return await fetchUsers(data.next_page_url)
             }
           }
-        }
-
-        if (data.next_page_url !== null) {
-          usersData.length = 0
-          await fetchUsers(data.next_page_url)
         }
       } catch (err: any) {
         core.error(err)
@@ -251,6 +247,6 @@ export class ctrlPanel {
 
     // Iniciar o processo de busca e salvamento de usuários
     const initialUrl = `${url}/api/users?page=1`
-    await fetchUsers(initialUrl)
+    return await fetchUsers(initialUrl)
   }
 }
