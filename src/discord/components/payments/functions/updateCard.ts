@@ -124,11 +124,6 @@ export class updateCard {
             name: '**🤝 Usuário:**',
             value: user?.name ?? 'Indefinido',
             inline: false
-          },
-          {
-            name: '**💳 Créditos atuais:**',
-            value: user?.credits?.toFixed(2) ?? 'Indefinido',
-            inline: false
           }
         )
 

@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import axios from 'axios'
-import { ButtonBuilder, ButtonStyle, EmbedBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
 import { numerosParaLetras } from './Format'
 import { createRow } from '@magicyan/discord'
 import { updateProgressAndEstimation } from '.'
@@ -42,38 +42,96 @@ export class ctrlPanel {
 
     const [status, userData] = await this.findEmail({ guildId, email, url, token, msg })
 
-    if (status === true) {
-      await msg.edit({
-        embeds: [
-          new EmbedBuilder({
-            title: `👋 Olá ${userData[0].name}`,
-            description: 'Sabia que seu id é ' + '`' + userData[0].id + '`' + '?'
-          }).setColor('Green')
-        ],
-        components: [createRow(
-          new ButtonBuilder({
-            customId: 'deleteMsg',
-            label: 'Sim, sou eu!',
-            style: ButtonStyle.Success
-          })
-        )]
-      })
-      return userData[0]
-    } else {
-      await msg.edit({
-        embeds: [
-          new EmbedBuilder({
-            title: 'Desculpe-me, mas o E-mail informado não foi encontrado, tente novamente...'
-          }).setColor('Red')
-        ],
-        components: [createRow(
+    return await response({ status, userData, runs: 0 })
+
+    async function response (options: {
+      status: boolean
+      userData: any[]
+      runs?: number
+    }): Promise<any> {
+      const { status, userData, runs } = options
+      if (status) {
+        await msg.edit({
+          embeds: [
+            new EmbedBuilder({
+              title: `👋 Olá ${userData[0].name}`,
+              description: 'Sabia que seu id é ' + '`' + userData[0].id + '`' + '?'
+            }).setColor('Green')
+          ],
+          components: [createRow(
+            new ButtonBuilder({
+              customId: 'deleteMsg',
+              label: 'Sim, sou eu!',
+              style: ButtonStyle.Success
+            })
+          )]
+        })
+        return userData[0]
+      } else {
+        let title: string = ''
+        if (runs === 0) {
+          title = 'Desculpe-me, mas o E-mail informado não foi encontrado...'
+        } else {
+          title = 'Desculpe-me, mas realmente não achei o E-mail informado, tente novamente...'
+        }
+
+        const embed = new EmbedBuilder({
+          title,
+          fields: [
+            {
+              name: '✉️ E-mail:',
+              value: '```' + email + '```'
+            }
+          ]
+        }).setColor('Red')
+
+        const row = new ActionRowBuilder<ButtonBuilder>()
+        if (runs === 0) {
+          embed.setFooter({ iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: 'Se sua conta for nova, faça uma pesquisa avançada' })
+          row.addComponents(
+            new ButtonBuilder({
+              customId: 'ctrlpanel-advanced-search',
+              emoji: '🔎',
+              label: 'Pesquisa Avançada',
+              style: ButtonStyle.Primary
+            })
+          )
+        }
+        row.addComponents(
           new ButtonBuilder({
             customId: 'deleteMsg',
             label: 'Entendo',
-            style: ButtonStyle.Success
+            style: ButtonStyle.Danger
           })
-        )]
-      })
+        )
+
+        const message = await msg.edit({
+          embeds: [embed],
+          components: [row]
+        })
+
+        if (runs === 0) {
+          const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })
+
+          collector.on('collect', async subInteraction => {
+            collector.stop()
+            await subInteraction.reply({
+              ephemeral,
+              embeds: [
+                new EmbedBuilder({
+                  title: 'Realizando pesquisa...'
+                }).setColor('Aqua')
+              ]
+            })
+            if (subInteraction.customId === 'ctrlpanel-advanced-search') {
+              await ctrlPanel.updateDatabase({ url, token, guildId, msg })
+              const [status, userData] = await ctrlPanel.findEmail({ guildId, email, url, token, msg })
+
+              return await response({ status, userData, runs: 1 })
+            }
+          })
+        }
+      }
     }
   }
 
@@ -86,7 +144,6 @@ export class ctrlPanel {
   }): Promise<boolean | any> {
     const { guildId, email, token, url, msg } = options
     let metadata = await db.ctrlPanel.table(numerosParaLetras(guildId)).get('metadata')
-    let runsUpdate: number = 0
 
     if (metadata?.last_page === undefined) {
       metadata = await this.updateDatabase({ url, token, guildId, msg })
@@ -112,15 +169,12 @@ export class ctrlPanel {
           }
         } else {
           core.error('dataDB não é um array iterável.')
+          return [false]
         }
-      }
 
-      if (runsUpdate < 1) {
-        await ctrlPanel.updateDatabase({ url, token, guildId, msg })
-        runsUpdate++
-        return await scan()
-      } else {
-        return [false]
+        if (page === metadata.last_page) {
+          return [false]
+        }
       }
     }
     return await scan()
@@ -150,12 +204,11 @@ export class ctrlPanel {
         const pageNumber = Number(await idURL(urlAPI))
 
         for (const user of users) {
-          const { id, name, email, credits, pterodactyl_id: pterodactylId } = user
+          const { id, name, email, pterodactyl_id: pterodactylId } = user
           usersData.push({
             id,
             name,
             email,
-            credits,
             pterodactylId
           })
         }
@@ -193,6 +246,7 @@ export class ctrlPanel {
                   startTime
                 })
                 await msg.edit({
+                  components: [],
                   embeds: [
                     new EmbedBuilder({
                       title: 'Fazendo pesquisa avançada...',
