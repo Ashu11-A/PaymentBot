@@ -1,10 +1,11 @@
 import { core, db } from '@/app'
-import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock } from 'discord.js'
+import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
 import { type Data, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 import mp from 'mercadopago'
 import axios from 'axios'
 import { settings } from '@/settings'
+import { ctrlPanel } from '@/functions/ctrlPanel'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
@@ -303,9 +304,10 @@ export class PaymentFunction {
       const res = await mp.payment.get(cardData.paymentId)
       const pagamentoStatus = res.body.status
 
-      if (pagamentoStatus !== 'approved') {
+      if (pagamentoStatus === 'approved') {
         await interaction.message.delete()
-        await interaction.editReply({
+        await interaction.deleteReply()
+        await interaction.channel?.send({
           embeds: [
             new EmbedBuilder({
               title: '**✅ Pagamento aprovado com sucesso!**',
@@ -316,7 +318,48 @@ export class PaymentFunction {
           ]
         })
 
-        if (cardData.typeRedeem === 1) {
+        if (cardData.typeRedeem === 2) {
+          const [userCoins, dashLink] = await ctrlPanel.updateUser({
+            guildId,
+            userID: cardData.user.id,
+            post: {
+              credits: Number(cardData.coins),
+              email: cardData.user.email,
+              name: cardData.user.name,
+              role: 'client'
+            }
+          })
+
+          const embed = new EmbedBuilder({
+            title: 'Seus créditos foram entregues!'
+          }).setColor('Green')
+
+          if (userCoins !== undefined) {
+            embed.addFields({
+              name: '🪙 | Seus Créditos:',
+              value: String(userCoins)
+            })
+          }
+
+          const components: Array<ActionRowBuilder<ButtonBuilder>> = []
+
+          if (dashLink !== undefined) {
+            components[0] = new ActionRowBuilder()
+            components[0].addComponents([
+              new ButtonBuilder({
+                url: dashLink,
+                style: ButtonStyle.Link,
+                label: 'Dash'
+              })
+            ])
+          }
+
+          await interaction.channel?.send({
+            content: `<@${user.id}>`,
+            embeds: [embed],
+            components
+          })
+        } else {
           const Post = {
             token: tokenAuth,
             guild: {

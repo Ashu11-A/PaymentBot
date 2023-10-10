@@ -354,4 +354,63 @@ export class ctrlPanel {
       return [undefined, undefined]
     }
   }
+
+  /**
+   * Atualiza dados dos usuários do Dash
+   */
+  public static async updateUser (options: {
+    userID: string
+    guildId: string
+    post: {
+      credits?: number
+      name?: string
+      email?: string
+      role?: 'client' | 'admin'
+    }
+  }): Promise<[ number, string ] | [undefined, undefined]> {
+    const { userID, guildId, post } = options
+    const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
+
+    try {
+      if (ctrlPanelData !== undefined) {
+        const { url, token } = ctrlPanelData
+        // Adicionar créditos
+        const response = await axios.patch(
+            `${url}/api/users/${userID}/increment`,
+            post,
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            }
+        )
+
+        if (
+          typeof post.name === 'string' &&
+          post.email !== undefined &&
+          typeof post.role === 'string'
+        ) {
+          delete post.credits
+          // Coloca o usuário como Client
+          await axios.patch(
+            `${url}/api/users/${userID}`,
+            post,
+            {
+              headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${token}`
+              }
+            }
+          )
+        }
+        const { credits } = response.data
+        return [credits, url]
+      }
+      return [undefined, undefined]
+    } catch (err) {
+      console.log(err)
+      return [undefined, undefined]
+    }
+  }
 }
