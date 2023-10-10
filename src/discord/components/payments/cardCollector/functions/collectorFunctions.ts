@@ -1,8 +1,10 @@
-import { db } from '@/app'
-import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
+import { core, db } from '@/app'
+import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock } from 'discord.js'
 import { type Data, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 import mp from 'mercadopago'
+import axios from 'axios'
+import { settings } from '@/settings'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
@@ -286,22 +288,142 @@ export class PaymentFunction {
     interaction: ButtonInteraction<CacheType>
   }): Promise<any> {
     const { interaction } = options
-    const { guildId, message } = interaction
+    if (!interaction.inCachedGuild()) return
+    const { guildId, message, user, guild } = interaction
     const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
+    const tokenAuth = await db.tokens.get('token')
 
     if (cardData?.paymentId !== undefined) {
       const token = await db.payments.get(`${guildId}.config.mcToken`)
-      console.log(cardData.paymentId)
-      console.log(token)
 
       mp.configure({
         access_token: token
       })
 
-      await mp.payment.get(cardData.paymentId).then(async (res) => {
-        const pagamentoStatus = res.body.status
-        await interaction.editReply({ content: pagamentoStatus })
-      }).catch(error => { console.log(error) })
+      const res = await mp.payment.get(cardData.paymentId)
+      const pagamentoStatus = res.body.status
+
+      if (pagamentoStatus !== 'approved') {
+        await interaction.message.delete()
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: '**✅ Pagamento aprovado com sucesso!**',
+              description: '',
+              footer: { text: 'Esse carrinho será fechado em 15 segundos.' },
+              timestamp: new Date()
+            }).setColor('Green')
+          ]
+        })
+
+        if (cardData.typeRedeem === 1) {
+          const Post = {
+            token: tokenAuth,
+            guild: {
+              id: guild.id,
+              name: guild.name
+            },
+            user: {
+              id: user.id,
+              name: user.username
+            },
+            productId: cardData.paymentId,
+            credits: Number(cardData.coins),
+            price: Number(cardData.amount),
+            name: cardData.product
+          }
+
+          const response = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/voucher`, Post, {
+            headers: {
+              Accept: 'application/json'
+            }
+          })
+          if ((response?.status !== 200) || (response?.data?.status !== undefined && response?.data?.status !== 200)) {
+            await interaction.channel?.send({
+              content: '@everyone',
+              embeds: [
+                new EmbedBuilder({
+                  title: 'Ocorreu um erro, chame um moderador!',
+                  fields: [
+                    {
+                      name: 'ID:',
+                      value: `||${cardData.paymentId}||`
+                    },
+                    {
+                      name: 'UUID:',
+                      value: `||${cardData.UUID}||`
+                    }
+                  ],
+                  timestamp: new Date(),
+                  footer: { text: `Code Error: ${response?.data?.status ?? response.status}, Error ${response?.data?.error ?? response.statusText}` }
+                }).setColor('Red')
+              ]
+            })
+            core.info(`Ocorreu um erro no Pagamento (ID: ${cardData.paymentId}) do usuário ${user.username} (ID: ${user.id})!`)
+            return
+          } else {
+            const embeds = [
+              new EmbedBuilder({
+                title: 'Compra efetuada com sucesso!',
+                description: `<@${user.id}> Agradecemos por escolher nossos produtos e serviços e esperamos atendê-lo novamente em breve.`,
+                fields: [
+                  { name: '🛒 | Produto: ', value: cardData.product },
+                  { name: '💰 | Créditos: ', value: cardData.coins },
+                  { name: '💵 | Valor: ', value: `R$${cardData.amount}` },
+                  {
+                    name: '📆 | Data: ',
+                    value: codeBlock(new Date(Date.now()).toLocaleString('pt-BR'))
+                  },
+                  { name: '🔑 | ID:', value: codeBlock(cardData.paymentId) }
+                ],
+                thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028234365248995368/aprove.gif' },
+                footer: { iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: `Atenciosamente, ${guild.name}` }
+              }).setColor('Green'),
+
+              new EmbedBuilder({
+                title: 'Resgate o Código aqui!',
+                description: 'Vá até loja, e clique em “Código de resgate” ',
+                fields: [
+                  {
+                    name: '💎 | Código de resgate: ',
+                    value: response.data.code
+                  },
+                  {
+                    name: '🔑 | ID: ',
+                    value: codeBlock(response.data.id)
+                  }
+                ],
+                footer: { iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: 'No celular, pressione o código para copiar.' },
+                url: 'https://dash.seventyhost.net',
+                image: { url: 'https://cdn.discordapp.com/attachments/1031659863757041674/1161136544128700546/image.png' }
+              })
+                .setColor('Blue'),
+              new EmbedBuilder().setURL('https://dash.seventyhost.net').setImage('https://cdn.discordapp.com/attachments/1031659863757041674/1161137302920253470/image.png')
+            ]
+
+            await user.send({
+              embeds
+            })
+          }
+        }
+
+        core.info(`Pagamento (ID: ${cardData.paymentId}) do usuário ${user.username} (ID: ${user.id}) foi aprovado com sucesso!`)
+
+        setTimeout(() => {
+          void db.payments.delete(`${guildId}.process.${message.id}`)
+          interaction?.channel?.delete().catch(console.error)
+        }, 15000)
+        return undefined
+      } else {
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: 'Status atual da compra está como ' + '`' + pagamentoStatus + '`',
+              timestamp: new Date()
+            }).setColor('Orange')
+          ]
+        })
+      }
     } else {
       await interaction.editReply({
         embeds: [
