@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle } from 'discord.js'
+import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle, codeBlock } from 'discord.js'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): any {
   return new ActionRowBuilder<Component>({ components })
@@ -41,7 +41,7 @@ export class Discord {
         case 'noPermission': {
           if (!(interaction instanceof ButtonInteraction)) {
             name = 'Usuário sem permissão tentou executar um comando'
-            value = `<@${interaction?.user.id}> Tentou usar o comando` + '```' + `/${interaction?.commandName}` + '```'
+            value = `<@${interaction?.user.id}> Tentou usar o comando` + codeBlock(`/${interaction?.commandName}`)
           }
           break
         }

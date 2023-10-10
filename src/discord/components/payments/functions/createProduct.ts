@@ -1,4 +1,4 @@
-import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message } from 'discord.js'
+import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message, codeBlock } from 'discord.js'
 import { db } from '@/app'
 import { updateProduct } from './updateProduct'
 
@@ -7,7 +7,7 @@ export async function sendEmbed (interaction: CommandInteraction<'cached'>, chan
   const icon = interaction.guild.iconURL({ size: 2048 }) as string ?? undefined
   const embed = new EmbedBuilder({
     title: 'Plano',
-    description: '```' + 'Sem nenhuma descrição' + '```',
+    description: codeBlock('Sem nenhuma descrição\''),
     thumbnail: { url: icon },
     image: { url: icon }
   }).setColor('Blue')

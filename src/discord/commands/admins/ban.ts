@@ -1,4 +1,4 @@
-import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, GuildMember } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel, GuildMember, codeBlock } from 'discord.js'
 import { Command } from '@/discord/base'
 import { client, db } from '@/app'
 import { Discord } from '@/functions'
@@ -85,7 +85,7 @@ new Command({
         .addFields(
           {
             name: 'Usuário Banido',
-            value: '```User: ' + user?.username + '\n' + 'ID:' + user?.id + '```'
+            value: codeBlock(`User: ${user?.username}'\n'ID: ${user?.id}`)
           },
           {
             name: 'Moderador responsável',

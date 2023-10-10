@@ -1,7 +1,7 @@
 import { client, db } from '@/app'
 import { Command } from '@/discord/base'
 import { Discord } from '@/functions'
-import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, type TextChannel } from 'discord.js'
+import { EmbedBuilder, ApplicationCommandType, ApplicationCommandOptionType, type TextChannel, codeBlock } from 'discord.js'
 
 new Command({
   name: 'kick',
@@ -65,7 +65,7 @@ new Command({
         .addFields(
           {
             name: 'Usuário expulso',
-            value: '```User: ' + user?.username + '\n' + 'ID:' + user?.id + '```'
+            value: codeBlock(`User: ${user?.username}\nID: ${user?.id}`)
           },
           { name: 'Motivo', value: reason },
           {

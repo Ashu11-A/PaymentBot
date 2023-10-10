@@ -1,5 +1,5 @@
 import { Command } from '@/discord/base'
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder } from 'discord.js'
+import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, codeBlock } from 'discord.js'
 
 new Command({
   name: 'id',
@@ -62,21 +62,21 @@ new Command({
       if (user !== null) {
         embed.addFields({
           name: `User: ${user?.username}`,
-          value: 'ID: ```' + user.id + '```'
+          value: codeBlock(`ID: ${user.id}`)
         })
       }
 
       if (cargo !== null) {
         embed.addFields({
           name: `Role: ${cargo?.name}`,
-          value: 'ID: ```' + cargo.id + '```'
+          value: codeBlock(`ID: ${cargo.id}`)
         })
       }
 
       if (canal !== null) {
         embed.addFields({
           name: `Channel: ${canal?.name}`,
-          value: 'ID: ```' + canal.id + '```'
+          value: codeBlock(`ID: ${canal.id}`)
         })
       }
 

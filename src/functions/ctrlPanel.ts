@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import axios from 'axios'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
 import { numerosParaLetras } from './Format'
 import { createRow } from '@magicyan/discord'
 import { updateProgressAndEstimation } from '.'
@@ -82,7 +82,7 @@ export class ctrlPanel {
           fields: [
             {
               name: '✉️ E-mail:',
-              value: '```' + email + '```'
+              value: codeBlock(email)
             }
           ]
         }).setColor('Red')

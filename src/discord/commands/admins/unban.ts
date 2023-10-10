@@ -64,7 +64,7 @@ new Command({
             .addFields(
               {
                 name: 'Usuário desbanido',
-                value: '```ID: ' + userID + '```'
+                value: codeBlock(`ID: ${userID}`)
               },
               {
                 name: 'Moderador responsável',
