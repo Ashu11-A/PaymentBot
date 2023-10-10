@@ -337,14 +337,6 @@ export class ctrlPanel {
         })
         const { data } = response
         if (response.status === 201 && data.status === 'VALID') {
-          await db.payments.set(`approved.${productId}`, {
-            userName: user.name,
-            userId: user.id,
-            price,
-            name,
-            voucherID: data.id,
-            voucher: code
-          })
           return [code, data.id]
         }
       }

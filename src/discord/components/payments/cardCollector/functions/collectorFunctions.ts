@@ -304,7 +304,9 @@ export class PaymentFunction {
       const res = await mp.payment.get(cardData.paymentId)
       const pagamentoStatus = res.body.status
 
-      if (pagamentoStatus === 'approved') {
+      if (pagamentoStatus !== 'approved') {
+        let voucherCode: string | undefined
+        let voucherId: number | undefined
         await interaction.message.delete()
         await interaction.deleteReply()
         await interaction.channel?.send({
@@ -381,6 +383,8 @@ export class PaymentFunction {
               Accept: 'application/json'
             }
           })
+          voucherCode = response.data.code
+          voucherId = response.data.id
           if ((response?.status !== 200) || (response?.data?.status !== undefined && response?.data?.status !== 200)) {
             await interaction.channel?.send({
               content: '@everyone',
@@ -444,6 +448,14 @@ export class PaymentFunction {
               new EmbedBuilder().setURL('https://dash.seventyhost.net').setImage('https://cdn.discordapp.com/attachments/1031659863757041674/1161137302920253470/image.png')
             ]
 
+            await interaction?.channel?.send({
+              embeds: [
+                new EmbedBuilder({
+                  title: 'O código de resgate foi enviado para o seu PV.'
+                }).setColor('Purple')
+              ]
+            })
+
             await user.send({
               embeds
             })
@@ -451,6 +463,16 @@ export class PaymentFunction {
         }
 
         core.info(`Pagamento (ID: ${cardData.paymentId}) do usuário ${user.username} (ID: ${user.id}) foi aprovado com sucesso!`)
+
+        await db.payments.set(`approved.${cardData.paymentId}`, {
+          paymentId: cardData.paymentId,
+          userName: user.username,
+          userId: user.id,
+          price: cardData.amount,
+          product: cardData.product,
+          voucherId,
+          voucherCode
+        })
 
         setTimeout(() => {
           void db.payments.delete(`${guildId}.process.${message.id}`)
