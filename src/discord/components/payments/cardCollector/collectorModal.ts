@@ -59,11 +59,14 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
             data,
             message: msg
           })
+          /* Modo debug
           await updateCard.displayData({
             interaction,
             data,
             type: 'editReply'
           })
+          */
+          await interaction.deleteReply()
         }).catch(async (err: Error) => {
           console.log(err)
           await interaction.editReply({ content: '❌ | Ocorreu um erro!' })

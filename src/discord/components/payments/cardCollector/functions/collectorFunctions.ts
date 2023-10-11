@@ -27,11 +27,14 @@ export class PaymentFunction {
       data,
       message
     })
+    await interaction.deleteReply()
+    /* Modo debug
     await updateCard.displayData({
       interaction,
       data,
       type: 'editReply'
     })
+    */
   }
 
   /**
@@ -181,11 +184,7 @@ export class PaymentFunction {
       message
     })
 
-    await updateCard.displayData({
-      interaction,
-      data,
-      type: 'editReply'
-    })
+    await interaction.deleteReply()
   }
 
   /**
@@ -304,7 +303,7 @@ export class PaymentFunction {
       const res = await mp.payment.get(cardData.paymentId)
       const pagamentoStatus = res.body.status
 
-      if (pagamentoStatus !== 'approved') {
+      if (pagamentoStatus === 'approved') {
         let voucherCode: string | undefined
         let voucherId: number | undefined
         await interaction.message.delete()

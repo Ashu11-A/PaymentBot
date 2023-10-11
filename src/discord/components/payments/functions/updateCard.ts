@@ -56,7 +56,7 @@ export class updateCard {
           inline: false
         },
         {
-          name: '**💰 Valor:**',
+          name: '**💰 Valor unitário:**',
           value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`,
           inline: true
         },
