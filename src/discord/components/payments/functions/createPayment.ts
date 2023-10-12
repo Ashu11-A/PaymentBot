@@ -3,7 +3,7 @@ import mp from 'mercadopago'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
 import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
 import { updateCard } from './updateCard'
-import { type Data, type MercadoPago } from './interfaces'
+import { type cardData, type MercadoPago } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Payment {
@@ -182,7 +182,7 @@ export class Payment {
     interaction: ButtonInteraction<CacheType>
     method: 'debit_card' | 'credit_card'
     amountTax: number
-    cardData: Data
+    cardData: cardData
   }): Promise<any[]> {
     const { interaction, method, amountTax, cardData } = options
     if (!interaction.inGuild()) return

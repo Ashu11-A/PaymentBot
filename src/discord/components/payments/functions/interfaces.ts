@@ -1,6 +1,7 @@
+import { type APIEmbed } from 'discord.js'
 import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethods } from 'mercadopago/models/preferences/create-payload.model'
 
-export interface Data {
+export interface cardData {
   UUID?: string
   product?: string
   amount?: number
@@ -9,13 +10,23 @@ export interface Data {
   typeEmbed?: number
   typeRedeem?: number
   properties?: any
-  user: User
+  user?: User
   cupom?: {
     name?: string
     porcent?: number
     cupomAmount?: number
   }
   fields?: Array<{ value: string }>
+}
+
+export interface productData {
+  id: string
+  role: string
+  embed: APIEmbed
+  status: boolean
+  price?: number
+  coins?: number
+  properties: any
 }
 
 export interface User {

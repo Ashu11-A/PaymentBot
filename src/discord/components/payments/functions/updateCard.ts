@@ -1,11 +1,11 @@
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
-import { type Data } from './interfaces'
+import { type cardData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {
   public static async embedAndButtons (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: Data
+    data: cardData
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
     paymentData?: any
@@ -162,7 +162,7 @@ export class updateCard {
   }
 
   public static async buttons (options: {
-    data: Data
+    data: cardData
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
     const { data } = options
     const { typeEmbed: type } = data
@@ -341,7 +341,7 @@ export class updateCard {
 
   public static async displayData (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: Data
+    data: cardData
     type?: 'editReply' | 'reply'
   }): Promise<void> {
     const { interaction, type, data } = options

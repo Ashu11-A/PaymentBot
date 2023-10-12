@@ -7,18 +7,18 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   if (!interaction.inGuild()) return
 
   const { customId, guildId, channel, channelId, message, fields } = interaction
+  const { type } = value
+  let messageModal: string | number = fields.getTextInputValue('content')
 
   await interaction.deferReply({ ephemeral: true })
-
-  const { type } = value
-  let messageModal = fields.getTextInputValue('content')
 
   if (messageModal.toLowerCase() === 'vazio') {
     messageModal = ''
   }
 
-  if (customId === 'paymentSetPrice') {
+  if (customId === 'paymentSetPrice' || customId === 'paymentAddCoins') {
     const [validador, message] = validarValor(messageModal)
+    messageModal = Number(messageModal.replace(',', '.'))
     if (validador === false) {
       await interaction.editReply({ content: message })
       return

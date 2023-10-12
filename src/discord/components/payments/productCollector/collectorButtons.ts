@@ -29,7 +29,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'switch',
         otherSystemNames: ['paymentSetCtrlPanel']
       })
-      await updateProduct.buttonsConfig({ interaction, message })
+      await updateProduct.embed({ interaction, message })
     },
     paymentSetCtrlPanel: async () => {
       await Database.setDelete({
@@ -41,15 +41,13 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'switch',
         otherSystemNames: ['paymentSetEstoque']
       })
-      await updateProduct.buttonsConfig({ interaction, message })
+      await updateProduct.embed({ interaction, message })
     },
     paymentExport: async () => {
       await updateProduct.export({ interaction, message })
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${customId}`, true)
     },
-    paymentImport: async () => {
-      await updateProduct.import({ interaction, message })
-    }
+    paymentImport: async () => { await updateProduct.import({ interaction, message }) }
 
   }
 

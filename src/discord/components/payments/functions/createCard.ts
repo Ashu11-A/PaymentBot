@@ -2,6 +2,7 @@ import { db } from '@/app'
 import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
 import { updateCard } from './updateCard'
 import { Discord, genv4 } from '@/functions'
+import { type productData } from './interfaces'
 
 export async function createCard (interaction: ButtonInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild()) return
@@ -30,15 +31,27 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
     })
   } else {
     try {
-      const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-      const product: string = data?.embed?.title
+      const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
+      const product = productData?.embed?.title
       const status = await db.system.get(`${guildId}.status`)
       const paymentsConfig = await db.payments.get(`${guildId}.config`)
 
-      const coins = data?.coins
-      let amount = data?.price
+      // Verificar se o produto está configurado
+      if (productData?.properties?.paymentSetCtrlPanel === undefined && productData?.coins === undefined) {
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: 'Nenhum método de envio foi configurado.'
+            }).setColor('Aqua')
+          ]
+        })
+        return
+      }
 
-      if (amount === undefined || parseFloat(amount?.replace(',', '.')) === 0) {
+      const coins = productData?.coins
+      const price = productData?.price
+
+      if (price === undefined) {
         await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
         return
       }
@@ -46,8 +59,6 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
         await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
         return
       }
-
-      amount = amount.replace(',', '.')
 
       // Permissões de visualização do novo channel
       const permissionOverwrites = [
@@ -75,7 +86,7 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
         interaction,
         data: {
           product,
-          amount,
+          amount: price,
           typeEmbed: 0,
           quantity: 1,
           coins
@@ -110,7 +121,7 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
               channelId: paymentChannel.id,
               messageId: msg.id,
               product,
-              amount,
+              amount: price,
               coins,
               quantity: 1,
               typeEmbed: 0,

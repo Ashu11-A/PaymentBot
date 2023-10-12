@@ -1,6 +1,8 @@
 import { db } from '@/app'
 import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, EmbedBuilder, MessageCollector, type TextBasedChannel, AttachmentBuilder, type APIActionRowComponent, type APIButtonComponent } from 'discord.js'
+import { Check } from './checkConfig'
+import { type productData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateProduct {
@@ -14,35 +16,35 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message, button } = options
     const { guildId, channelId, customId } = interaction
-    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
-    const updateEmbed = new EmbedBuilder(data?.embed)
+    const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`) as productData
+    const updateEmbed = new EmbedBuilder(productData?.embed)
 
-    if (data?.price !== undefined && data.price !== '') {
+    if (productData?.price !== undefined) {
       updateEmbed.addFields(
         {
           name: '💵 | Preço:',
-          value: `R$${data.price}`
+          value: `R$${productData.price}`
         }
       )
     }
-    if (data?.coins !== undefined && data.coins !== '') {
+    if (productData?.properties?.paymentSetCtrlPanel === true && productData?.coins !== undefined) {
       updateEmbed.addFields({
         name: '🪙 | Coins:',
-        value: data.coins
+        value: String(productData.coins)
       })
     }
 
-    if (data?.role !== undefined && data.role !== '') {
+    if (productData?.role !== undefined && productData.role !== '') {
       updateEmbed.addFields({
         name: '🛂 | Você receberá o cargo:',
-        value: `<@&${data.role}>`
+        value: `<@&${productData.role}>`
       })
     }
 
-    if (data?.embed !== undefined) {
-      if (data.embed?.color !== undefined && typeof data.embed?.color === 'string') {
-        if (data.embed.color?.startsWith('#') === true) {
-          updateEmbed.setColor(parseInt(data.embed.color.slice(1), 16))
+    if (productData?.embed !== undefined) {
+      if (productData.embed?.color !== undefined && typeof productData.embed.color === 'string') {
+        if (productData.embed.color?.startsWith('#') === true) {
+          updateEmbed.setColor(parseInt(productData.embed.color.slice(1), 16))
         }
       }
     }
@@ -71,7 +73,7 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message, switchBotton, button } = options
     const { guildId, channelId } = interaction
-    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
+    const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
 
     let customId: string | undefined
     if (button !== undefined) {
@@ -107,7 +109,7 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of row2Buttons) {
         const { custom_id: customID } = Object(value.toJSON())
-        if (data?.properties?.[customID] !== undefined) {
+        if (productData?.properties?.[customID] !== undefined) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
@@ -150,18 +152,18 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
         const { custom_id: customID } = Object(value.toJSON())
-        if (data?.properties?.[customID] === true) {
+        if (productData?.properties?.[customID] === true) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
 
-        if (customID === 'paymentAddEstoque' && data?.properties?.paymentSetEstoque === true) {
+        if (customID === 'paymentAddEstoque' && productData?.properties?.paymentSetEstoque === true) {
           value.setDisabled(false)
         }
-        if (customID === 'paymentAddCoins' && data?.properties?.paymentSetCtrlPanel === true) {
+        if (customID === 'paymentAddCoins' && productData?.properties?.paymentSetCtrlPanel === true) {
           value.setDisabled(false)
-          if (data?.coins !== undefined && data?.coins !== '') {
+          if (productData?.coins !== undefined) {
             value.setStyle(ButtonStyle.Primary)
           } else {
             value.setStyle(ButtonStyle.Secondary)
@@ -196,7 +198,7 @@ export class updateProduct {
       for (const value of footerBar) {
         const { custom_id: customID } = Object(value.toJSON())
         if (customID === 'paymentStatus') {
-          if (data?.status === true) {
+          if (productData?.status) {
             value.setLabel('Ativado')
               .setEmoji('✅')
               .setStyle(ButtonStyle.Primary)
@@ -294,7 +296,20 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message } = options
     const { guildId, channelId } = interaction
-    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
+    const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
+
+    const checkRes = await Check.product({ productData })
+    if (!checkRes[0]) {
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: '⚠️ Faltam configurar algumas propriedades!',
+            description: checkRes[1]
+          }).setColor('Red')
+        ]
+      })
+      return
+    }
 
     const row1Buttons = [
       new ButtonBuilder()
@@ -313,7 +328,7 @@ export class updateProduct {
     for (const value of row1Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
       if (customID === 'paymentBuy') {
-        if (data?.status !== undefined && data.status === true) {
+        if (productData?.status !== undefined && productData.status) {
           value.setDisabled(false)
         } else {
           value.setDisabled(true)
@@ -343,8 +358,8 @@ export class updateProduct {
     const { interaction, message } = options
     const { guildId, channelId } = interaction
 
-    const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-    const jsonData = JSON.stringify(data, (key, value) => {
+    const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
+    const jsonData = JSON.stringify(productData, (key, value) => {
       if (typeof value === 'string') {
         return value.replace(/`/g, '\\`')
       }
@@ -421,9 +436,9 @@ export class updateProduct {
             const json = JSON.parse(cleanedJsonData)
             delete json.id
             console.log(json)
-            const data = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
+            const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`) as productData
             await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}`, {
-              id: data.id,
+              id: productData.id,
               ...json
             })
             if (message !== null) {
@@ -466,8 +481,8 @@ export class updateProduct {
   }): Promise<void> {
     const { interaction, message } = options
     const { guildId, channelId } = interaction
-    let { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`)
-    if (status === undefined || status === false) {
+    let { status } = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
+    if (status === undefined || !status) {
       status = true
     } else {
       status = false
@@ -476,9 +491,9 @@ export class updateProduct {
     await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.status`, status)
     await this.buttonsConfig({ interaction, message })
     const embed = new EmbedBuilder({
-      title: `Produto ${status === true ? 'Ativado' : 'Desativado'} com sucesso.`
+      title: `Produto ${status ? 'Ativado' : 'Desativado'} com sucesso.`
     })
-    if (status === true) {
+    if (status) {
       embed.setColor('Green')
     } else {
       embed.setColor('Red')

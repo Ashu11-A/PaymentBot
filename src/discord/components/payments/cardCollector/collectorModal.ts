@@ -1,5 +1,5 @@
 import { core, db } from '@/app'
-import { validarEmail, validarValor } from '@/functions'
+import { validarEmail } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { updateCard } from '@/discord/components/payments'
 import { ctrlPanel } from '@/functions/ctrlPanel'
@@ -39,15 +39,6 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   }
 
   await interaction.deferReply({ ephemeral: true })
-
-  if (customId === 'paymentSetPrice') {
-    const [validador, message] = validarValor(messageModal)
-    if (validador === false) {
-      await interaction.editReply({ content: message })
-      return
-    }
-  }
-
   await db.payments.set(`${guildId}.process.${message?.id}.${type}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
