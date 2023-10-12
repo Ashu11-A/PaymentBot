@@ -298,7 +298,7 @@ export class updateProduct {
     const { guildId, channelId } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
 
-    const checkRes = await Check.product({ productData })
+    const checkRes = await Check.product({ interaction, productData })
     if (!checkRes[0]) {
       await interaction.editReply({
         embeds: [

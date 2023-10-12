@@ -1,4 +1,6 @@
+import { type ButtonInteraction, type CacheType, type CommandInteraction } from 'discord.js'
 import { type productData } from './interfaces'
+import { db } from '@/app'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Check {
@@ -6,9 +8,11 @@ export class Check {
     * Verificar se as informações do produto estão coerentes antes de continuar
     */
   public static async product (options: {
+    interaction: ButtonInteraction<CacheType> | CommandInteraction<'cached'>
     productData: productData
   }): Promise<[boolean, string] | [boolean]> {
-    const { productData } = options
+    const { interaction, productData } = options
+    const { guildId } = interaction
     const errors: string[] = []
 
     if (productData !== undefined) {
@@ -16,8 +20,16 @@ export class Check {
         errors.push('Nenhum método de envio foi configurado.')
       }
 
-      if (productData?.properties?.paymentSetCtrlPanel === true && productData?.coins === undefined) {
-        errors.push('Método de envio é `CtrlPanel`, mas não foi setado as moedas a serem adquiridas.')
+      if (productData?.properties?.paymentSetCtrlPanel === true) {
+        const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
+
+        if (productData?.coins === undefined) {
+          errors.push('Método de envio é `CtrlPanel`, mas não foi setado as moedas a serem adquiridas.')
+        }
+
+        if (ctrlPanelData?.token === undefined && ctrlPanelData?.url === undefined) {
+          errors.push('Propriedades do ctrlPanel não configurados, use o comando: /config ctrlpanel')
+        }
       }
 
       if (productData.price === undefined) {
