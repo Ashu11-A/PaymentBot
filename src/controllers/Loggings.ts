@@ -26,4 +26,15 @@ class Loggings {
   }
 }
 
+/**
+ * #### Type LoggingsConstructor
+ * 
+ * ```ts
+ * import Loggings { LoggingsConstructor } from "@/controllers/Loggings"
+ * 
+ * const core:LoggingsConstructor = new Loggings("Exemplo", "blue")
+ * ```
+ */
+export type LoggingsConstructor = new (title: string, color: string) => Loggings;
+
 export default Loggings
