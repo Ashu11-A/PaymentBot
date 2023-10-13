@@ -26,4 +26,33 @@ class Loggings {
   }
 }
 
+/**
+ * #### Type LoggingsConstructor
+ * 
+ * ```ts
+ * import Loggings { LoggingsConstructor } from "@/controllers/Loggings"
+ * 
+ * const core:LoggingsConstructor = new Loggings("Exemplo", "blue")
+ * ```
+ */
+export type LoggingsConstructor = new (title: string, color: string) => Loggings;
+
+/**
+ * #### Type LoggingsMethods
+ * 
+ * ```ts
+ * import {LoggingsMethods} from "@/controllers/Loggings"
+ * function Core(core: LoggingsMethods) {
+ * core.log("Olá")		
+ * }
+ * ```
+ */
+export type LoggingsMethods = {
+	log: (message: string) => void;
+	error: (message: string) => void;
+	warn: (message: string) => void;
+	info: (message: string) => void;
+	debug: (message: string) => void;
+	sys: (message: string) => void;
+};
 export default Loggings
