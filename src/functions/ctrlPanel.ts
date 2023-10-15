@@ -187,12 +187,14 @@ export class ctrlPanel {
     token: string
     guildId: string
     msg: InteractionResponse<boolean>
-  }): Promise<{ last_page: number, users_per_page: number, from: number, to: number, total: number } | undefined> {
+  }): Promise<{ last_page: number, users_per_page: number, total: number } | undefined> {
     const { url, token, guildId, msg } = options
     const usersData: User [] = []
     const startTime = Date.now()
+    let clientCount = 0
+    let teamCount = 0
 
-    async function fetchUsers (urlAPI: string): Promise<{ last_page: number, users_per_page: number, from: number, to: number, total: number } | undefined> {
+    async function fetchUsers (urlAPI: string): Promise<{ last_page: number, users_per_page: number, total: number } | undefined> {
       try {
         const response = await axios.get(urlAPI, {
           headers: {
@@ -201,24 +203,30 @@ export class ctrlPanel {
           }
         })
 
-        const data: any = response.data
-        const users: any[] = data.data
+        const data = response.data
+        const users = data.data
         const pageNumber = Number(await idURL(urlAPI))
 
         for (const user of users) {
-          const { id, name, email, pterodactyl_id: pterodactylId } = user
+          const { id, name, email, pterodactyl_id: pterodactylId, role } = user
           usersData.push({
             id,
             name,
             email,
-            pterodactylId
+            pterodactylId,
+            role
           })
+          if (user.role === 'client') {
+            clientCount++
+          }
+          if (user.role === 'admin') {
+            teamCount++
+          }
         }
 
         if (pageNumber !== undefined) {
           if (pageNumber <= data.last_page) {
             const dataBD = await db.ctrlPanel.table(numerosParaLetras(guildId)).get(String(pageNumber))
-
             if (dataBD?.length <= 50 || usersData?.length > 0) {
               let isDataChanged = false
 
@@ -271,13 +279,13 @@ export class ctrlPanel {
 
             if (pageNumber === data.last_page) {
               // eslint-disable-next-line @typescript-eslint/naming-convention
-              const { last_page, per_page: users_per_page, from, to, total } = data
+              const { last_page, per_page: users_per_page, total } = data
               const metadata = {
                 last_page,
                 users_per_page,
-                from,
-                to,
-                total
+                total,
+                clientCount,
+                teamCount
               }
               await db.ctrlPanel.table(numerosParaLetras(guildId)).set('metadata', metadata)
               return metadata
@@ -314,7 +322,7 @@ export class ctrlPanel {
   }): Promise<[ string, string ] | [undefined, undefined]> {
     try {
       const { dataCtrlPanelVoucher } = options
-      const { user, name, credits, price, productId, guild } = dataCtrlPanelVoucher
+      const { user, credits, price, guild } = dataCtrlPanelVoucher
       const ctrlPanelData = await db.payments.get(`${guild.id}.config.ctrlPanel`)
       const pass = randomstring.generate({ length: 36 })
       const code = pass.toString()

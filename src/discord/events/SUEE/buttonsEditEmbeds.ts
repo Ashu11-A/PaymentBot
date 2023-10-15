@@ -4,7 +4,7 @@ import { db } from '@/app'
 import { Event } from '@/discord/base'
 import { ModalBuilder, ActionRowBuilder, TextInputBuilder } from 'discord.js'
 
-const buttonsModals: any = {
+const buttonsModals: Record<string, any> = {
   SetName: {
     button: true,
     modal: true,

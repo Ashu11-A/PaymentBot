@@ -34,6 +34,7 @@ export interface User {
   name: string
   email: string
   pterodactylId: number
+  role: string
 }
 
 export interface MercadoPago {

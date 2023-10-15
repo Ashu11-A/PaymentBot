@@ -16,9 +16,10 @@ class CreateVoucher {
   /**
     * Recebe solicitações para a criação de vouchers
     */
-  public async post (req: Request, res: Response): Promise<any> {
+  public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
     const token = await db.tokens.get('token')
     const { token: tokenAuth, user, guild, credits, productId, price, name } = req.body as RequestBodyCtrlPanelVoucher
+    const ipAddress = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
     console.log(req.body)
 
     if (tokenAuth === token) {
@@ -63,7 +64,7 @@ class CreateVoucher {
         console.log(err)
       }
     } else {
-      const ipAddress: any = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
+      // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
       core.warn(`Alguem acessou a URL do Webhook sem token! IP: ${ipAddress}`)
       return res.status(401).send('Invalid webhook URL')
     }

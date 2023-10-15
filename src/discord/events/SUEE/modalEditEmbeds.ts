@@ -6,7 +6,7 @@ import { ticketButtonsConfig } from '@/discord/components/tickets'
 import { Event } from '@/discord/base'
 import { validarCorHex } from '@/functions'
 
-const buttonsModals: any = {
+const buttonsModals: Record<string, { type: string }> = {
   SetName: {
     type: 'embed.title'
   },
@@ -55,7 +55,7 @@ export default new Event({
 
         if (button === 'SetColor') {
           const [validador, message] = validarCorHex(messageModal)
-          if (validador === false) {
+          if (!validador) {
             await interaction.editReply({ content: message })
             return
           }

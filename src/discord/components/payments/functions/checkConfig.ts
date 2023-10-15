@@ -20,7 +20,7 @@ export class Check {
         errors.push('Nenhum método de envio foi configurado.')
       }
 
-      if (productData.properties?.paymentSetCtrlPanel === true) {
+      if (productData.properties?.paymentSetCtrlPanel) {
         const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
 
         if (productData.coins === undefined) {

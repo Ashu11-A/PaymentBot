@@ -1,4 +1,4 @@
-export function validarValor (valor: string): any[] {
+export function validarValor (valor: string): [boolean, string] | [boolean] {
   if (valor === '') {
     return [false, '😑 | Você não pode definir o Preço como VAZIO, oque você esperava que ocorresse?']
   }
@@ -26,7 +26,7 @@ export function validarValor (valor: string): any[] {
   return [true]
 }
 
-export function validarCorHex (cor: string): any[] {
+export function validarCorHex (cor: string): [boolean, string] | [boolean] {
   if (cor === '') {
     return [false, '😒 | Você não pode definir a Cor como VAZIO, oque você esperava que ocorresse?']
   }
