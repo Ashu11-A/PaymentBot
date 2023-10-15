@@ -11,7 +11,7 @@ class Database {
     if (tableName === undefined) {
       return res.status(400).json({
         status: 400,
-        error: 'Missing or invalid tableName parameter'
+        error: 'Missing or invalid parameter'
       })
     }
 
