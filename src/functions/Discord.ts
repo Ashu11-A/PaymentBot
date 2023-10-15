@@ -2,7 +2,7 @@ import { core, db } from '@/app'
 import { Component } from '@/discord/base'
 import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle, codeBlock } from 'discord.js'
 
-export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): any {
+export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
   return new ActionRowBuilder<Component>({ components })
 }
 

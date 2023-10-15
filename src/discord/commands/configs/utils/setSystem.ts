@@ -97,7 +97,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setEmoji({ name: '⚫' })
   ]
 
-  const typeStatus: any = {
+  const typeStatus: Record<string, string> = {
     systemStatusOnline: 'online',
     systemStatusAusente: 'idle',
     systemStatusNoPerturbe: 'dnd',
@@ -134,7 +134,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
 
   for (const value of row3Buttons) {
     const { custom_id: customID } = Object(value.toJSON())
-    const result = await typeStatus[customID]
+    const result = typeStatus[customID]
     const systemEnabled = await db.system.get(`${interaction?.guild?.id}.status.systemStatusType`)
     if (systemEnabled === result) {
       value.setStyle(ButtonStyle.Success)

@@ -5,7 +5,7 @@ class Home {
     * Home Page
     */
   public get (req: Request, res: Response): object {
-    const ipAddress: any = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
+    const ipAddress = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
     try {
       return res.json({
         status: 200,

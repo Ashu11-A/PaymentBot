@@ -1,8 +1,9 @@
 import { db } from '@/app'
 import { ticketButtonsConfig, buttonsUsers } from '@/discord/components/tickets'
 import { type TextChannel, type CacheType, type ModalSubmitInteraction } from 'discord.js'
+import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   const { customId, guildId, channel, channelId, message, fields } = interaction
   await interaction.deferReply({ ephemeral: true })
 
@@ -11,7 +12,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
     const { select: existingData } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
     console.log('0', existingData)
-    const data: any = existingData !== undefined ? existingData : []
+    const data = existingData !== undefined ? existingData : []
 
     console.log('1', data)
 

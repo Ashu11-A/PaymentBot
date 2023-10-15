@@ -2,10 +2,11 @@ import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
 import { PaymentFunction } from './functions/collectorFunctions'
 import { Payment } from '../functions/createPayment'
+import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
-export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   if (!interaction.inGuild()) return
 
   const { guildId, customId, message } = interaction

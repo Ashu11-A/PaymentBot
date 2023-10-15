@@ -2,6 +2,7 @@ import { db } from '@/app'
 import { ActionRowBuilder, type CacheType, ModalBuilder, TextInputBuilder, type ButtonInteraction, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type TextChannel } from 'discord.js'
 import { createTicket, ticketButtonsConfig, buttonsUsers } from '@/discord/components/tickets'
 import { Discord, createRow } from '@/functions'
+import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
 const listItens = {
   SetName: {
@@ -30,7 +31,7 @@ const listItens = {
   }
 }
 
-export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   console.log(interaction.customId)
   const { guildId, message, channelId, customId } = interaction
   const { title, label, placeholder, style, type, maxLength } = value

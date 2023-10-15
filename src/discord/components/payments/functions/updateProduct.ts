@@ -27,7 +27,7 @@ export class updateProduct {
         }
       )
     }
-    if (productData?.properties?.paymentSetCtrlPanel === true && productData?.coins !== undefined) {
+    if (productData?.properties?.paymentSetCtrlPanel && productData?.coins !== undefined) {
       updateEmbed.addFields({
         name: '🪙 | Coins:',
         value: String(productData.coins)
@@ -152,16 +152,16 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
         const { custom_id: customID } = Object(value.toJSON())
-        if (productData?.properties?.[customID] === true) {
+        if (productData?.properties?.[customID]) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
 
-        if (customID === 'paymentAddEstoque' && productData?.properties?.paymentSetEstoque === true) {
+        if (customID === 'paymentAddEstoque' && productData?.properties?.paymentSetEstoque) {
           value.setDisabled(false)
         }
-        if (customID === 'paymentAddCoins' && productData?.properties?.paymentSetCtrlPanel === true) {
+        if (customID === 'paymentAddCoins' && productData?.properties?.paymentSetCtrlPanel) {
           value.setDisabled(false)
           if (productData?.coins !== undefined) {
             value.setStyle(ButtonStyle.Primary)
@@ -215,7 +215,7 @@ export class updateProduct {
     }
 
     // Mapeia o customId para o número da fileira
-    const buttonRowMap: any = {
+    const buttonRowMap: Record<string, number> = {
       SetName: 1,
       SetDesc: 1,
       SetMiniature: 1,

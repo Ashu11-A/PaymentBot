@@ -122,7 +122,9 @@ new Component({
       })
     }
 
-    const data: any = {}
+    type Data = Record<string, string | undefined>
+
+    const data: Data = {}
 
     for (const field of fieldNames) {
       const message = fields.getTextInputValue(field)
@@ -130,7 +132,7 @@ new Component({
       if (message !== null && message !== '') {
         data[field] = message
       } else {
-        data[field] = null
+        data[field] = undefined
       }
     }
 

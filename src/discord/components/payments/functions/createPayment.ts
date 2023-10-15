@@ -4,6 +4,8 @@ import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder
 import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
 import { updateCard } from './updateCard'
 import { type cardData, type MercadoPago } from './interfaces'
+import { type PaymentCreateResponse } from 'mercadopago/resources/payment'
+import { type PreferenceCreateResponse } from 'mercadopago/resources/preferences'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Payment {
@@ -83,12 +85,14 @@ export class Payment {
         })
       })
     } else if (method === 'debit_card' || method === 'credit_card') {
-      await this.card({
+      const mpRes = await this.card({
         interaction,
         method,
         amountTax,
         cardData
-      }).then(async ([unixTimestamp, payment]) => {
+      })
+      if (mpRes !== undefined) {
+        const { payment, unixTimestamp } = mpRes
         console.log(payment)
         const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
           data: cardData,
@@ -114,16 +118,7 @@ export class Payment {
 
         embeds.push(cardEmbed.toJSON())
         components[0].components[0].setURL(payment.body.init_point)
-      }).catch(async (err) => {
-        console.log(err)
-        await interaction.editReply({
-          embeds: [
-            new EmbedBuilder({
-              title: '❌ | Ocorreu um erro, tente novamente...'
-            }).setColor('Red')
-          ]
-        })
-      })
+      }
     }
     const clearData = { components: [], embeds: [], files: [] }
     await message.edit({
@@ -140,7 +135,7 @@ export class Payment {
   public static async pix (options: {
     interaction: ButtonInteraction<CacheType>
     amountTax: number
-  }): Promise<any[]> {
+  }): Promise<[number, PaymentCreateResponse, Buffer, string]> {
     const { interaction, amountTax } = options
     const { guildId, message } = interaction
     const token = await db.payments.get(`${guildId}.config.mcToken`)
@@ -163,7 +158,7 @@ export class Payment {
 
     const base64Img = payment.body.point_of_interaction.transaction_data.qr_code_base64
     const buf = Buffer.from(base64Img, 'base64')
-    const id = payment.body.id
+    const id: string = payment.body.id
 
     await db.payments.set(`${guildId}.process.${message.id}.paymentId`, id)
 
@@ -183,7 +178,7 @@ export class Payment {
     method: 'debit_card' | 'credit_card'
     amountTax: number
     cardData: cardData
-  }): Promise<any[]> {
+  }): Promise<{ unixTimestamp: number, payment: PreferenceCreateResponse } | undefined> {
     const { interaction, method, amountTax, cardData } = options
     if (!interaction.inGuild()) return
     const { guildId, message } = interaction
@@ -237,6 +232,6 @@ export class Payment {
     expirationDate.setMinutes(expirationDate.getMinutes())
     const unixTimestamp = Math.floor(expirationDate.getTime() / 1000)
 
-    return [unixTimestamp, payment]
+    return { unixTimestamp, payment }
   }
 }

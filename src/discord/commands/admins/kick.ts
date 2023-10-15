@@ -24,7 +24,7 @@ new Command({
   async run (interaction) {
     const { guild, options } = interaction
 
-    const user: any = options.getUser('usuário')
+    const user = options.getUser('usuário')
     const reason = options.getString('motivo') ?? 'Nenhum motivo especificado'
 
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
@@ -32,6 +32,7 @@ new Command({
 
     const havePermision = await Discord.Permission(interaction, 'KickMembers', 'noPermissionBanKick')
     if (havePermision) return
+    if (user === null) return
 
     if (user.id === interaction.user.id) {
       const embed = new EmbedBuilder()

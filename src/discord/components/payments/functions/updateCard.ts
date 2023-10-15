@@ -1,5 +1,7 @@
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
 import { type cardData } from './interfaces'
+import { type PreferenceCreateResponse } from 'mercadopago/resources/preferences'
+import { type PaymentCreateResponse } from 'mercadopago/resources/payment'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {
@@ -8,7 +10,7 @@ export class updateCard {
     data: cardData
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
-    paymentData?: any
+    paymentData?: PreferenceCreateResponse | PaymentCreateResponse
     taxa?: number
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
     const { interaction, data, message, typeEdit, paymentData, taxa } = options
@@ -306,7 +308,7 @@ export class updateCard {
         value.setStyle(ButtonStyle.Secondary)
       }
 
-      if (customID === 'paymentUserWTF' && data?.typeEmbed !== undefined && data?.properties?.[`${customID}_${data.typeEmbed}`] === true) {
+      if (customID === 'paymentUserWTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
         value.setStyle(ButtonStyle.Secondary)
         value.setLabel('Saiba Mais')
       }
@@ -320,7 +322,7 @@ export class updateCard {
         value.setDisabled(true)
       }
 
-      if (customID === 'paymentUserCupom' && data?.properties?.cupom === true) {
+      if (customID === 'paymentUserCupom' && ((data?.properties?.cupom) === true)) {
         value.setDisabled(true)
       }
     }
@@ -331,7 +333,7 @@ export class updateCard {
       if (customID === 'paymentUserDM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
-      if (customID === 'paymentUserDirect' && data?.typeRedeem === 2 && data?.properties[customID] === true) {
+      if (customID === 'paymentUserDirect' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
     }

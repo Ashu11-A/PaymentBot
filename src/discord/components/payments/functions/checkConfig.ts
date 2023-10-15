@@ -16,14 +16,14 @@ export class Check {
     const errors: string[] = []
 
     if (productData !== undefined) {
-      if (productData?.properties?.paymentSetCtrlPanel === undefined && productData?.properties?.paymentSetEstoque === undefined) {
+      if (productData.properties?.paymentSetCtrlPanel === undefined && productData.properties?.paymentSetEstoque === undefined) {
         errors.push('Nenhum método de envio foi configurado.')
       }
 
-      if (productData?.properties?.paymentSetCtrlPanel === true) {
+      if (productData.properties?.paymentSetCtrlPanel === true) {
         const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
 
-        if (productData?.coins === undefined) {
+        if (productData.coins === undefined) {
           errors.push('Método de envio é `CtrlPanel`, mas não foi setado as moedas a serem adquiridas.')
         }
 

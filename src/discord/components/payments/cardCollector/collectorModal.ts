@@ -3,8 +3,9 @@ import { validarEmail } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { updateCard } from '@/discord/components/payments'
 import { ctrlPanel } from '@/functions/ctrlPanel'
+import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   if (!interaction.inGuild()) return
 
   const { customId, guildId, channel, message, fields } = interaction

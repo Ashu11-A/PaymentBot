@@ -5,7 +5,7 @@ class Database {
   /**
    * Rota para acessar dados de uma tabela específica.
    */
-  public async get (req: Request, res: Response): Promise<any> {
+  public async get (req: Request, res: Response): Promise<Response<any, Record<string, any>>> {
     const tableName = req.query.tableName as string | undefined
 
     if (tableName === undefined) {

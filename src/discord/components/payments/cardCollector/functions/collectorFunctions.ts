@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
-import { type Data, updateCard } from '@/discord/components/payments'
+import { type cardData, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 import mp from 'mercadopago'
 import axios from 'axios'
@@ -198,7 +198,7 @@ export class PaymentFunction {
     const { interaction, type, update } = options
     const { guildId, user, message } = interaction
 
-    let data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
+    let data = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
 
     function stringNextBefore (numberType: number): string {
       let typeString
@@ -272,7 +272,7 @@ export class PaymentFunction {
       }
     }
     if (update === undefined || update === 'Yes') {
-      data = await db.payments.get(`${guildId}.process.${message.id}`) as Data
+      data = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
       await updateCard.embedAndButtons({
         interaction,
         data,
@@ -286,7 +286,7 @@ export class PaymentFunction {
    */
   public static async verifyPayment (options: {
     interaction: ButtonInteraction<CacheType>
-  }): Promise<any> {
+  }): Promise<undefined> {
     const { interaction } = options
     if (!interaction.inCachedGuild()) return
     const { guildId, message, user, guild } = interaction

@@ -18,7 +18,7 @@ class Discord {
           uptime: ((client.uptime ?? 0) / 1000).toFixed(2),
           commands: {
             loaded: commands?.size,
-            names: [commands?.map((command: { name: any }) => command.name)]
+            names: [commands?.map((command: { name: string }) => command.name)]
           },
           buttons: Component.all.filter((component) => component.type === 'Button').length,
           modals: Component.all.filter((component) => component.type === 'Modal').length,

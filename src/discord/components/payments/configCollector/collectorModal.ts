@@ -1,7 +1,7 @@
 import { Database } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild()) return
 
   await interaction.deferReply({ ephemeral })

@@ -9,7 +9,7 @@ export async function deleteSelect (interaction: StringSelectMenuInteraction<Cac
 
   if (Array.isArray(values)) {
     const deleteValues = interaction.values.map(Number)
-    const updatedValues = values.filter((_: any, index: any) => !deleteValues.includes(index))
+    const updatedValues = values.filter((_: string, index: number) => !deleteValues.includes(index))
 
     await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.select`, updatedValues)
     await interaction.reply({

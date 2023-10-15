@@ -2,8 +2,9 @@ import { db } from '@/app'
 import { updateProduct } from '@/discord/components/payments'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
+import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: any): Promise<void> {
+export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   if (!interaction.inGuild()) return
 
   const { customId, guildId, channel, channelId, message, fields } = interaction

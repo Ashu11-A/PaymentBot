@@ -33,7 +33,7 @@ export async function delModalPresence (interaction: StringSelectMenuInteraction
   const values = await db.messages.get(`${guildId}.system.status.messages`)
   const deleteValues = interaction.values.map(Number)
 
-  const updatedValues = values.filter((_: any, index: any) => !deleteValues.includes(index))
+  const updatedValues = values.filter((_: string, index: number) => !deleteValues.includes(index))
   await db.messages.set(`${guildId}.system.status.messages`, updatedValues)
   console.log(await db.messages.get(`${guildId}.system.status.messages`))
   await interaction.reply({ content: `User ${user.username} selecionou os valores: ${deleteValues.map(v => `> ${v}`).join('\n')}`, ephemeral: true })

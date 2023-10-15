@@ -7,7 +7,8 @@ class IPN {
     * Recebe os POST do Mercado Pago, confirmando o pagamento.
     */
   public async post (req: Request, res: Response): Promise<object> {
-    const ipAddress: any = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
+    const ipAddress = req.headers['x-forwarded-for'] ?? req.socket.remoteAddress
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     core.info(`Acesso ao IPN | Método POST | IP: ${ipAddress}`)
     const { live_mode: liveMode, data } = req.body
 

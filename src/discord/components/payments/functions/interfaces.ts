@@ -9,7 +9,7 @@ export interface cardData {
   quantity?: number
   typeEmbed?: number
   typeRedeem?: number
-  properties?: any
+  properties?: Record<string, boolean> | undefined
   user?: User
   cupom?: {
     name?: string
@@ -26,7 +26,7 @@ export interface productData {
   status: boolean
   price?: number
   coins?: number
-  properties: any
+  properties: Record<string, boolean>
 }
 
 export interface User {
