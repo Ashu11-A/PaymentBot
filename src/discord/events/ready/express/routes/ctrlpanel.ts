@@ -17,11 +17,16 @@ export class CtrlPanel {
         })
       }
 
-      const ctrlPanelData = await db.ctrlPanel.table(numerosParaLetras(guildId)).get('metadata')
-      console.log(ctrlPanelData)
+      const ctrlUsers = await db.ctrlPanel.table(`${numerosParaLetras(guildId)}_users`).get('metadata')
+      const ctrlServer = await db.ctrlPanel.table(`${numerosParaLetras(guildId)}_servers`).get('metadata')
       return res.status(200).json({
         status: 200,
-        ...ctrlPanelData
+        users: {
+          ...ctrlUsers
+        },
+        servers: {
+          ...ctrlServer
+        }
       })
     } catch (error) {
       return res.status(500).json({

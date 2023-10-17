@@ -42,17 +42,18 @@ export class ctrlPanel {
       ]
     })
 
-    const [status, userData] = await this.findEmail({ guildId, email, url, token, msg })
+    const findRes = await ctrlPanel.findEmail({ guildId, email, url, token, msg })
 
-    return await response({ status, userData, runs: 0 })
+    return await response({ status: findRes?.status, userData: findRes?.userData, runs: 0 })
 
     async function response (options: {
-      status: boolean
-      userData: any[]
+      status: boolean | undefined
+      userData: any[] | undefined
       runs?: number
+    // eslint-disable-next-line @typescript-eslint/no-invalid-void-type
     }): Promise<any> {
       const { status, userData, runs } = options
-      if (status) {
+      if (status === true && userData !== undefined) {
         await msg.edit({
           embeds: [
             new EmbedBuilder({
@@ -126,10 +127,10 @@ export class ctrlPanel {
               ]
             })
             if (subInteraction.customId === 'ctrlpanel-advanced-search') {
-              await ctrlPanel.updateDatabase({ url, token, guildId, msg, type: 'servers'})
-              const [status, userData] = await ctrlPanel.findEmail({ guildId, email, url, token, msg })
+              await ctrlPanel.updateDatabase({ url, token, guildId, msg, type: 'users' })
+              const findRes = await ctrlPanel.findEmail({ guildId, email, url, token, msg })
 
-              return await response({ status, userData, runs: 1 })
+              return await response({ status: findRes?.status, userData: findRes?.userData, runs: 1 })
             }
           })
         }
@@ -143,19 +144,31 @@ export class ctrlPanel {
     url: string
     token: string
     msg: InteractionResponse<boolean>
-  }): Promise<boolean | any> {
+  }): Promise<{
+      status: boolean
+      userData: any[]
+    } | {
+      status: boolean
+      userData?: undefined
+    } | undefined> {
     const { guildId, email, token, url, msg } = options
     let metadata = await db.ctrlPanel.table(`${numerosParaLetras(guildId)}_users`).get('metadata')
 
-    if (metadata?.last_page === undefined) {
+    if (metadata?.lastPage === undefined) {
       metadata = await this.updateDatabase({ url, token, guildId, msg, type: 'users' })
     }
 
     core.info(`Procurando: ${email}`)
     let foundUsers: any[] = []
 
-    async function scan (): Promise<[boolean, any[]] | [boolean] | undefined> {
-      for (let page = 1; page <= metadata.last_page; page++) {
+    async function scan (): Promise<{
+      status: boolean
+      userData: any[]
+    } | {
+      status: boolean
+      userData?: undefined
+    } | undefined> {
+      for (let page = 1; page <= metadata.lastPage; page++) {
         const dataDB = await db.ctrlPanel.table(`${numerosParaLetras(guildId)}_users`).get(String(page))
 
         if (Array.isArray(dataDB)) {
@@ -164,18 +177,18 @@ export class ctrlPanel {
           )
 
           if (foundUsers.length > 0) {
-            core.info(`Pesquisando: ${page}/${metadata.last_page} | Encontrei`)
-            return [true, foundUsers]
+            core.info(`Pesquisando: ${page}/${metadata.lastPage} | Encontrei`)
+            return { status: true, userData: foundUsers }
           } else {
-            core.info(`Pesquisando: ${page}/${metadata.last_page} |`)
+            core.info(`Pesquisando: ${page}/${metadata.lastPage} |`)
           }
         } else {
           core.error('dataDB não é um array iterável.')
-          return [false]
+          return { status: false }
         }
 
         if (page === metadata.last_page) {
-          return [false]
+          return { status: false }
         }
       }
     }
@@ -215,7 +228,7 @@ export class ctrlPanel {
               if (fazData > jaFaz) {
                 console.log('Foi suspendido depois de criado: ' + suspençãoData)
                 console.log('Foi criado há: ' + fazData)
-                const userInfo = await axios.get(`https://dash.seventyhost.net/api/users/${server.userId}`,
+                const userInfo = await axios.get(`${url}/api/users/${server.userId}`,
                   {
                     headers: {
                       Accept: 'application/json',
@@ -261,8 +274,7 @@ export class ctrlPanel {
     msg?: InteractionResponse<boolean>
     type: 'users' | 'servers' | 'all'
   }): Promise<
-    { last_page: number, users_per_page: number, total: number } |
-    { lastPage: any, serversPerPage: any, total: any } |
+    { lastPage: number, perPage: number, total: number } |
     undefined> {
     const { url, token, guildId, msg, type } = options
     const usersData: User[] = []
@@ -271,7 +283,7 @@ export class ctrlPanel {
     let clientCount = 0
     let teamCount = 0
 
-    async function fetchUsers (urlAPI: string): Promise<{ last_page: number, users_per_page: number, total: number } | undefined> {
+    async function fetchUsers (urlAPI: string): Promise<{ lastPage: number, perPage: number, total: number } | undefined> {
       try {
         const response = await axios.get(urlAPI, {
           headers: {
@@ -354,10 +366,10 @@ export class ctrlPanel {
 
           if (data.current_page === data.last_page) {
             // eslint-disable-next-line @typescript-eslint/naming-convention
-            const { last_page, per_page: users_per_page, total } = data
+            const { last_page: lastPage, per_page: perPage, total } = data
             const metadata = {
-              last_page,
-              users_per_page,
+              lastPage,
+              perPage,
               total,
               clientCount,
               teamCount
@@ -369,12 +381,12 @@ export class ctrlPanel {
             return await fetchUsers(data.next_page_url)
           }
         }
-      } catch (err: any) {
-        core.error(err)
+      } catch (err) {
+        console.log(err)
       }
     }
 
-    async function fetchServers (urlAPI: string): Promise<{ lastPage: any, serversPerPage: any, total: any } | undefined> {
+    async function fetchServers (urlAPI: string): Promise<{ lastPage: number, perPage: number, total: number } | undefined> {
       try {
         const response = await axios.get(urlAPI, {
           headers: {
@@ -423,10 +435,10 @@ export class ctrlPanel {
           }
 
           if (data.current_page === data.last_page) {
-            const { last_page: lastPage, per_page: serversPerPage, total } = data
+            const { last_page: lastPage, per_page: perPage, total } = data
             const metadata = {
               lastPage,
-              serversPerPage,
+              perPage,
               total,
               sincDate: Number(new Date())
             }

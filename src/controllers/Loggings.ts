@@ -9,7 +9,7 @@ class Loggings {
     this.color = color ?? 'blue'
   }
 
-  error (message: string): void {
+  error (message: any): void {
     logs(this.title, message, 'Error', this.color)
   }
 
