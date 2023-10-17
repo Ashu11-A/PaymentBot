@@ -11,10 +11,11 @@ import { db } from '@/app'
 import { brBuilder } from '@magicyan/discord'
 
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
-  const guildID = interaction?.guild?.id
-  const channelDB = (await db.guilds.get(`${guildID}.channel.system`)) as string
-  const message1DB = (await db.messages.get(`${guildID}.system.message1`)) as string
-  const message2DB = (await db.messages.get(`${guildID}.system.message2`)) as string
+  const { guildId } = interaction
+  const channelDB = (await db.guilds.get(`${guildId}.channel.system`)) as string
+  const message1DB = (await db.messages.get(`${guildId}.system.message1`)) as string
+  const message2DB = (await db.messages.get(`${guildId}.system.message2`)) as string
+  const systemData = await db.system.get(`${guildId}.status`)
 
   let channelSend
 
@@ -22,7 +23,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     channelSend = interaction.guild?.channels.cache.get(String(channelDB)) as TextChannel
   }
 
-  const enabled = new EmbedBuilder({
+  const configEmbed = new EmbedBuilder({
     title: '🎉 Configurações',
     description: brBuilder(
       '◈ Escolha quais sistemas do bot você deseja ativar ou desativar neste servidor.',
@@ -33,7 +34,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     color: 0x57f287
   })
 
-  const statusEmbed = new EmbedBuilder({
+  const presenceEmbed = new EmbedBuilder({
     title: '⚙️ Presence Status',
     description: brBuilder(
       '◈ Ative ou Desative o status do Bot.',
@@ -45,26 +46,38 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     color: 0x57f287
   })
 
-  const row1Buttons = [
-    new ButtonBuilder()
-      .setCustomId('systemTicket')
-      .setLabel('Ticket')
-      .setEmoji({ name: '🎫' }),
-    new ButtonBuilder()
-      .setCustomId('systemWelcomer')
-      .setLabel('Boas Vindas')
-      .setEmoji({ name: '❤️' }),
-    new ButtonBuilder()
-      .setCustomId('systemLogs')
-      .setLabel('Logs')
-      .setEmoji({ name: '📰' }),
-    new ButtonBuilder()
-      .setCustomId('systemPayments')
-      .setLabel('Pagamentos')
-      .setEmoji({ name: '💲' })
+  const config = [
+    new ButtonBuilder({
+      customId: 'systemTicket',
+      label: 'Ticket',
+      emoji: { name: '🎫' }
+    }),
+    new ButtonBuilder({
+      customId: 'systemWelcomer',
+      label: 'Boas Vindas',
+      emoji: { name: '❤️' }
+    }),
+    new ButtonBuilder({
+      customId: 'systemLogs',
+      label: 'Logs',
+      emoji: { name: '📰' }
+    }),
+    new ButtonBuilder({
+      customId: 'systemPayments',
+      label: 'Pagamentos',
+      emoji: { name: '💲' }
+    })
   ]
 
-  const row2Buttons = [
+  const config2 = [
+    new ButtonBuilder({
+      customId: 'systemDeleteServers',
+      label: 'Delete Servers',
+      emoji: { name: '🗑️' }
+    })
+  ]
+
+  const presence = [
     new ButtonBuilder()
       .setCustomId('systemStatus')
       .setLabel('Status')
@@ -78,7 +91,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       .setLabel('Mensagens')
       .setEmoji({ name: '📃' })
   ]
-  const row3Buttons = [
+  const presence2 = [
     new ButtonBuilder()
       .setCustomId('systemStatusOnline')
       .setLabel('Online')
@@ -104,13 +117,9 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     systemStatusInvisível: 'invisible'
   }
 
-  const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
-  const row2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
-  const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row3Buttons)
-
-  for (const value of row1Buttons) {
+  for (const value of config) {
     const { custom_id: customID } = Object(value.toJSON())
-    const result = await db.system.get(`${interaction?.guild?.id}.status.${customID}`)
+    const result = systemData?.[customID]
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
     } else if (result === false) {
@@ -120,9 +129,9 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     }
   }
 
-  for (const value of row2Buttons) {
+  for (const value of config2) {
     const { custom_id: customID } = Object(value.toJSON())
-    const result = await db.system.get(`${interaction?.guild?.id}.status.${customID}`)
+    const result = systemData?.[customID]
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
     } else if (result === false) {
@@ -132,10 +141,22 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     }
   }
 
-  for (const value of row3Buttons) {
+  for (const value of presence) {
+    const { custom_id: customID } = Object(value.toJSON())
+    const result = systemData?.[customID]
+    if (result !== undefined && result === true) {
+      value.setStyle(ButtonStyle.Success)
+    } else if (result === false) {
+      value.setStyle(ButtonStyle.Danger)
+    } else {
+      value.setStyle(ButtonStyle.Secondary)
+    }
+  }
+
+  for (const value of presence2) {
     const { custom_id: customID } = Object(value.toJSON())
     const result = typeStatus[customID]
-    const systemEnabled = await db.system.get(`${interaction?.guild?.id}.status.systemStatusType`)
+    const systemEnabled = systemData?.status?.systemStatusType
     if (systemEnabled === result) {
       value.setStyle(ButtonStyle.Success)
     } else {
@@ -143,26 +164,31 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     }
   }
 
+  const configRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...config)
+  const configRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...config2)
+  const presenceRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence)
+  const presenceRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence2)
+
   try {
     await channelSend?.messages.fetch(message1DB)
       .then(async (msg) => {
-        await msg.edit({ embeds: [enabled], components: [row1] })
+        await msg.edit({ embeds: [configEmbed], components: [configRow1, configRow2] })
       })
       .catch(async () => {
-        await interaction.channel?.send({ embeds: [enabled], components: [row1] })
+        await interaction.channel?.send({ embeds: [configEmbed], components: [configRow1, configRow2] })
           .then(async (msg) => {
-            await db.messages.set(`${guildID}.system.message1`, msg.id)
+            await db.messages.set(`${guildId}.system.message1`, msg.id)
             await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
           })
       })
     await channelSend?.messages.fetch(message2DB)
       .then(async (msg) => {
-        await msg.edit({ embeds: [statusEmbed], components: [row2, row3] })
+        await msg.edit({ embeds: [presenceEmbed], components: [presenceRow1, presenceRow2] })
       })
       .catch(async () => {
-        await interaction.channel?.send({ embeds: [statusEmbed], components: [row2, row3] })
+        await interaction.channel?.send({ embeds: [presenceEmbed], components: [presenceRow1, presenceRow2] })
           .then(async (msg) => {
-            await db.messages.set(`${guildID}.system.message2`, msg.id)
+            await db.messages.set(`${guildId}.system.message2`, msg.id)
             await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
           })
       })

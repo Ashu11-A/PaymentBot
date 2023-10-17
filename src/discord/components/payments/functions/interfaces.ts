@@ -37,6 +37,15 @@ export interface User {
   role: string
 }
 
+export interface Server {
+  userId: number
+  pterodactylId: number
+  identifier: string
+  name: string
+  suspended: boolean
+  createAt: number
+}
+
 export interface MercadoPago {
   items: PreferenceItem[] | undefined
   payer: PreferencePayer | undefined

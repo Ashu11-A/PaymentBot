@@ -7,6 +7,7 @@ const system = {
   systemPayments: { info: 'Pagamentos' },
   systemWelcomer: { info: 'Boas vindas' },
   systemStatus: { info: 'Status' },
+  systemDeleteServers: { info: 'Deletar Servidores' },
   systemStatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
   systemStatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
   systemLogs: { info: 'Logs' },
@@ -38,7 +39,7 @@ Object.entries(system).map(async ([key, value]) => {
           pathDB: 'status',
           displayName: value.info,
           typeDB: 'system',
-          enabledType: 'switch',
+          enabledType: 'swap',
           otherSystemNames: [value.remove]
         })
       } else {

@@ -75,7 +75,7 @@ export class Database {
     pathDB: string
     systemName: string
     displayName?: string
-    enabledType: 'switch' | string
+    enabledType: 'switch' | 'swap' | string
     otherSystemNames?: string[]
   }): Promise<void> {
     const { interaction, typeDB, pathDB, displayName, systemName, enabledType, otherSystemNames } = options
@@ -88,13 +88,13 @@ export class Database {
       let activate: string | boolean
       let datatype: boolean = true
 
-      if (enabledType === 'switch') {
+      if (enabledType === 'swap') {
         activate = true
-      } else if (typeof enabledType === 'string') {
-        activate = enabledType
-      } else {
+      } else if (enabledType === 'switch') {
         datatype = (!status)
         activate = (!status)
+      } else {
+        activate = enabledType
       }
 
       await dbInstance.set(statusKey, activate)

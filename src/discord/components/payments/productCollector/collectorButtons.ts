@@ -27,7 +27,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         pathDB: `payments.${channelId}.messages.${message.id}.properties`,
         displayName: 'Estoque',
         typeDB: 'messages',
-        enabledType: 'switch',
+        enabledType: 'swap',
         otherSystemNames: ['paymentSetCtrlPanel']
       })
       await updateProduct.embed({ interaction, message })
@@ -39,7 +39,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         pathDB: `payments.${channelId}.messages.${message.id}.properties`,
         displayName: 'CtrlPanel',
         typeDB: 'messages',
-        enabledType: 'switch',
+        enabledType: 'swap',
         otherSystemNames: ['paymentSetEstoque']
       })
       await updateProduct.embed({ interaction, message })
