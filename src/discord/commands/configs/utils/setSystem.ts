@@ -13,8 +13,6 @@ import { brBuilder } from '@magicyan/discord'
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guildId } = interaction
   const channelDB = (await db.guilds.get(`${guildId}.channel.system`)) as string
-  const message1DB = (await db.messages.get(`${guildId}.system.message1`)) as string
-  const message2DB = (await db.messages.get(`${guildId}.system.message2`)) as string
   const systemData = await db.system.get(`${guildId}.status`)
 
   let channelSend
@@ -122,8 +120,6 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     const result = systemData?.[customID]
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
-    } else if (result === false) {
-      value.setStyle(ButtonStyle.Danger)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
@@ -134,8 +130,6 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     const result = systemData?.[customID]
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
-    } else if (result === false) {
-      value.setStyle(ButtonStyle.Danger)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
@@ -146,8 +140,6 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     const result = systemData?.[customID]
     if (result !== undefined && result === true) {
       value.setStyle(ButtonStyle.Success)
-    } else if (result === false) {
-      value.setStyle(ButtonStyle.Danger)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
@@ -169,30 +161,36 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
   const presenceRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence)
   const presenceRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence2)
 
+  const embedsData = [
+    {
+      embed: configEmbed,
+      row: [configRow1, configRow2]
+    },
+    {
+      embed: presenceEmbed,
+      row: [presenceRow1, presenceRow2]
+    }
+  ]
+
   try {
-    await channelSend?.messages.fetch(message1DB)
-      .then(async (msg) => {
-        await msg.edit({ embeds: [configEmbed], components: [configRow1, configRow2] })
-      })
-      .catch(async () => {
-        await interaction.channel?.send({ embeds: [configEmbed], components: [configRow1, configRow2] })
-          .then(async (msg) => {
-            await db.messages.set(`${guildId}.system.message1`, msg.id)
-            await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
-          })
-      })
-    await channelSend?.messages.fetch(message2DB)
-      .then(async (msg) => {
-        await msg.edit({ embeds: [presenceEmbed], components: [presenceRow1, presenceRow2] })
-      })
-      .catch(async () => {
-        await interaction.channel?.send({ embeds: [presenceEmbed], components: [presenceRow1, presenceRow2] })
-          .then(async (msg) => {
-            await db.messages.set(`${guildId}.system.message2`, msg.id)
-            await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
-          })
-      })
-  } catch (err) {
-    console.log(err)
+    for (let index = 1; index <= embedsData.length; index++) {
+      const { embed, row } = embedsData[index - 1]
+      const dbKey = `${guildId}.system.message${index}`
+      const messageId = await db.messages.get(dbKey)
+
+      await channelSend?.messages.fetch(messageId)
+        .then(async (msg) => {
+          await msg.edit({ embeds: [embed], components: row })
+        })
+        .catch(async () => {
+          await interaction.channel?.send({ embeds: [embed], components: row })
+            .then(async (msg) => {
+              await db.messages.set(dbKey, msg.id)
+              await interaction.editReply({ content: '✅ | Mensagem enviada com sucesso!' })
+            })
+        })
+    }
+  } catch (error) {
+    console.error(error)
   }
 }
