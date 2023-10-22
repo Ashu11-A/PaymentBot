@@ -18,10 +18,11 @@ export class Payment {
   }): Promise<void> {
     const { interaction, method } = options
     const { message, guildId } = interaction
-    const tax = await db.payments.get(`${guildId}.config.taxes.${method}`) ?? 0
+    const tax = await db.payments.get(`${guildId}.config.taxes.${method}`)
     await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
     const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
-    const amount = Number(cardData.amount) * cardData.quantity
+    const { amount: cardAmount, quantity, cupom } = cardData
+    const amount = Number(((typeof cupom?.porcent === 'number' ? (cardAmount - (cardAmount * cupom.porcent / 100)) : cardAmount) * (quantity ?? 1)).toFixed(2))
     const amountTax = amount + (amount * (Number(tax) / 100))
 
     let embeds: Array<APIEmbed | JSONEncodable<APIEmbed>> = [] // Inicialize embeds como um array vazio
@@ -38,7 +39,7 @@ export class Payment {
           data: cardData,
           interaction,
           paymentData: payment,
-          taxa: tax
+          taxa: (tax ?? 1)
         })
 
         embeds = newEmbeds
@@ -98,7 +99,7 @@ export class Payment {
           data: cardData,
           interaction,
           paymentData: payment,
-          taxa: tax
+          taxa: (method === 'debit_card' ? (tax ?? 2) : (tax ?? 5))
         })
 
         embeds = newEmbeds

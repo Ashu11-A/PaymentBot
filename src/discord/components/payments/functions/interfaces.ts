@@ -4,17 +4,16 @@ import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethod
 export interface cardData {
   UUID?: string
   product?: string
-  amount?: number
+  amount: number
   coins?: number
-  quantity?: number
+  quantity: number
   typeEmbed?: number
   typeRedeem?: number
   properties?: Record<string, boolean> | undefined
   user?: User
   cupom?: {
-    name?: string
-    porcent?: number
-    cupomAmount?: number
+    name: string
+    porcent: number
   }
   fields?: Array<{ value: string }>
 }

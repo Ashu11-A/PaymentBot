@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { validarEmail } from '@/functions'
-import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
+import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
 import { updateCard } from '@/discord/components/payments'
 import { ctrlPanel } from '@/functions/ctrlPanel'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
@@ -35,6 +35,57 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       }
     } else {
       await interaction.reply({ ephemeral, content: messageInfo })
+    }
+    return
+  }
+
+  if (customId === 'paymentUserCupom') {
+    const codeVerify = await db.payments.get(`${guildId}.cupons.${messageModal.toLowerCase()}`)
+
+    if (codeVerify === undefined) {
+      await interaction.reply({
+        ephemeral,
+        embeds: [
+          new EmbedBuilder({
+            title: '❌ | Cupom não encontrado!'
+          }).setColor('Red')
+        ]
+      })
+    } else {
+      const cardData = await db.payments.get(`${guildId}.process.${message?.id}`)
+      if (codeVerify.usosMax !== null && (cardData.quantity > codeVerify.usosMax)) {
+        await interaction.reply({
+          ephemeral,
+          embeds: [
+            new EmbedBuilder({
+              title: `Este cupom não permite ser utilizado em mais de ${codeVerify.usosMax} produto(s)`
+            }).setColor('Red')
+          ]
+        })
+        return
+      }
+      await db.payments.set(`${guildId}.process.${message?.id}.cupom`, {
+        name: messageModal.toLowerCase(),
+        porcent: codeVerify.desconto,
+        max: codeVerify.usosMax
+      })
+
+      await interaction.reply({
+        ephemeral,
+        embeds: [
+          new EmbedBuilder({
+            title: `✅ | Cupom ${messageModal}, foi definido!`
+          }).setColor('Green')
+        ]
+      })
+
+      const data = await db.payments.get(`${guildId}.process.${message?.id}`)
+      const msg = await channel?.messages.fetch(String(message?.id))
+      await updateCard.embedAndButtons({
+        interaction,
+        data,
+        message: msg
+      })
     }
     return
   }

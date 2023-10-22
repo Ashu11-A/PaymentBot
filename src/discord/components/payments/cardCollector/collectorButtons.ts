@@ -40,7 +40,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
           custom_id: 'content',
           label,
           placeholder,
-          value: textValue ?? null,
+          value: textValue ?? undefined,
           style,
           required: true,
           maxLength

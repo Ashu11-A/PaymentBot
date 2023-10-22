@@ -165,9 +165,19 @@ export class PaymentFunction {
     const { interaction, type } = options
     const { guildId, message } = interaction
 
-    const { quantity } = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { quantity, cupom } = await db.payments.get(`${guildId}.process.${message.id}`)
 
     if (type === 'Add') {
+      if (cupom?.max !== null && ((quantity + 1) > cupom.max)) {
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: `Este cupom não permite ser utilizado em mais de ${cupom.max} produto(s)`
+            }).setColor('Red')
+          ]
+        })
+        return
+      }
       await db.payments.add(`${guildId}.process.${message.id}.quantity`, 1)
     } else if (type === 'Rem' && quantity > 1) {
       await db.payments.sub(`${guildId}.process.${message.id}.quantity`, 1)
@@ -359,6 +369,21 @@ export class PaymentFunction {
             content: `<@${user.id}>`,
             embeds: [embed],
             components
+          })
+          if (cardData.paymentId !== undefined && cardData.UUID !== undefined) {
+            embed.addFields(
+              {
+                name: '🆔 ID:',
+                value: `||${cardData.paymentId}||`
+              },
+              {
+                name: '📋 UUID:',
+                value: `||${cardData.UUID}||`
+              }
+            )
+          }
+          await user.send({
+            embeds: [embed]
           })
         } else {
           const Post = {

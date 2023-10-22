@@ -15,7 +15,7 @@ const buttons = {
     title: '❓| Qual cupom deseja utilizar?',
     label: 'Seu Cupom',
     style: 1,
-    type: 'cupom'
+    type: 'cupom.name'
   },
   paymentUserDM: {},
   paymentUserWTF: {},
