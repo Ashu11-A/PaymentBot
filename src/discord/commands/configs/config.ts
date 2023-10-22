@@ -200,6 +200,18 @@ new Command({
           type: ApplicationCommandOptionType.String
         }
       ]
+    },
+    {
+      name: 'telegram',
+      description: '[ ✈️ ] Configurar aspectos do Telegram',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'token',
+          description: 'Token do seu bot',
+          type: ApplicationCommandOptionType.String
+        }
+      ]
     }
   ],
   async run (interaction) {
@@ -340,6 +352,23 @@ new Command({
               typeDB: 'payments'
             })
           }
+
+          break
+        }
+        case 'telegram': {
+          await interaction.deferReply({ ephemeral: true })
+          const token = options.getString('token')
+
+          if (token !== null) {
+            await Database.set({
+              interaction,
+              data: token,
+              pathDB: 'config.telegram.token',
+              typeDB: 'guilds'
+            })
+          }
+
+          break
         }
       }
 

@@ -8,6 +8,7 @@ const system = {
   systemWelcomer: { info: 'Boas vindas' },
   systemStatus: { info: 'Status' },
   systemDeleteServers: { info: 'Deletar Servidores' },
+  systemTelegramNotif: { info: 'Notificação via Telegram' },
   systemStatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
   systemStatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
   systemLogs: { info: 'Logs' },

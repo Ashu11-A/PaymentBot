@@ -44,6 +44,14 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     color: 0x57f287
   })
 
+  const telegramEmbed = new EmbedBuilder({
+    title: '✈️ Telegram Config',
+    description: brBuilder(
+      'Notificações: Envia as mensagens de um channel selecionado para o Telegram.'
+    ),
+    color: 0x57f287
+  })
+
   const config = [
     new ButtonBuilder({
       customId: 'systemTicket',
@@ -72,6 +80,14 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       customId: 'systemDeleteServers',
       label: 'Delete Servers',
       emoji: { name: '🗑️' }
+    })
+  ]
+
+  const configTelegram = [
+    new ButtonBuilder({
+      customId: 'systemTelegramNotif',
+      label: 'Notificações',
+      emoji: { name: '📤' }
     })
   ]
 
@@ -135,6 +151,16 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     }
   }
 
+  for (const value of configTelegram) {
+    const { custom_id: customID } = Object(value.toJSON())
+    const result = systemData?.[customID]
+    if (result !== undefined && result === true) {
+      value.setStyle(ButtonStyle.Success)
+    } else {
+      value.setStyle(ButtonStyle.Secondary)
+    }
+  }
+
   for (const value of presence) {
     const { custom_id: customID } = Object(value.toJSON())
     const result = systemData?.[customID]
@@ -158,6 +184,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
 
   const configRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...config)
   const configRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...config2)
+  const telegramRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...configTelegram)
   const presenceRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence)
   const presenceRow2 = new ActionRowBuilder<ButtonBuilder>().addComponents(...presence2)
 
@@ -165,6 +192,10 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     {
       embed: configEmbed,
       row: [configRow1, configRow2]
+    },
+    {
+      embed: telegramEmbed,
+      row: [telegramRow1]
     },
     {
       embed: presenceEmbed,
