@@ -2,6 +2,7 @@ import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder,
 import { type cardData } from './interfaces'
 import { type PreferenceCreateResponse } from 'mercadopago/resources/preferences'
 import { type PaymentCreateResponse } from 'mercadopago/resources/payment'
+import { db } from '@/app'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {
@@ -15,6 +16,9 @@ export class updateCard {
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
     const { interaction, data, message, typeEdit, paymentData, taxa } = options
     const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
+    const { guildId } = interaction
+    const valor = Number(((typeof cupom?.porcent === 'number' ? (amount - (amount * cupom.porcent / 100)) : amount) * (quantity ?? 1)).toFixed(2))
+    const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
     console.log(paymentData)
 
@@ -43,15 +47,14 @@ export class updateCard {
       type = 'Não selecionado.'
     }
 
-    const mainEmbed = new EmbedBuilder()
-      .setColor('LightGrey')
-      .setTitle(titulo)
-      .setDescription(descrição)
+    const mainEmbed = new EmbedBuilder({
+      title: titulo,
+      description: descrição
+    }).setColor('LightGrey')
 
-    const infoPayment = new EmbedBuilder()
-      .setColor('LightGrey')
-      .setTitle('Informações do Pedido')
-      .addFields(
+    const infoPayment = new EmbedBuilder({
+      title: 'Informações do Pedido',
+      fields: [
         {
           name: 'Produto:',
           value: (product ?? 'Indefinido'),
@@ -59,12 +62,12 @@ export class updateCard {
         },
         {
           name: '**💰 Valor unitário:**',
-          value: `R$${cupom?.cupomAmount ?? amount ?? '0'}`,
+          value: `R$${amount}`,
           inline: true
         },
         {
           name: '**📦 Quantidade:**',
-          value: `${quantity ?? 1}`,
+          value: `${quantity}`,
           inline: true
         },
         {
@@ -73,13 +76,13 @@ export class updateCard {
           inline: true
         },
         {
-          name: '**🛒 Valor Total (Sem taxas):**',
-          value: `R$${(cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)}`,
+          name: `**🛒 Valor Total ${typeof cupom?.porcent === 'number' ? '(Desconto incluso)' : '(Taxas não inclusas)'}:**`,
+          value: `R$${valor}`,
           inline: true
         },
         {
           name: '**🍃 Taxas:**',
-          value: `R$${((paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? data?.cupom?.cupomAmount ?? ((amount ?? 0) * (quantity ?? 1))) - (cupom?.cupomAmount ?? amount ?? 0) * (quantity ?? 1)).toFixed(2)} (${taxa ?? 0}%)`,
+          value: `R$${((paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? valor) - (valor * (quantity))).toFixed(2)} (${taxa ?? 0}%)`,
           inline: true
         },
         {
@@ -91,13 +94,14 @@ export class updateCard {
           name: '**✉️ Método de envio:**',
           value: type
         }
-      )
+      ]
+    }).setColor('LightGrey')
 
     if ((typeEmbed === 0) || (cupom?.name !== undefined)) {
       infoPayment.addFields(
         {
           name: '**🎫 Cupom:**',
-          value: cupom?.name !== undefined ? '(' + (cupom?.porcent ?? 0) + '%)' : 'Indefinido'
+          value: typeof cupom?.name === 'string' ? `${cupom.name} (${cupom?.porcent ?? 0}%)` : 'Indefinido'
         }
       )
     }
@@ -131,16 +135,17 @@ export class updateCard {
 
       embedsPayment.push(userEmbed)
     }
-
+    const { pix, debit_card: debit, credit_card: credit } = await db.payments.get(`${guildId}.config.taxes`)
     if (typeEmbed === 2) {
-      const infoTax = new EmbedBuilder()
+      const infoTax = new EmbedBuilder({
+        title: 'Taxas dos Métodos de pagamento:',
+        fields: [
+          { name: '**💠 PIX:**', value: (pix ?? '1') + '%', inline: false },
+          { name: '**💳 Cartão de Débito:**', value: (debit ?? '1.99') + '%', inline: false },
+          { name: '**💳 Cartão de Crédito:**', value: (credit ?? '4.98') + '%', inline: false }
+        ]
+      })
         .setColor('LightGrey')
-        .setTitle('Taxas dos Métodos de pagamento:')
-        .addFields(
-          { name: '**💠 PIX:**', value: '1%', inline: false },
-          { name: '**💳 Cartão de Débito:**', value: '1.99%', inline: false },
-          { name: '**💳 Cartão de Crédito:**', value: '4.98%', inline: false }
-        )
       embedsPayment.push(infoTax)
     }
 
@@ -151,6 +156,10 @@ export class updateCard {
     const embeds = embedsPayment.map((embedBuilder) =>
       embedBuilder.toJSON()
     )
+
+    if (typeEmbed === 1) {
+      components[0].components[2].setURL(ctrlUrl)
+    }
 
     if (message !== undefined) {
       if (typeEdit === 'update') {
@@ -202,7 +211,7 @@ export class updateCard {
         style: ButtonStyle.Primary
       }),
       new ButtonBuilder({
-        url: 'https://dash.seventyhost.net/',
+        url: 'https://google.com/',
         emoji: '🔗',
         style: ButtonStyle.Link
       })
