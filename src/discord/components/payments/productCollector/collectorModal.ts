@@ -20,7 +20,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   if (customId === 'paymentSetPrice' || customId === 'paymentAddCoins') {
     const [validador, message] = validarValor(messageModal)
     messageModal = Number(messageModal.replace(',', '.'))
-    if (validador === false) {
+    if (!validador) {
       await interaction.editReply({ content: message })
       return
     }

@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { Command } from '@/discord/base'
 import { Discord } from '@/functions'
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock } from 'discord.js'
+import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock, ChannelType, type ChatInputCommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
 
 new Command({
   name: 'cupons',
@@ -46,6 +46,21 @@ new Command({
           required: true
         }
       ]
+    },
+    {
+      name: 'panel',
+      description: 'Painel de controle dos cupons',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'channel',
+          description: 'Embed de gerenciamento',
+          type: ApplicationCommandOptionType.Channel,
+          channelTypes: [
+            ChannelType.GuildText
+          ]
+        }
+      ]
     }
   ],
   async run (interaction) {
@@ -53,10 +68,15 @@ new Command({
     const { options, guildId, user, guild } = interaction
     const logsDB = await db.guilds.get(`${guildId}.channel.logs`) as string
     const logsChannel = guild.channels.cache.get(logsDB) as TextChannel | undefined
+    const panel = options.getChannel('channel') as TextChannel
 
     if (havePermision) return
-
     try {
+      if (panel !== null) {
+        console.log(panel)
+        await panelCupons({ interaction, channel: panel })
+        return
+      }
       switch (options.getSubcommand(true)) {
         case 'create': {
           await interaction.deferReply({ ephemeral })
@@ -145,3 +165,48 @@ new Command({
     }
   }
 })
+
+export async function panelCupons (options: {
+  interaction: ChatInputCommandInteraction<'cached'>
+  channel?: TextChannel
+}): Promise<void> {
+  const { interaction, channel } = options
+  const embed = new EmbedBuilder({
+    title: '🎟️ | Configurar Cupons',
+    description: 'Crie, Remova ou Edite os cupons'
+  })
+
+  const buttons = [
+    new ButtonBuilder({
+      customId: 'AddCupom',
+      emoji: '➕',
+      label: 'Adicionar',
+      style: ButtonStyle.Success
+    }),
+    new ButtonBuilder({
+      customId: 'RemCupom',
+      emoji: '✖️',
+      label: 'Remover',
+      style: ButtonStyle.Danger
+    }),
+    new ButtonBuilder({
+      customId: 'ListCupom',
+      emoji: '🗒️',
+      label: 'Listar',
+      style: ButtonStyle.Secondary
+    })
+  ]
+
+  const row = new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons)
+  if (channel !== undefined) {
+    await channel.send({
+      components: [row],
+      embeds: [embed]
+    })
+  } else {
+    await interaction.editReply({
+      components: [row],
+      embeds: [embed]
+    })
+  }
+}
