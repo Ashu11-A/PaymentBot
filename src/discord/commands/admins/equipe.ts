@@ -43,8 +43,7 @@ new Command({
     const channelDB = await db.guilds.get(`${interaction?.guild?.id}.channel.staff_logs`)
     const sendChannel = guild?.channels.cache.get(channelDB) as TextChannel
 
-    const havePermision = await Discord.Permission(interaction, 'ManageRoles')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'ManageRoles')) return
 
     if (user?.id === interaction.user.id) {
       const embed = new EmbedBuilder()

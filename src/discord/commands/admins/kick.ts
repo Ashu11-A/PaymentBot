@@ -30,8 +30,7 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    const havePermision = await Discord.Permission(interaction, 'KickMembers', 'noPermissionBanKick')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'KickMembers', 'noPermissionBanKick')) return
     if (user === null) return
 
     if (user.id === interaction.user.id) {

@@ -126,8 +126,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     return
   }
 
-  const havePermision = await Discord.Permission(interaction, 'Administrator')
-  if (havePermision) return
+  if (await Discord.Permission(interaction, 'Administrator')) return
 
   if (customId === 'ticketAddSelect') {
     const modal = new ModalBuilder({ customId: 'ticketSelectMenu', title: 'Adicionar Opções no Select Menu' })

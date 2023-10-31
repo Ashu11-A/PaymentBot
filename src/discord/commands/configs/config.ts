@@ -215,8 +215,7 @@ new Command({
     }
   ],
   async run (interaction) {
-    const havePermision = await Discord.Permission(interaction, 'Administrator', 'noPermissionBanKick')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'Administrator', 'noPermissionBanKick')) return
 
     if (!interaction.inCachedGuild()) return
     const { options } = interaction

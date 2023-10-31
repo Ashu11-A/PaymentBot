@@ -29,8 +29,7 @@ new Command({
 
     await interaction.deferReply({ ephemeral: true })
 
-    const havePermision = await Discord.Permission(interaction, 'Administrator')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'Administrator')) return
 
     try {
       const embed = new EmbedBuilder()

@@ -64,13 +64,12 @@ new Command({
     }
   ],
   async run (interaction) {
-    const havePermision = await Discord.Permission(interaction, 'Administrator')
+    if (await Discord.Permission(interaction, 'Administrator')) return
     const { options, guildId, user, guild } = interaction
     const logsDB = await db.guilds.get(`${guildId}.channel.logs`) as string
     const logsChannel = guild.channels.cache.get(logsDB) as TextChannel | undefined
     const panel = options.getChannel('channel') as TextChannel
 
-    if (havePermision) return
     try {
       if (panel !== null) {
         console.log(panel)

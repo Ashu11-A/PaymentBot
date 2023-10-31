@@ -32,8 +32,7 @@ new Command({
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
 
-    const havePermision = await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')) return
 
     try {
       if (isNaN(Number(userID))) {

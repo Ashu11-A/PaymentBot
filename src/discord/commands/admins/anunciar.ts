@@ -52,8 +52,7 @@ new Command({
     }
   ],
   async run (interaction) {
-    const havePermision = await Discord.Permission(interaction, 'Administrator')
-    if (havePermision) return
+    if (await Discord.Permission(interaction, 'Administrator')) return
 
     const { options, member } = interaction
 
