@@ -164,19 +164,21 @@ export class PaymentFunction {
   }): Promise<void> {
     const { interaction, type } = options
     const { guildId, message } = interaction
-
     const { quantity, cupom } = await db.payments.get(`${guildId}.process.${message.id}`)
 
     if (type === 'Add') {
-      if (cupom?.max !== null && ((quantity + 1) > cupom.max)) {
-        await interaction.editReply({
-          embeds: [
-            new EmbedBuilder({
-              title: `Este cupom não permite ser utilizado em mais de ${cupom.max} produto(s)`
-            }).setColor('Red')
-          ]
-        })
-        return
+      if (cupom?.name !== undefined) {
+        const cupomData = await db.payments.get(`${guildId}.cupons.${cupom.name.toLowerCase()}`)
+        if (cupomData?.usosMax !== null && ((quantity + 1) > cupomData.usosMax)) {
+          await interaction.editReply({
+            embeds: [
+              new EmbedBuilder({
+                title: `Este cupom não permite ser utilizado em mais de ${cupomData.usosMax} produto(s)`
+              }).setColor('Red')
+            ]
+          })
+          return
+        }
       }
       await db.payments.add(`${guildId}.process.${message.id}.quantity`, 1)
     } else if (type === 'Rem' && quantity > 1) {

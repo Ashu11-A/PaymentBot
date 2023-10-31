@@ -8,7 +8,7 @@ import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
   if (!interaction.inGuild()) return
 
-  const { customId, guildId, channel, message, fields } = interaction
+  const { customId, guildId, user, channel, message, fields } = interaction
   const { type } = value
   const messageModal = fields.getTextInputValue('content')
 
@@ -53,12 +53,12 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       })
     } else {
       const cardData = await db.payments.get(`${guildId}.process.${message?.id}`)
-      if (codeVerify.usosMax !== null && (cardData.quantity > codeVerify.usosMax)) {
+      if (codeVerify.usosMax !== null && (cardData.quantity > codeVerify.usosMax || codeVerify[user.id].usos > codeVerify.usosMax)) {
         await interaction.reply({
           ephemeral,
           embeds: [
             new EmbedBuilder({
-              title: `Este cupom não permite ser utilizado em mais de ${codeVerify.usosMax} produto(s)`
+              title: `O cupom não pode ser utilizado em mais de ${codeVerify.usosMax} produto(s)`
             }).setColor('Red')
           ]
         })
@@ -66,9 +66,9 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       }
       await db.payments.set(`${guildId}.process.${message?.id}.cupom`, {
         name: messageModal.toLowerCase(),
-        porcent: codeVerify.desconto,
-        max: codeVerify.usosMax
+        porcent: codeVerify.desconto
       })
+      await db.payments.add(`${guildId}.cupons.${messageModal.toLowerCase()}.${user.id}.usos`, 1)
 
       await interaction.reply({
         ephemeral,
