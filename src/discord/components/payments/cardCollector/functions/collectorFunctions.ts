@@ -445,7 +445,7 @@ export class PaymentFunction {
                     name: '📆 | Data: ',
                     value: codeBlock(new Date(Date.now()).toLocaleString('pt-BR'))
                   },
-                  { name: '🔑 | ID:', value: codeBlock(cardData.paymentId) }
+                  { name: '🔑 | UUID:', value: codeBlock(cardData.paymentId) }
                 ],
                 thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028234365248995368/aprove.gif' },
                 footer: { iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: `Atenciosamente, ${guild.name}` }
