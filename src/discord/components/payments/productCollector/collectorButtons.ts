@@ -65,7 +65,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
           custom_id: 'content',
           label,
           placeholder,
-          value: String(textValue) ?? null,
+          value: typeof textValue === 'number' ? String(textValue) : textValue ?? null,
           style,
           required: true,
           maxLength
