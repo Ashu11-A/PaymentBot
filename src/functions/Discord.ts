@@ -101,7 +101,7 @@ export class Discord {
       return false
     } catch (err: any) {
       console.error(`Erro ao verificar permissão: ${err}`)
-      return false
+      return true
     }
   }
 
