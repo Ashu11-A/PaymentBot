@@ -18,13 +18,14 @@ export class updateCard {
     const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
     const { guildId } = interaction
     const valor = Number(((typeof cupom?.porcent === 'number' ? (amount - (amount * cupom.porcent / 100)) : amount) * (quantity ?? 1)).toFixed(2))
+    const valorPagamento = paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? (valor * (quantity))
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
-
-    console.log(paymentData)
 
     let titulo
     let descrição
     let type
+
+    console.log(paymentData?.response?.transaction_amount, paymentData?.response?.items?.[0]?.unit_price)
 
     if (typeEmbed === 0 || typeEmbed === undefined) {
       titulo = 'Checkout & Quantidade.'
@@ -82,7 +83,7 @@ export class updateCard {
         },
         {
           name: '**🍃 Taxas:**',
-          value: `R$${((paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? valor) - (valor * (quantity))).toFixed(2)} (${taxa ?? 0}%)`,
+          value: `R$${(valorPagamento - valor).toFixed(2)} (${taxa ?? 0}%)`,
           inline: true
         },
         {
