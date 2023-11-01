@@ -301,8 +301,8 @@ export class PaymentFunction {
   }): Promise<undefined> {
     const { interaction } = options
     if (!interaction.inCachedGuild()) return
-    const { guildId, message, user, guild } = interaction
-    const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { guildId, message, user, guild, member } = interaction
+    const cardData = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
     const tokenAuth = await db.tokens.get('token')
 
     if (cardData?.paymentId !== undefined) {
@@ -334,11 +334,11 @@ export class PaymentFunction {
         if (cardData.typeRedeem === 2) {
           const [userCoins, dashLink] = await ctrlPanel.updateUser({
             guildId,
-            userID: cardData.user.id,
+            userID: cardData.user?.id,
             post: {
               credits: Number(cardData.coins),
-              email: cardData.user.email,
-              name: cardData.user.name,
+              email: cardData.user?.email,
+              name: cardData.user?.name,
               role: 'client'
             }
           })
@@ -440,14 +440,14 @@ export class PaymentFunction {
                 title: 'Compra efetuada com sucesso!',
                 description: `<@${user.id}> Agradecemos por escolher nossos produtos e serviços e esperamos atendê-lo novamente em breve.`,
                 fields: [
-                  { name: '🛒 | Produto: ', value: cardData.product },
-                  { name: '💰 | Créditos: ', value: cardData.coins },
+                  { name: '🛒 | Produto: ', value: (cardData.product ?? 'Error') },
+                  { name: '💰 | Créditos: ', value: (String(cardData.coins ?? 'Error')) },
                   { name: '💵 | Valor: ', value: `R$${cardData.amount}` },
                   {
                     name: '📆 | Data: ',
                     value: codeBlock(new Date(Date.now()).toLocaleString('pt-BR'))
                   },
-                  { name: '🔑 | UUID:', value: codeBlock(cardData.paymentId) }
+                  { name: '🔑 | UUID:', value: codeBlock(String(cardData.paymentId)) }
                 ],
                 thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028234365248995368/aprove.gif' },
                 footer: { iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: `Atenciosamente, ${guild.name}` }
@@ -499,6 +499,10 @@ export class PaymentFunction {
           voucherId,
           voucherCode
         })
+
+        if (cardData.role !== undefined) {
+          member.roles.add(cardData.role).catch((err) => { console.log(err) })
+        }
 
         setTimeout(() => {
           void db.payments.delete(`${guildId}.process.${message.id}`)

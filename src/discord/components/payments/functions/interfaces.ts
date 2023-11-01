@@ -3,12 +3,14 @@ import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethod
 
 export interface cardData {
   UUID?: string
+  role?: string
   product?: string
   amount: number
   coins?: number
   quantity: number
   typeEmbed?: number
   typeRedeem?: number
+  paymentId?: number
   properties?: Record<string, boolean> | undefined
   user?: User
   cupom?: {

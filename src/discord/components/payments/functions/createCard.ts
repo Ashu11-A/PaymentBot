@@ -48,8 +48,7 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
         return
       }
 
-      const coins = productData?.coins
-      const price = productData?.price
+      const { coins, price, role } = productData
 
       if (price === undefined) {
         await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
@@ -120,6 +119,7 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
               userID: user.id,
               channelId: paymentChannel.id,
               messageId: msg.id,
+              role,
               product,
               amount: price,
               coins,

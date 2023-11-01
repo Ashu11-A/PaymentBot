@@ -508,7 +508,7 @@ export class ctrlPanel {
    * Atualiza dados dos usuários do Dash
    */
   public static async updateUser (options: {
-    userID: string
+    userID: number | undefined
     guildId: string
     post: {
       credits?: number
