@@ -1,7 +1,7 @@
 import { setIntervalAsync } from 'set-interval-async/fixed'
 import { Event } from '@/discord/base'
 import statusPresence from './statusPresence'
-import moduleExpress from './express/express'
+import moduleExpress from '@/express/express'
 import { telegramNotify } from './telegram'
 
 export default new Event({

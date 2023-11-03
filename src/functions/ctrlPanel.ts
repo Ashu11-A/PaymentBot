@@ -5,8 +5,6 @@ import { numerosParaLetras } from './Format'
 import { createRow } from '@magicyan/discord'
 import { updateProgressAndEstimation } from '.'
 import { type Server, type User } from '@/discord/components/payments'
-import randomstring from 'randomstring'
-import { type RequestBodyCtrlPanelVoucher } from '@/discord/events/ready/express/routes/voucher'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class ctrlPanel {
@@ -460,47 +458,6 @@ export class ctrlPanel {
       return await fetchUsers(`${url}/api/users?page=1`)
     } else if (type === 'servers' || type === 'all') {
       return await fetchServers(`${url}/api/servers?page=1`)
-    }
-  }
-
-  /**
-   * Criar voucher
-   */
-  public static async createVoucher (options: {
-    dataCtrlPanelVoucher: RequestBodyCtrlPanelVoucher
-  }): Promise<[string, string] | [undefined, undefined]> {
-    try {
-      const { dataCtrlPanelVoucher } = options
-      const { user, credits, price, guild } = dataCtrlPanelVoucher
-      const ctrlPanelData = await db.payments.get(`${guild.id}.config.ctrlPanel`)
-      const pass = randomstring.generate({ length: 36 })
-      const code = pass.toString()
-
-      if (ctrlPanelData !== undefined) {
-        const postData = {
-          memo: `${user.name} (ID: ${user.id}) comprou créditos no valor de R$${price}`,
-          code,
-          uses: 1,
-          credits
-        }
-
-        console.log(postData)
-
-        const response = await axios.post(ctrlPanelData.url + '/api/vouchers', postData, {
-          headers: {
-            Accept: 'application/json',
-            Authorization: `Bearer ${ctrlPanelData.token}`
-          }
-        })
-        const { data } = response
-        if (response.status === 201 && data.status === 'VALID') {
-          return [code, data.id]
-        }
-      }
-      return [undefined, undefined]
-    } catch (err) {
-      console.log(err)
-      return [undefined, undefined]
     }
   }
 

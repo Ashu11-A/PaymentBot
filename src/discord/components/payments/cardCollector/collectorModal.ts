@@ -53,7 +53,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       })
     } else {
       const cardData = await db.payments.get(`${guildId}.process.${message?.id}`)
-      if (codeVerify.usosMax !== null && (cardData.quantity > codeVerify.usosMax || codeVerify[user.id].usos > codeVerify.usosMax)) {
+      if (codeVerify?.usosMax !== null && (cardData?.quantity > codeVerify?.usosMax || codeVerify[user.id]?.usos > codeVerify?.usosMax)) {
         await interaction.reply({
           ephemeral,
           embeds: [

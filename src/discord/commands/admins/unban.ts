@@ -23,16 +23,15 @@ new Command({
     }
   ],
   async run (interaction) {
-    await interaction.deferReply()
-    const { guild, options } = interaction
+    if (await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')) return
 
+    await interaction.deferReply({ ephemeral: true })
+
+    const { guild, options } = interaction
     const userID = options.getString('usuário', true)
     const reason: string = options.getString('motivo') ?? 'Nenhum motivo especificado'
-
     const logsDB = await db.guilds.get(`${interaction?.guild?.id}.channel.logs`) as string
     const logsChannel = interaction.guild?.channels.cache.get(logsDB) as TextChannel
-
-    if (await Discord.Permission(interaction, 'BanMembers', 'noPermissionBanKick')) return
 
     try {
       if (isNaN(Number(userID))) {

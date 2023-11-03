@@ -142,7 +142,7 @@ export class Discord {
         await runCallback(interaction)
         const end = Date.now()
         const timeSpent = (end - start) / 1000 + 's'
-        core.info(`${type} | ${interaction.customId} | ${timeSpent}`)
+        core.info(`${type} | ${interaction.customId} | ${timeSpent} | ${interaction.user.username}`)
       }
     })
   }

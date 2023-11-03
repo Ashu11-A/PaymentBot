@@ -1,15 +1,16 @@
 import { Router } from 'express'
 import { readdirSync, statSync } from 'fs'
 import path from 'path'
-
 import { Root as notFoundRouter } from '../routes/home'
-import { loggingMiddleware } from './loggingMiddleware'
+import { loggingMiddleware, corsMiddleware, fuckFavicon } from './middleware'
 
 const router: Router = Router()
 
+router.use(corsMiddleware)
+router.use(fuckFavicon)
 router.use(loggingMiddleware)
 
-async function scanRoutes (folderPath: string, router: Router): Promise<void> {
+async function scanRoutes (folderPath: string, router: Router, prefix = ''): Promise<void> {
   const files = readdirSync(folderPath)
 
   for (const file of files) {
@@ -18,19 +19,24 @@ async function scanRoutes (folderPath: string, router: Router): Promise<void> {
 
     if (stat.isDirectory()) {
       // Se for um diretório, continue a recursão
-      await scanRoutes(filePath, router)
+      await scanRoutes(filePath, router, path.join(prefix, file))
     } else if (file.endsWith('.ts')) {
       try {
         // Importe o módulo de rota
         const routeModule = await import(filePath)
         const { Root } = routeModule // Acesse o objeto Root do módulo importado
+        const fileFormat = file.replace('.ts', '')
+        let route: string = path.join(prefix, fileFormat).split('\\').join('/')
 
-        if (Root?.get !== undefined) {
-          router.get(`/${file.replace('.ts', '')}`, Root.get) // Use o método get do objeto Root
+        if (fileFormat === 'index') {
+          route = route.replace('index', '')
         }
-        if (Root?.post !== undefined) {
-          router.post(`/${file.replace('.ts', '')}`, Root.post) // Use o método post do objeto Root
-        }
+
+        ['get', 'post', 'delete', 'put'].forEach((method: string) => {
+          if (Root?.[method] !== undefined) {
+            (router as Record<string, any>)[method](`/${route}`, Root[method])
+          }
+        })
       } catch (err) {
         console.error(err)
       }

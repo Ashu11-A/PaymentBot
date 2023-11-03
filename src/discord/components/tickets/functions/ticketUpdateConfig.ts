@@ -90,7 +90,6 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
     const { custom_id: customID } = Object(value.toJSON())
 
     if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
-      console.log('Botão:', customID, 'Enabled:', enabled)
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {

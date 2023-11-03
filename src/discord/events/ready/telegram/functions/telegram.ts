@@ -20,8 +20,6 @@ export class NtTelegram {
     const { token } = this
     const bot = new TelegramBot(this.token, { polling: true })
 
-    console.log(token, bot)
-
     try {
       bot.onText(/\/start/, async (msg: { chat: { id: number } }) => {
         const chatId = msg.chat.id

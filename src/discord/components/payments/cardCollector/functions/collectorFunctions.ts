@@ -2,7 +2,6 @@ import { core, db } from '@/app'
 import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
 import { type cardData, updateCard } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
-import mp from 'mercadopago'
 import axios from 'axios'
 import { settings } from '@/settings'
 import { ctrlPanel } from '@/functions/ctrlPanel'
@@ -88,11 +87,10 @@ export class PaymentFunction {
           if (paymentId !== undefined) {
             const token = await db.payments.get(`${guildId}.config.mcToken`)
 
-            mp.configure({
-              access_token: token
+            await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/delete`, {
+              mpToken: token,
+              paymentId
             })
-
-            await mp.payment.cancel(paymentId)
           }
 
           await message.delete()
@@ -304,22 +302,38 @@ export class PaymentFunction {
     const { guildId, message, user, guild, member } = interaction
     const cardData = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
     const tokenAuth = await db.tokens.get('token')
+    const mpToken = await db.payments.get(`${guildId}.config.mcToken`)
 
     if (cardData?.paymentId !== undefined) {
-      const token = await db.payments.get(`${guildId}.config.mcToken`)
-
-      mp.configure({
-        access_token: token
+      const pagamentoRes = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment`, {
+        mpToken,
+        paymentId: cardData.paymentId
       })
 
-      const res = await mp.payment.get(cardData.paymentId)
-      const pagamentoStatus = res.body.status
+      if (pagamentoRes.status !== 200) {
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: 'Ocorreu um erro na solicitação do back-end',
+              fields: [
+                { name: 'Status', value: (String(pagamentoRes?.status) ?? 'Indefinido') },
+                { name: 'Error', value: (pagamentoRes.statusText ?? 'Indefinido') }
+              ]
+            }).setColor('Red')
+          ]
+        })
+        return
+      }
 
-      if (pagamentoStatus === 'approved') {
+      if (pagamentoRes.data.status === 'approved') {
+        const components = await updateCard.buttons({ data: cardData })
+        components[0].components[1].setDisabled(true)
+
         let voucherCode: string | undefined
         let voucherId: number | undefined
-        await interaction.message.delete()
-        await interaction.deleteReply()
+        await message.edit({
+          components
+        })
         await interaction.channel?.send({
           embeds: [
             new EmbedBuilder({
@@ -330,63 +344,90 @@ export class PaymentFunction {
             }).setColor('Green')
           ]
         })
+        await interaction.deleteReply()
 
         if (cardData.typeRedeem === 2) {
-          const [userCoins, dashLink] = await ctrlPanel.updateUser({
-            guildId,
-            userID: cardData.user?.id,
-            post: {
-              credits: Number(cardData.coins),
-              email: cardData.user?.email,
-              name: cardData.user?.name,
-              role: 'client'
-            }
-          })
-
-          const embed = new EmbedBuilder({
-            title: 'Seus créditos foram entregues!'
-          }).setColor('Green')
-
-          if (userCoins !== undefined) {
-            embed.addFields({
-              name: '🪙 | Seus Créditos:',
-              value: String(userCoins)
-            })
-          }
-
-          const components: Array<ActionRowBuilder<ButtonBuilder>> = []
-
-          if (dashLink !== undefined) {
-            components[0] = new ActionRowBuilder()
-            components[0].addComponents([
-              new ButtonBuilder({
-                url: dashLink,
-                style: ButtonStyle.Link,
-                label: 'Dash'
-              })
-            ])
-          }
-
-          await interaction.channel?.send({
-            content: `<@${user.id}>`,
-            embeds: [embed],
-            components
-          })
-          if (cardData.paymentId !== undefined && cardData.UUID !== undefined) {
-            embed.addFields(
-              {
-                name: '🆔 ID:',
-                value: `||${cardData.paymentId}||`
-              },
-              {
-                name: '📋 UUID:',
-                value: `||${cardData.UUID}||`
+          if (
+            cardData?.coins !== undefined &&
+            cardData.user?.email !== undefined &&
+            cardData.user?.name !== undefined &&
+            cardData?.UUID !== undefined
+          ) {
+            const [userCoins, dashLink] = await ctrlPanel.updateUser({
+              guildId,
+              userID: cardData.user?.id,
+              post: {
+                credits: (cardData.coins * cardData.amount),
+                email: cardData.user.email,
+                name: cardData.user.name,
+                role: 'client'
               }
-            )
+            })
+
+            const embed = new EmbedBuilder({
+              title: 'Seus créditos foram entregues!'
+            }).setColor('Green')
+
+            if (userCoins !== undefined) {
+              embed.addFields({
+                name: '🪙 | Seus Créditos:',
+                value: String(userCoins)
+              })
+            }
+
+            const components: Array<ActionRowBuilder<ButtonBuilder>> = []
+
+            if (dashLink !== undefined) {
+              components[0] = new ActionRowBuilder()
+              components[0].addComponents([
+                new ButtonBuilder({
+                  url: dashLink,
+                  style: ButtonStyle.Link,
+                  label: 'Dash'
+                })
+              ])
+            }
+
+            await interaction.channel?.send({
+              content: `<@${user.id}>`,
+              embeds: [embed],
+              components
+            })
+            if (cardData.UUID !== undefined) {
+              embed.addFields(
+                {
+                  name: '🆔 ID:',
+                  value: `||${cardData.paymentId}||`
+                },
+                {
+                  name: '📋 UUID:',
+                  value: `||${cardData.UUID}||`
+                }
+              )
+            }
+            await user.send({
+              embeds: [embed]
+            })
+          } else {
+            await interaction.channel?.send({
+              content: '@everyone',
+              embeds: [
+                new EmbedBuilder({
+                  title: 'Falta informações!',
+                  description: 'Ao consultar o database, foi detectado uma anomalia',
+                  fields: [
+                    { name: 'E-mail', value: (cardData?.user?.email ?? 'Error') },
+                    { name: 'userName', value: (cardData?.user?.name ?? 'Error') },
+                    { name: 'Coins', value: (String(cardData?.coins) ?? 'Error') },
+                    { name: 'UUID', value: (String(cardData?.UUID) ?? 'Error') }
+                  ]
+                }).setColor('Red')
+              ]
+            })
+            components[0].components[1].setDisabled(false)
+            await message.edit({ components }) // Retira o desabilitar do botão verificar
+            return
           }
-          await user.send({
-            embeds: [embed]
-          })
         } else {
           const Post = {
             token: tokenAuth,
@@ -404,7 +445,7 @@ export class PaymentFunction {
             name: cardData.product
           }
 
-          const response = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/voucher`, Post, {
+          const response = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/ctrlpanel/voucher/create`, Post, {
             headers: {
               Accept: 'application/json'
             }
@@ -513,7 +554,7 @@ export class PaymentFunction {
         await interaction.editReply({
           embeds: [
             new EmbedBuilder({
-              title: 'Status atual da compra está como ' + '`' + pagamentoStatus + '`',
+              title: 'Status atual da compra está como ' + '`' + pagamentoRes.data.status + '`',
               timestamp: new Date()
             }).setColor('Orange')
           ]

@@ -17,7 +17,7 @@ export function logs (controller: string, message: string, level: string, color:
   const currentLevelConfig = loggings[CURRENT_LOG_LEVEL]
 
   const ColorController = CheckColors(color, controller)
-  const SelectedColor = !levelConfig.color ? 'white' : CheckColors(levelConfig?.color, level)
+  const SelectedColor = levelConfig.color !== undefined ? CheckColors(levelConfig?.color, level) : 'white'
   if (level === 'Core') {
     const { currentHour } = getTimestamp()
     const ConsoleLog: ConsoleLogger = {

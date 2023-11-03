@@ -22,7 +22,6 @@ export async function setPresence (interaction: ModalSubmitInteraction<CacheType
     }
   }
   await db.messages.set(`${guildId}.system.status.messages`, data)
-  console.log(await db.messages.get(`${guildId}.system.status.messages`))
 
   await interaction.reply({ content: '✅ | Modal enviado com sucesso!', ephemeral: true })
 }
@@ -35,6 +34,5 @@ export async function delModalPresence (interaction: StringSelectMenuInteraction
 
   const updatedValues = values.filter((_: string, index: number) => !deleteValues.includes(index))
   await db.messages.set(`${guildId}.system.status.messages`, updatedValues)
-  console.log(await db.messages.get(`${guildId}.system.status.messages`))
   await interaction.reply({ content: `User ${user.username} selecionou os valores: ${deleteValues.map(v => `> ${v}`).join('\n')}`, ephemeral: true })
 }

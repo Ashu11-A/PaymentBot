@@ -8,8 +8,6 @@ export default new Event({
   name: 'messageDelete',
   async run (message) {
     const { guildId, channelId, id, guild, interaction } = message
-    console.log(`Guild: ${guildId} - Channel: ${channelId} - ID: ${id}`)
-
     const categories = ['payments', 'ticket']
 
     for (const category of categories) {

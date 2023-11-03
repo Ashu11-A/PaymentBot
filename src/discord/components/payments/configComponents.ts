@@ -12,7 +12,7 @@ Object.entries(modalConfig).map(async ([key, value]) => {
     async run (modalInteraction) {
       const isModal = (value as { modal?: boolean })?.modal ?? true
       if (isModal) {
-        await collectorModal(modalInteraction, key, value)
+        await collectorModal(modalInteraction)
       }
     }
   })

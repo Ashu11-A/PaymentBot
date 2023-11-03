@@ -15,7 +15,7 @@ export function CheckColors (color: string, type: string): string {
   if (!validColors.includes(color)) {
     const errorMessage: string = `A cor "${color}" usada no "${type}" é ínvalida, usando cor padrão(${loggings.Alternative.color}).`
 
-    if (!logHistory[errorMessage]) {
+    if (logHistory[errorMessage] === undefined) {
       logHistory[errorMessage] = true
       core(errorMessage)
     }

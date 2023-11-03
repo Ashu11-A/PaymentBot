@@ -12,7 +12,6 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   const { guildId, message, channelId, customId } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
-  if (await Discord.Permission(interaction, 'Administrator')) return
 
   const customIdHandlers: CustomIdHandlers = {
     paymentSave: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
@@ -54,6 +53,9 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   const customIdHandler = customIdHandlers[customId]
 
   if (typeof customIdHandler === 'function') {
+    if (customId !== 'paymentBuy') {
+      if (await Discord.Permission(interaction, 'Administrator')) return
+    }
     await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {

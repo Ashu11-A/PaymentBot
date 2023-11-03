@@ -52,9 +52,9 @@ new Command({
   async run (interaction) {
     const { channel, options } = interaction
 
-    await interaction.deferReply({ ephemeral: true })
-
     if (await Discord.Permission(interaction, 'ManageChannels', 'noPermission')) return
+
+    await interaction.deferReply({ ephemeral: true })
 
     const amount = options.getInteger('quantidade', true)
     const mention = options.getUser('autor')

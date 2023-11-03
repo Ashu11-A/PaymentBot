@@ -54,10 +54,8 @@ export interface MercadoPago {
   notification_url: string | undefined
   metadata: {
     userId: string
-    guildId: string
-    messageId: string
     price: number
-    UUID: string | undefined
+    infoPayment: any[]
   }
   date_of_expiration: string | undefined
 }

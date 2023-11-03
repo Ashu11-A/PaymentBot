@@ -1,7 +1,12 @@
 {
     "Express": {
+        "ip": "localhost",
         "Port": 3005,
-        "encryptionKey": "i am something very precious and i have to have 32 characters"
+        "encryptionKey": "i am something very precious and i have to have 32 characters",
+        "permIps": [
+            "::1",
+            "localhost"
+        ]
     },
     "Logs": {
         "configPATH": "./src/config",

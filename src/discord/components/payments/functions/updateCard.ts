@@ -1,8 +1,7 @@
 import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
 import { type cardData } from './interfaces'
-import { type PreferenceCreateResponse } from 'mercadopago/resources/preferences'
-import { type PaymentCreateResponse } from 'mercadopago/resources/payment'
 import { db } from '@/app'
+import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCard {
@@ -11,21 +10,19 @@ export class updateCard {
     data: cardData
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
-    paymentData?: PreferenceCreateResponse | PaymentCreateResponse
+    paymentData?: PaymentResponse
     taxa?: number
   }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
     const { interaction, data, message, typeEdit, paymentData, taxa } = options
     const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
     const { guildId } = interaction
     const valor = Number(((typeof cupom?.porcent === 'number' ? (amount - (amount * cupom.porcent / 100)) : amount) * (quantity ?? 1)).toFixed(2))
-    const valorPagamento = paymentData?.response?.transaction_amount ?? paymentData?.response?.items?.[0]?.unit_price ?? (valor * (quantity))
+    const valorPagamento = paymentData?.transaction_amount ?? paymentData?.additional_info?.items?.[0]?.unit_price ?? (valor * (quantity))
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
     let titulo
     let descrição
     let type
-
-    console.log(paymentData?.response?.transaction_amount, paymentData?.response?.items?.[0]?.unit_price)
 
     if (typeEmbed === 0 || typeEmbed === undefined) {
       titulo = 'Checkout & Quantidade.'
@@ -111,7 +108,7 @@ export class updateCard {
       infoPayment.addFields(
         {
           name: '**🪙 Créditos totais:**',
-          value: `${coins ?? 'Indefinido'}`
+          value: `${(coins * quantity) ?? 'Indefinido'}`
         }
       )
     }
@@ -203,7 +200,8 @@ export class updateCard {
         customId: 'paymentUserDM',
         label: 'Mensagem via DM',
         emoji: '💬',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Primary,
+        disabled: true
       }),
       new ButtonBuilder({
         customId: 'paymentUserDirect',
@@ -328,7 +326,6 @@ export class updateCard {
       const { custom_id: customID } = Object(value.toJSON())
 
       if (customID === 'paymentUserRem' && data?.quantity !== undefined && data.quantity <= 1) {
-        console.log('Botão paymentUserRem, foi desabilidado.')
         value.setDisabled(true)
       }
 
