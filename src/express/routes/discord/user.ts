@@ -5,8 +5,10 @@ class User {
   /**
    * Pesquisa informações de um certo user
    */
-  public async get (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
-    const { userId } = req.query
+  public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
+    const { userId } = req.body
+
+    console.log(userId)
 
     if (userId === undefined || typeof userId !== 'string') {
       return res.status(400).json({
