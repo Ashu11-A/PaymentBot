@@ -227,13 +227,15 @@ export class updateCard {
         customId: 'paymentUserGerarCardDebito',
         label: 'Cartão de Débito',
         emoji: '💳',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        disabled: true
       }),
       new ButtonBuilder({
         customId: 'paymentUserGerarCardCredito',
         label: 'Cartão de Crédito',
         emoji: '💳',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        disabled: true
       })
     ]
 
