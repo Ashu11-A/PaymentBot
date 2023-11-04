@@ -40,7 +40,7 @@ class CreatePixPayment {
         }
       })
 
-      const dateStr = paymentData.date_of_expiration ?? isoDate
+      const dateStr = paymentData?.date_of_expiration ?? isoDate
       const expirationDate = new Date(dateStr)
       expirationDate.setMinutes(expirationDate.getMinutes())
       const unixTimestamp = Math.floor(expirationDate.getTime() / 1000)

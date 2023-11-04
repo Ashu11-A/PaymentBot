@@ -1,3 +1,5 @@
+import fetch from 'node-fetch'
+
 global.animated = true
 global.fetchReply = true
 global.ephemeral = true
@@ -8,3 +10,4 @@ global.dmPermission = false
 global.components = []
 global.embeds = []
 global.__rootname = process.cwd()
+global.fetch = fetch
