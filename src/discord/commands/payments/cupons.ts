@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { Command } from '@/discord/base'
-import { Discord } from '@/functions'
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock, ChannelType, type ChatInputCommandInteraction, ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
+import { CustomButtonBuilder, Discord } from '@/functions'
+import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock, ChannelType, type ChatInputCommandInteraction, type ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
 
 new Command({
   name: 'cupons',
@@ -176,20 +176,20 @@ export async function panelCupons (options: {
   })
 
   const buttons = [
-    new ButtonBuilder({
-      customId: 'AddCupom',
+    await CustomButtonBuilder.create({
+      customId: 'Cupom_Admin_Add',
       emoji: '➕',
       label: 'Adicionar',
       style: ButtonStyle.Success
     }),
-    new ButtonBuilder({
-      customId: 'RemCupom',
+    await CustomButtonBuilder.create({
+      customId: 'Cupom_Admin_Rem',
       emoji: '✖️',
       label: 'Remover',
       style: ButtonStyle.Danger
     }),
-    new ButtonBuilder({
-      customId: 'ListCupom',
+    await CustomButtonBuilder.create({
+      customId: 'Cupom_Admin_List',
       emoji: '🗒️',
       label: 'Listar',
       style: ButtonStyle.Secondary

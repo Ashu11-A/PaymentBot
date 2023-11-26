@@ -1,6 +1,6 @@
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
+import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, ChannelType, EmbedBuilder, PermissionsBitField, type CacheType, type CommandInteraction, type ButtonInteraction, type Collection, type OverwriteResolvable, type Snowflake, type StringSelectMenuInteraction } from 'discord.js'
 import { db } from '@/app'
-import { Discord } from '@/functions'
+import { CustomButtonBuilder, Discord } from '@/functions'
 
 export async function createTicket (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | StringSelectMenuInteraction<CacheType>, about: string): Promise<void> {
   const { guild, user, guildId } = interaction
@@ -91,7 +91,7 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
         .setFooter({ text: `Equipe ${interaction.guild?.name}`, iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) })
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder({
+        await CustomButtonBuilder.create({
           customId: 'del-ticket',
           label: 'Fechar Ticket',
           emoji: '✖️',

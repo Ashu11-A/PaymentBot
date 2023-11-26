@@ -1,6 +1,7 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { type AnyComponentBuilder, ActionRowBuilder, type ColorResolvable, type TextChannel, type CommandInteraction, type MessageInteraction, type Guild, EmbedBuilder, type CacheType, type PermissionResolvable, ButtonInteraction, ButtonBuilder, ButtonStyle, codeBlock } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel } from 'discord.js'
+import { genButtonID } from './GenButton'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
   return new ActionRowBuilder<Component>({ components })
@@ -116,7 +117,7 @@ export class Discord {
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
     const { guildId, channelId, emoji, label } = options
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
-      new ButtonBuilder({
+      await CustomButtonBuilder.create({
         emoji,
         label,
         url: `https://discord.com/channels/${guildId}/${channelId}`,
@@ -145,5 +146,36 @@ export class Discord {
         core.info(`${type} | ${interaction.customId} | ${timeSpent} | ${interaction.user.username}`)
       }
     })
+  }
+}
+
+export class CustomButtonBuilder extends ButtonBuilder {
+  customId?: string
+  emoji?: string
+  style?: ButtonStyle
+  url?: string
+  label?: string
+  constructor (customId?: string, emoji?: string, style?: ButtonStyle, url?: string, label?: string) {
+    super()
+    this.customId = customId
+    this.emoji = emoji
+    this.style = style
+    this.url = url
+    this.label = label
+  }
+
+  async init (): Promise<this> {
+    const { Id } = await genButtonID()
+    if (this.customId !== undefined) this.setCustomId(`${Id}_${this.customId}`)
+    if (this.emoji !== undefined) this.setEmoji(this.emoji)
+    if (this.style !== undefined) this.setStyle(this.style)
+    if (this.url !== undefined) this.setURL(this.url)
+    if (this.label !== undefined) this.setLabel(this.label)
+    return this
+  }
+
+  static async create ({ customId, emoji, style, url, label }: any): Promise<CustomButtonBuilder> {
+    const builder = new CustomButtonBuilder(customId, emoji, style, url, label)
+    return await builder.init()
   }
 }

@@ -1,14 +1,15 @@
+import { db } from '@/app'
+import { CustomButtonBuilder } from '@/functions'
+import { brBuilder } from '@magicyan/discord'
 import {
   ActionRowBuilder,
-  ButtonBuilder,
+  type ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
-  type CacheType, type CommandInteraction,
   type ButtonInteraction,
+  type CacheType, type CommandInteraction,
   type TextChannel
 } from 'discord.js'
-import { db } from '@/app'
-import { brBuilder } from '@magicyan/discord'
 
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guildId } = interaction
@@ -53,82 +54,89 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
   })
 
   const config = [
-    new ButtonBuilder({
-      customId: 'systemTicket',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_Ticket',
       label: 'Ticket',
       emoji: { name: '🎫' }
     }),
-    new ButtonBuilder({
-      customId: 'systemWelcomer',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_Welcomer',
       label: 'Boas Vindas',
       emoji: { name: '❤️' }
     }),
-    new ButtonBuilder({
-      customId: 'systemLogs',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_Logs',
       label: 'Logs',
       emoji: { name: '📰' }
     }),
-    new ButtonBuilder({
-      customId: 'systemPayments',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_Payments',
       label: 'Pagamentos',
       emoji: { name: '💲' }
     })
   ]
 
   const config2 = [
-    new ButtonBuilder({
-      customId: 'systemDeleteServers',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_DeleteServers',
       label: 'Delete Servers',
       emoji: { name: '🗑️' }
     })
   ]
 
   const configTelegram = [
-    new ButtonBuilder({
-      customId: 'systemTelegramNotif',
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_TelegramNotif',
       label: 'Notificações',
       emoji: { name: '📤' }
     })
   ]
 
   const presence = [
-    new ButtonBuilder()
-      .setCustomId('systemStatus')
-      .setLabel('Status')
-      .setEmoji({ name: '⚙️' }),
-    new ButtonBuilder()
-      .setCustomId('systemStatusMinecraft')
-      .setLabel('Minecraft')
-      .setEmoji({ name: '🧱' }),
-    new ButtonBuilder()
-      .setCustomId('systemStatusString')
-      .setLabel('Mensagens')
-      .setEmoji({ name: '📃' })
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_Status',
+      label: 'Status',
+      emoji: '⚙️'
+    }),
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusMinecraft',
+      label: 'Minecraft',
+      emoji: '🧱'
+    }),
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusString',
+      label: 'Mensagens',
+      emoji: '📃'
+    })
   ]
   const presence2 = [
-    new ButtonBuilder()
-      .setCustomId('systemStatusOnline')
-      .setLabel('Online')
-      .setEmoji({ name: '🟢' }),
-    new ButtonBuilder()
-      .setCustomId('systemStatusAusente')
-      .setLabel('Ausente')
-      .setEmoji({ name: '🟠' }),
-    new ButtonBuilder()
-      .setCustomId('systemStatusNoPerturbe')
-      .setLabel('Não Perturbe')
-      .setEmoji({ name: '🔴' }),
-    new ButtonBuilder()
-      .setCustomId('systemStatusInvisível')
-      .setLabel('Invisível')
-      .setEmoji({ name: '⚫' })
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusOnline',
+      label: 'Online',
+      emoji: '🟢'
+    }),
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusAusente',
+      label: 'Ausente',
+      emoji: '🟠'
+    }),
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusNoPerturbe',
+      label: 'Não Perturbe',
+      emoji: '🔴'
+    }),
+    await CustomButtonBuilder.create({
+      customId: 'System_Admin_StatusInvisível',
+      label: 'Invisível',
+      emoji: '⚫'
+    })
   ]
 
   const typeStatus: Record<string, string> = {
-    systemStatusOnline: 'online',
-    systemStatusAusente: 'idle',
-    systemStatusNoPerturbe: 'dnd',
-    systemStatusInvisível: 'invisible'
+    System_StatusOnline: 'online',
+    System_StatusAusente: 'idle',
+    System_StatusNoPerturbe: 'dnd',
+    System_StatusInvisível: 'invisible'
   }
 
   for (const value of config) {
