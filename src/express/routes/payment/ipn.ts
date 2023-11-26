@@ -16,9 +16,9 @@ class IPN {
       try {
         if (data?.id !== undefined) {
           const { userId, guildId, messageId, UUID } = req.body.metadata
-          const cardData = await db.payments.get(`${guildId}.process.${messageId}`)
+          const cartData = await db.payments.get(`${guildId}.process.${messageId}`)
 
-          if (cardData?.UUID === UUID) {
+          if (cartData?.UUID === UUID) {
             const token = await db.payments.get(`${guildId}.config.mcToken`)
             const client = new MercadoPagoConfig({ accessToken: token })
             const status = await new Payment(client).get(data.id)
@@ -37,7 +37,7 @@ class IPN {
               status: 'success'
             })
           } else {
-            core.warn(`Tentativa de fraude!.\nUser: ${userId}\nUUID (Local): ${cardData.UUID}\nUUID (Externo): ${UUID}`)
+            core.warn(`Tentativa de fraude!.\nUser: ${userId}\nUUID (Local): ${cartData.UUID}\nUUID (Externo): ${UUID}`)
             return res.status(403).json({
               status: 'refused'
             })

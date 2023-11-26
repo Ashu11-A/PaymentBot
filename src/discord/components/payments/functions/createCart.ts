@@ -1,10 +1,10 @@
 import { db } from '@/app'
 import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
-import { updateCard } from './updateCard'
+import { updateCart } from './updateCart'
 import { Discord, genv4 } from '@/functions'
 import { type productData } from './interfaces'
 
-export async function createCard (interaction: ButtonInteraction<CacheType>): Promise<void> {
+export async function createCart (interaction: ButtonInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild()) return
 
   const { channelId, guild, guildId, user, message } = interaction
@@ -81,7 +81,7 @@ export async function createCard (interaction: ButtonInteraction<CacheType>): Pr
         parent: category?.id
       })
 
-      const { embeds, components } = await updateCard.embedAndButtons({
+      const { embeds, components } = await updateCart.embedAndButtons({
         interaction,
         data: {
           product,

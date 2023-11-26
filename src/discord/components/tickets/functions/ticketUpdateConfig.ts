@@ -1,5 +1,6 @@
 import { db } from '@/app'
 import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
+import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
 export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
@@ -11,38 +12,38 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const embedEdit = await createRowEdit(interaction, message, 'ticket')
 
   const setSystem = [
-    new ButtonBuilder({
-      customId: 'ticketSetRole',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_SetRole',
       label: 'Add Cargo',
       emoji: '🛂'
     }),
-    new ButtonBuilder({
-      customId: 'ticketSetSelect',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_SetSelect',
       label: 'SelectMenu',
       emoji: '🗄️'
     }),
-    new ButtonBuilder({
-      customId: 'ticketAddSelect',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_AddSelect',
       label: 'Add Select',
       emoji: '📝',
       disabled: true
     }),
-    new ButtonBuilder({
-      customId: 'ticketSetButton',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_SetButton',
       label: 'Botão',
       emoji: '🔘'
     })
   ]
 
   const saveDelete = [
-    new ButtonBuilder({
-      customId: 'ticketSendSave',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_SendSave',
       label: 'Enviar',
       emoji: '✔️',
       style: ButtonStyle.Success
     }),
-    new ButtonBuilder({
-      customId: 'ticketEmbedDelete',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_Admin_EmbedDelete',
       label: 'Apagar',
       emoji: '✖️',
       style: ButtonStyle.Danger
@@ -68,7 +69,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   if (enabled !== undefined && enabled === true) {
     row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder({
-        custom_id: 'ticketRowSelect',
+        custom_id: 'Ticket_Admin_RowSelect',
         placeholder: 'Escolha qual tipo de ticket deseja abrir!',
         options
       })
@@ -76,7 +77,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   } else {
     row4 = new ActionRowBuilder<ButtonBuilder>().addComponents(
       new ButtonBuilder()
-        .setCustomId('ticketOpen')
+        .setCustomId('Ticket_User_Open')
         .setEmoji({ name: '📩' })
         .setLabel('Abra seu ticket')
         .setStyle(ButtonStyle.Success)
@@ -89,7 +90,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   for (const value of setSystem) {
     const { custom_id: customID } = Object(value.toJSON())
 
-    if (customID === 'ticketAddSelect' || customID === 'ticketRemSelect') {
+    if (customID === 'Ticket_Admin_AddSelect' || customID === 'Ticket_Admin_RemSelect') {
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -107,7 +108,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   for (const value of saveDelete) {
     const { custom_id: customID } = Object(value.toJSON())
 
-    if (customID === 'ticketSendSave') {
+    if (customID === 'Ticket_Admin_SendSave') {
       const { embedChannelID: embedSend } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
       if (embedSend !== undefined && typeof embedSend === 'string') {
         value.setEmoji('📝')
@@ -170,8 +171,8 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
   ]
 
   const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
-    new ButtonBuilder({
-      customId: 'ticketOpen',
+    await CustomButtonBuilder.create({
+      customId: 'Ticket_User_Open',
       label: 'Abra seu ticket',
       emoji: '📩',
       style: ButtonStyle.Success

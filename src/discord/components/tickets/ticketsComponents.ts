@@ -5,7 +5,7 @@ import { deleteSelect, collectorSelect } from './ticketsCollector/collectorSelec
 import { Discord } from '@/functions'
 
 const buttonsModals = {
-  ticketSetRole: {
+  SetRole: {
     button: true,
     modal: true,
     title: '❓| ID marcado na criação do Ticket',
@@ -15,16 +15,16 @@ const buttonsModals = {
     maxLength: 30,
     type: 'role'
   },
-  ticketOpen: {
+  Open: {
     button: true,
     modal: false
   },
-  ticketSelectMenu: {
+  SelectMenu: {
     button: false,
     modal: true,
     type: 'select'
   },
-  ticketAddSelect: {
+  AddSelect: {
     button: true,
     modal: false
   },
@@ -32,15 +32,15 @@ const buttonsModals = {
     button: true,
     modal: false
   },
-  ticketSetSelect: {
+  SetSelect: {
     button: true,
     modal: false
   },
-  ticketSetButton: {
+  SetButton: {
     button: true,
     modal: false
   },
-  ticketSendSave: {
+  SendSave: {
     button: true,
     modal: true,
     title: '❓| ID do channel',
@@ -50,7 +50,7 @@ const buttonsModals = {
     maxLength: 30,
     type: 'embedChannelID'
   },
-  ticketEmbedDelete: {
+  EmbedDelete: {
     button: true,
     modal: false
   }

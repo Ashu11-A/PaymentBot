@@ -1,10 +1,11 @@
 import { core, db } from '@/app'
-import { ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
-import { type cardData, updateCard } from '@/discord/components/payments'
+import { type ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
+import { type cartData, updateCart } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
 import { settings } from '@/settings'
 import { ctrlPanel } from '@/functions/ctrlPanel'
+import { CustomButtonBuilder } from '@/functions'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
@@ -21,14 +22,14 @@ export class PaymentFunction {
     await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDirect`)
     await db.payments.delete(`${guildId}.process.${message.id}.user`)
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
-    await updateCard.embedAndButtons({
+    await updateCart.embedAndButtons({
       interaction,
       data,
       message
     })
     await interaction.deleteReply()
     /* Modo debug
-    await updateCard.displayData({
+    await updateCart.displayData({
       interaction,
       data,
       type: 'editReply'
@@ -52,8 +53,8 @@ export class PaymentFunction {
     const messagePrimary = await interaction.editReply({
       embeds: [embed],
       components: [createRow(
-        new ButtonBuilder({ custom_id: 'payment-confirm-delete', label: 'Confirmar', style: ButtonStyle.Success }),
-        new ButtonBuilder({ custom_id: 'payment-cancel-delete', label: 'Cancelar', style: ButtonStyle.Danger })
+        await CustomButtonBuilder.create({ custom_id: 'payment-confirm-delete', label: 'Confirmar', style: ButtonStyle.Success }),
+        await CustomButtonBuilder.create({ custom_id: 'payment-cancel-delete', label: 'Cancelar', style: ButtonStyle.Danger })
       )]
     })
     const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })
@@ -144,7 +145,7 @@ export class PaymentFunction {
         await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}_${typeEmbed}`, true)
         const data = await db.payments.get(`${guildId}.process.${message.id}`)
 
-        await updateCard.embedAndButtons({
+        await updateCart.embedAndButtons({
           interaction,
           message,
           data,
@@ -188,7 +189,7 @@ export class PaymentFunction {
 
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
 
-    await updateCard.embedAndButtons({
+    await updateCart.embedAndButtons({
       interaction,
       data,
       message
@@ -208,7 +209,7 @@ export class PaymentFunction {
     const { interaction, type, update } = options
     const { guildId, user, message } = interaction
 
-    let data = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
+    let data = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
 
     function stringNextBefore (numberType: number): string {
       let typeString
@@ -282,8 +283,8 @@ export class PaymentFunction {
       }
     }
     if (update === undefined || update === 'Yes') {
-      data = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
-      await updateCard.embedAndButtons({
+      data = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
+      await updateCart.embedAndButtons({
         interaction,
         data,
         message
@@ -300,14 +301,14 @@ export class PaymentFunction {
     const { interaction } = options
     if (!interaction.inCachedGuild()) return
     const { guildId, message, user, guild, member } = interaction
-    const cardData = await db.payments.get(`${guildId}.process.${message.id}`) as cardData
+    const cartData = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
     const tokenAuth = await db.tokens.get('token')
     const mpToken = await db.payments.get(`${guildId}.config.mcToken`)
 
-    if (cardData?.paymentId !== undefined) {
+    if (cartData?.paymentId !== undefined) {
       const pagamentoRes = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment`, {
         mpToken,
-        paymentId: cardData.paymentId
+        paymentId: cartData.paymentId
       })
 
       if (pagamentoRes.status !== 200) {
@@ -326,7 +327,7 @@ export class PaymentFunction {
       }
 
       if (pagamentoRes.data.status === 'approved') {
-        const components = await updateCard.buttons({ data: cardData })
+        const components = await updateCart.buttons({ data: cartData })
         components[0].components[1].setDisabled(true)
 
         let voucherCode: string | undefined
@@ -346,20 +347,20 @@ export class PaymentFunction {
         })
         await interaction.deleteReply()
 
-        if (cardData.typeRedeem === 2) {
+        if (cartData.typeRedeem === 2) {
           if (
-            cardData?.coins !== undefined &&
-            cardData.user?.email !== undefined &&
-            cardData.user?.name !== undefined &&
-            cardData?.UUID !== undefined
+            cartData?.coins !== undefined &&
+            cartData.user?.email !== undefined &&
+            cartData.user?.name !== undefined &&
+            cartData?.UUID !== undefined
           ) {
             const [userCoins, dashLink] = await ctrlPanel.updateUser({
               guildId,
-              userID: cardData.user?.id,
+              userID: cartData.user?.id,
               post: {
-                credits: (cardData.coins * cardData.amount),
-                email: cardData.user.email,
-                name: cardData.user.name,
+                credits: (cartData.coins * cartData.amount),
+                email: cartData.user.email,
+                name: cartData.user.name,
                 role: 'client'
               }
             })
@@ -380,7 +381,7 @@ export class PaymentFunction {
             if (dashLink !== undefined) {
               components[0] = new ActionRowBuilder()
               components[0].addComponents([
-                new ButtonBuilder({
+                await CustomButtonBuilder.create({
                   url: dashLink,
                   style: ButtonStyle.Link,
                   label: 'Dash'
@@ -393,15 +394,15 @@ export class PaymentFunction {
               embeds: [embed],
               components
             })
-            if (cardData.UUID !== undefined) {
+            if (cartData.UUID !== undefined) {
               embed.addFields(
                 {
                   name: '🆔 ID:',
-                  value: `||${cardData.paymentId}||`
+                  value: `||${cartData.paymentId}||`
                 },
                 {
                   name: '📋 UUID:',
-                  value: `||${cardData.UUID}||`
+                  value: `||${cartData.UUID}||`
                 }
               )
             }
@@ -416,10 +417,10 @@ export class PaymentFunction {
                   title: 'Falta informações!',
                   description: 'Ao consultar o database, foi detectado uma anomalia',
                   fields: [
-                    { name: 'E-mail', value: (cardData?.user?.email ?? 'Error') },
-                    { name: 'userName', value: (cardData?.user?.name ?? 'Error') },
-                    { name: 'Coins', value: (String(cardData?.coins) ?? 'Error') },
-                    { name: 'UUID', value: (String(cardData?.UUID) ?? 'Error') }
+                    { name: 'E-mail', value: (cartData?.user?.email ?? 'Error') },
+                    { name: 'userName', value: (cartData?.user?.name ?? 'Error') },
+                    { name: 'Coins', value: (String(cartData?.coins) ?? 'Error') },
+                    { name: 'UUID', value: (String(cartData?.UUID) ?? 'Error') }
                   ]
                 }).setColor('Red')
               ]
@@ -439,10 +440,10 @@ export class PaymentFunction {
               id: user.id,
               name: user.username
             },
-            productId: cardData.paymentId,
-            credits: Number(cardData.coins),
-            price: Number(cardData.amount),
-            name: cardData.product
+            productId: cartData.paymentId,
+            credits: Number(cartData.coins),
+            price: Number(cartData.amount),
+            name: cartData.product
           }
 
           const response = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/ctrlpanel/voucher/create`, Post, {
@@ -461,11 +462,11 @@ export class PaymentFunction {
                   fields: [
                     {
                       name: 'ID:',
-                      value: `||${cardData.paymentId}||`
+                      value: `||${cartData.paymentId}||`
                     },
                     {
                       name: 'UUID:',
-                      value: `||${cardData.UUID}||`
+                      value: `||${cartData.UUID}||`
                     }
                   ],
                   timestamp: new Date(),
@@ -473,7 +474,7 @@ export class PaymentFunction {
                 }).setColor('Red')
               ]
             })
-            core.info(`Ocorreu um erro no Pagamento (ID: ${cardData.paymentId}) do usuário ${user.username} (ID: ${user.id})!`)
+            core.info(`Ocorreu um erro no Pagamento (ID: ${cartData.paymentId}) do usuário ${user.username} (ID: ${user.id})!`)
             return
           } else {
             const embeds = [
@@ -481,14 +482,14 @@ export class PaymentFunction {
                 title: 'Compra efetuada com sucesso!',
                 description: `<@${user.id}> Agradecemos por escolher nossos produtos e serviços e esperamos atendê-lo novamente em breve.`,
                 fields: [
-                  { name: '🛒 | Produto: ', value: (cardData.product ?? 'Error') },
-                  { name: '💰 | Créditos: ', value: (String(cardData.coins ?? 'Error')) },
-                  { name: '💵 | Valor: ', value: `R$${cardData.amount}` },
+                  { name: '🛒 | Produto: ', value: (cartData.product ?? 'Error') },
+                  { name: '💰 | Créditos: ', value: (String(cartData.coins ?? 'Error')) },
+                  { name: '💵 | Valor: ', value: `R$${cartData.amount}` },
                   {
                     name: '📆 | Data: ',
                     value: codeBlock(new Date(Date.now()).toLocaleString('pt-BR'))
                   },
-                  { name: '🔑 | UUID:', value: codeBlock(String(cardData.paymentId)) }
+                  { name: '🔑 | UUID:', value: codeBlock(String(cartData.paymentId)) }
                 ],
                 thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028234365248995368/aprove.gif' },
                 footer: { iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: `Atenciosamente, ${guild.name}` }
@@ -529,20 +530,20 @@ export class PaymentFunction {
           }
         }
 
-        core.info(`Pagamento (ID: ${cardData.paymentId}) do usuário ${user.username} (ID: ${user.id}) foi aprovado com sucesso!`)
+        core.info(`Pagamento (ID: ${cartData.paymentId}) do usuário ${user.username} (ID: ${user.id}) foi aprovado com sucesso!`)
 
-        await db.payments.set(`approved.${cardData.paymentId}`, {
-          paymentId: cardData.paymentId,
+        await db.payments.set(`approved.${cartData.paymentId}`, {
+          paymentId: cartData.paymentId,
           userName: user.username,
           userId: user.id,
-          price: cardData.amount,
-          product: cardData.product,
+          price: cartData.amount,
+          product: cartData.product,
           voucherId,
           voucherCode
         })
 
-        if (cardData.role !== undefined) {
-          member.roles.add(cardData.role).catch((err) => { console.log(err) })
+        if (cartData.role !== undefined) {
+          member.roles.add(cartData.role).catch((err) => { console.log(err) })
         }
 
         setTimeout(() => {

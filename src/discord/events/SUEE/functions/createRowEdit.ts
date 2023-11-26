@@ -1,33 +1,39 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
 import { db } from '@/app'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, type StringSelectMenuInteraction } from 'discord.js'
+import { CustomButtonBuilder } from '@/functions'
+import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type StringSelectMenuInteraction } from 'discord.js'
 
 export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: string): Promise<ActionRowBuilder<ButtonBuilder>> {
   const { guildId, channelId } = interaction
   const data = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message.id}`)
 
   const rowButtons = [
-    new ButtonBuilder()
-      .setCustomId(`${type}_SetName`)
-      .setLabel('Nome')
-      .setEmoji('📝'),
-    new ButtonBuilder()
-      .setCustomId(`${type}_SetDesc`)
-      .setLabel('Descrição')
-      .setEmoji('📑'),
-    new ButtonBuilder()
-      .setCustomId(`${type}_SetMiniature`)
-      .setLabel('Miniatura')
-      .setEmoji('🖼️'),
-    new ButtonBuilder()
-      .setCustomId(`${type}_SetBanner`)
-      .setLabel('Banner')
-      .setEmoji('🌄'),
-    new ButtonBuilder()
-      .setCustomId(`${type}_SetColor`)
-      .setLabel('Cor')
-      .setEmoji('🎨')
+    await CustomButtonBuilder.create({
+      customId: `${type}_SetName`,
+      label: 'Nome',
+      emoji: '📝'
+    }),
+    await CustomButtonBuilder.create({
+      customId: `${type}_SetDesc`,
+      label: 'Descrição',
+      emoji: '📑'
+    }),
+    await CustomButtonBuilder.create({
+      customId: `${type}_SetMiniature`,
+      label: 'Miniatura',
+      emoji: '🖼️'
+    }),
+    await CustomButtonBuilder.create({
+      customId: `${type}_SetBanner`,
+      label: 'Banner',
+      emoji: '🌄'
+    }),
+    await CustomButtonBuilder.create({
+      customId: `${type}_SetColor`,
+      label: 'Cor',
+      emoji: '🎨'
+    })
   ]
   let componetUpdate: string = ''
   for (const value of rowButtons) {

@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { updateProduct, createCard } from '@/discord/components/payments'
+import { updateProduct, createCart } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
 import { Database } from '@/functions'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
@@ -14,11 +14,11 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   const { title, label, placeholder, style, type, maxLength } = value
 
   const customIdHandlers: CustomIdHandlers = {
-    paymentSave: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
-    paymentConfig: async () => { await updateProduct.buttonsConfig({ interaction, message, switchBotton: true }) },
-    paymentStatus: async () => { await updateProduct.paymentStatus({ interaction, message }) },
-    paymentBuy: async () => { await createCard(interaction) },
-    paymentSetEstoque: async () => {
+    Save: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
+    Config: async () => { await updateProduct.buttonsConfig({ interaction, message, switchBotton: true }) },
+    Status: async () => { await updateProduct.paymentStatus({ interaction, message }) },
+    Buy: async () => { await createCart(interaction) },
+    SetEstoque: async () => {
       await Database.setDelete({
         interaction,
         systemName: key,
@@ -30,7 +30,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       })
       await updateProduct.embed({ interaction, message })
     },
-    paymentSetCtrlPanel: async () => {
+    SetCtrlPanel: async () => {
       await Database.setDelete({
         interaction,
         systemName: key,
@@ -42,18 +42,18 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
       })
       await updateProduct.embed({ interaction, message })
     },
-    paymentExport: async () => {
+    Export: async () => {
       await updateProduct.export({ interaction, message })
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${customId}`, true)
     },
-    paymentImport: async () => { await updateProduct.import({ interaction, message }) }
+    Import: async () => { await updateProduct.import({ interaction, message }) }
 
   }
 
   const customIdHandler = customIdHandlers[customId]
 
   if (typeof customIdHandler === 'function') {
-    if (customId !== 'paymentBuy') {
+    if (customId !== 'Buy') {
       if (await Discord.Permission(interaction, 'Administrator')) return
     }
     await interaction.deferReply({ ephemeral })

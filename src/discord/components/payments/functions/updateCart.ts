@@ -1,13 +1,14 @@
-import { EmbedBuilder, type ButtonInteraction, type CacheType, ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type ModalSubmitInteraction, codeBlock, type APIEmbed } from 'discord.js'
-import { type cardData } from './interfaces'
 import { db } from '@/app'
+import { CustomButtonBuilder } from '@/functions'
+import { ActionRowBuilder, ButtonStyle, EmbedBuilder, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
+import { type cartData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class updateCard {
+export class updateCart {
   public static async embedAndButtons (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: cardData
+    data: cartData
     message?: Message<boolean>
     typeEdit?: 'update' | 'remover&update'
     paymentData?: PaymentResponse
@@ -147,9 +148,7 @@ export class updateCard {
       embedsPayment.push(infoTax)
     }
 
-    const components = await this.buttons({
-      data
-    })
+    const components = await this.buttons({ data })
 
     const embeds = embedsPayment.map((embedBuilder) =>
       embedBuilder.toJSON()
@@ -171,24 +170,24 @@ export class updateCard {
   }
 
   public static async buttons (options: {
-    data: cardData
+    data: cartData
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
     const { data } = options
     const { typeEmbed: type } = data
 
     const Primary = [
-      new ButtonBuilder({
-        customId: 'paymentUserRem',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Rem',
         emoji: '➖',
         style: ButtonStyle.Primary
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserAdd',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Add',
         emoji: '➕',
         style: ButtonStyle.Primary
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserCupom',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Cupom',
         label: 'Cupom',
         emoji: '🎫',
         style: ButtonStyle.Primary
@@ -196,20 +195,20 @@ export class updateCard {
     ]
 
     const Secondary = [
-      new ButtonBuilder({
-        customId: 'paymentUserDM',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_DM',
         label: 'Mensagem via DM',
         emoji: '💬',
         style: ButtonStyle.Primary,
         disabled: true
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserDirect',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Direct',
         label: 'Instantaneamente',
         emoji: '📲',
         style: ButtonStyle.Primary
       }),
-      new ButtonBuilder({
+      await CustomButtonBuilder.create({
         url: 'https://google.com/',
         emoji: '🔗',
         style: ButtonStyle.Link
@@ -217,21 +216,21 @@ export class updateCard {
     ]
 
     const Third = [
-      new ButtonBuilder({
-        customId: 'paymentUserGerarPix',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_GerarPix',
         label: 'PIX',
         emoji: '💠',
         style: ButtonStyle.Success
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserGerarCardDebito',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_GerarCardDebito',
         label: 'Cartão de Débito',
         emoji: '💳',
         style: ButtonStyle.Success,
         disabled: true
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserGerarCardCredito',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_GerarCardCredito',
         label: 'Cartão de Crédito',
         emoji: '💳',
         style: ButtonStyle.Success,
@@ -240,19 +239,19 @@ export class updateCard {
     ]
 
     const Payment = [
-      new ButtonBuilder({
+      await CustomButtonBuilder.create({
         label: 'Pagar',
         url: 'https://www.mercadopago.com.br/',
         style: ButtonStyle.Link
       }),
-      new ButtonBuilder({
-        customId: 'paymentVerify',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Verify',
         label: 'Verificar Pagamento',
         emoji: '✔️',
         style: ButtonStyle.Success
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserCancelar',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
         style: ButtonStyle.Danger
@@ -260,26 +259,26 @@ export class updateCard {
     ]
 
     const footerBar = [
-      new ButtonBuilder({
-        customId: 'paymentUserBefore',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Before',
         label: 'Voltar',
         emoji: '⬅️',
         style: ButtonStyle.Secondary
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserNext',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Next',
         label: 'Proximo',
         emoji: '➡️',
         style: ButtonStyle.Success
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserWTF',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_WTF',
         label: 'Saiba Mais 🔔',
         emoji: '❔',
         style: ButtonStyle.Primary
       }),
-      new ButtonBuilder({
-        customId: 'paymentUserCancelar',
+      await CustomButtonBuilder.create({
+        customId: 'Cart_User_Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
         style: ButtonStyle.Danger
@@ -309,16 +308,16 @@ export class updateCard {
     for (const value of footerBar) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'paymentUserBefore' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
+      if (customID === 'Cart_User_Before' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
         value.setDisabled(true)
       }
 
-      if (customID === 'paymentUserNext' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
+      if (customID === 'Cart_User_Next' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
         value.setDisabled(true)
         value.setStyle(ButtonStyle.Secondary)
       }
 
-      if (customID === 'paymentUserWTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
+      if (customID === 'Cart_User_WTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
         value.setStyle(ButtonStyle.Secondary)
         value.setLabel('Saiba Mais')
       }
@@ -327,11 +326,11 @@ export class updateCard {
     for (const value of Primary) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'paymentUserRem' && data?.quantity !== undefined && data.quantity <= 1) {
+      if (customID === 'Cart_User_Rem' && data?.quantity !== undefined && data.quantity <= 1) {
         value.setDisabled(true)
       }
 
-      if (customID === 'paymentUserCupom' && ((data?.properties?.cupom) === true)) {
+      if (customID === 'Cart_User_Cupom' && ((data?.properties?.cupom) === true)) {
         value.setDisabled(true)
       }
     }
@@ -339,10 +338,10 @@ export class updateCard {
     for (const value of Secondary) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'paymentUserDM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
+      if (customID === 'Cart_User_DM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
-      if (customID === 'paymentUserDirect' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
+      if (customID === 'Cart_User_Direct' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
     }
@@ -352,7 +351,7 @@ export class updateCard {
 
   public static async displayData (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: cardData
+    data: cartData
     type?: 'editReply' | 'reply'
   }): Promise<void> {
     const { interaction, type, data } = options

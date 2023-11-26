@@ -1,6 +1,7 @@
 import { db } from '@/app'
 import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, EmbedBuilder, MessageCollector, type TextBasedChannel, AttachmentBuilder, type APIActionRowComponent, type APIButtonComponent } from 'discord.js'
+import { CustomButtonBuilder } from '@/functions'
+import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel } from 'discord.js'
 import { Check } from './checkConfig'
 import { type productData } from './interfaces'
 
@@ -82,25 +83,25 @@ export class updateProduct {
       customId = interaction.customId
     }
 
-    function createSecondaryRow (): ActionRowBuilder<ButtonBuilder> {
+    async function createSecondaryRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const row2Buttons = [
-        new ButtonBuilder({
-          customId: 'paymentSetPrice',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_SetPrice',
           label: 'Preço',
           emoji: '💰'
         }),
-        new ButtonBuilder({
-          customId: 'paymentSetRole',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_SetRole',
           label: 'Add Cargo',
           emoji: '🛂'
         }),
-        new ButtonBuilder({
-          customId: 'paymentExport',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_Export',
           label: 'Exportar',
           emoji: '📤'
         }),
-        new ButtonBuilder({
-          customId: 'paymentImport',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_Import',
           label: 'Importar',
           emoji: '📥'
         })
@@ -120,29 +121,29 @@ export class updateProduct {
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
     }
 
-    function createThirdRow (): ActionRowBuilder<ButtonBuilder> {
+    async function createThirdRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const redeemSystem = [
-        new ButtonBuilder({
-          customId: 'paymentSetEstoque',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_SetEstoque',
           label: 'Estoque',
           emoji: '🗃️',
           style: ButtonStyle.Secondary
         }),
-        new ButtonBuilder({
-          customId: 'paymentAddEstoque',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_AddEstoque',
           label: 'Add Estoque',
           emoji: '➕',
           style: ButtonStyle.Secondary,
           disabled: true
         }),
-        new ButtonBuilder({
-          customId: 'paymentSetCtrlPanel',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_SetCtrlPanel',
           label: 'CrtlPanel',
           emoji: '💻',
           style: ButtonStyle.Secondary
         }),
-        new ButtonBuilder({
-          customId: 'paymentAddCoins',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_AddCoins',
           label: 'Moedas',
           emoji: '🪙',
           style: ButtonStyle.Secondary,
@@ -158,10 +159,10 @@ export class updateProduct {
           value.setStyle(ButtonStyle.Secondary)
         }
 
-        if (customID === 'paymentAddEstoque' && productData?.properties?.paymentSetEstoque) {
+        if (customID === 'Product_Admin_AddEstoque' && productData?.properties?.paymentSetEstoque) {
           value.setDisabled(false)
         }
-        if (customID === 'paymentAddCoins' && productData?.properties?.paymentSetCtrlPanel) {
+        if (customID === 'Product_Admin_AddCoins' && productData?.properties?.paymentSetCtrlPanel) {
           value.setDisabled(false)
           if (productData?.coins !== undefined) {
             value.setStyle(ButtonStyle.Primary)
@@ -175,20 +176,20 @@ export class updateProduct {
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
     }
 
-    function createFooterRow (): ActionRowBuilder<ButtonBuilder> {
+    async function createFooterRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const footerBar = [
-        new ButtonBuilder({
-          customId: 'paymentSave',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_Save',
           label: 'Salvar',
           emoji: '✔️',
           style: ButtonStyle.Success
         }),
-        new ButtonBuilder({
-          customId: 'paymentStatus',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_Status',
           label: 'Ativar/Desativar'
         }),
-        new ButtonBuilder({
-          customId: 'paymentDelete',
+        await CustomButtonBuilder.create({
+          customId: 'Product_Admin_Delete',
           label: 'Apagar Produto',
           emoji: '✖️',
           style: ButtonStyle.Danger
@@ -197,7 +198,7 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of footerBar) {
         const { custom_id: customID } = Object(value.toJSON())
-        if (customID === 'paymentStatus') {
+        if (customID === 'Product_Admin_Status') {
           if (productData?.status) {
             value.setLabel('Ativado')
               .setEmoji('✅')
@@ -221,17 +222,17 @@ export class updateProduct {
       SetMiniature: 1,
       SetBanner: 1,
       SetColor: 1,
-      paymentSetPrice: 2,
-      paymentSetRole: 2,
-      paymentExport: 2,
-      paymentImport: 2,
-      paymentSetEstoque: 3,
-      paymentAddEstoque: 3,
-      paymentSetCtrlPanel: 3,
-      paymentAddCoins: 3,
-      paymentSave: 4,
-      paymentStatus: 4,
-      paymentDelete: 4
+      SetPrice: 2,
+      SetRole: 2,
+      Export: 2,
+      Import: 2,
+      SetEstoque: 3,
+      AddEstoque: 3,
+      SetCtrlPanel: 3,
+      AddCoins: 3,
+      Save: 4,
+      Status: 4,
+      Delete: 4
     }
 
     if (message.components[1] !== undefined || (customId !== undefined && customId !== 'paymentConfig')) {
@@ -246,13 +247,13 @@ export class updateProduct {
             updatedRow = (await createRowEdit(interaction, message, 'payments')).toJSON()
             break
           case 2:
-            updatedRow = createSecondaryRow().toJSON()
+            updatedRow = (await createSecondaryRow()).toJSON()
             break
           case 3:
-            updatedRow = createThirdRow().toJSON()
+            updatedRow = (await createThirdRow()).toJSON()
             break
           case 4:
-            updatedRow = createFooterRow().toJSON()
+            updatedRow = (await createFooterRow()).toJSON()
             break
         }
         if (updatedRow !== null) {
@@ -271,9 +272,9 @@ export class updateProduct {
       }
     } else {
       const row1 = await createRowEdit(interaction, message, 'payments')
-      const row2 = createSecondaryRow()
-      const row3 = createThirdRow()
-      const row4 = createFooterRow()
+      const row2 = await createSecondaryRow()
+      const row3 = await createThirdRow()
+      const row4 = await createFooterRow()
       await message.edit({ components: [row1, row2, row3, row4] })
       if (switchBotton === true) {
         await interaction.editReply({
@@ -312,22 +313,24 @@ export class updateProduct {
     }
 
     const row1Buttons = [
-      new ButtonBuilder()
-        .setCustomId('paymentBuy')
-        .setLabel('Adicionar ao Carrinho')
-        .setStyle(ButtonStyle.Success)
-        .setEmoji('🛒'),
-      new ButtonBuilder()
-        .setCustomId('paymentConfig')
-        .setStyle(ButtonStyle.Secondary)
-        .setLabel('⚙️')
+      await CustomButtonBuilder.create({
+        customId: 'Product_User_Buy',
+        label: 'Adicionar ao Carrinho',
+        style: ButtonStyle.Success,
+        emoji: '🛒'
+      }),
+      await CustomButtonBuilder.create({
+        customId: 'Product_Admin_Config',
+        style: ButtonStyle.Secondary,
+        emoji: '⚙️'
+      })
     ]
 
     const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
 
     for (const value of row1Buttons) {
       const { custom_id: customID } = Object(value.toJSON())
-      if (customID === 'paymentBuy') {
+      if (customID === 'Buy') {
         if (productData?.status !== undefined && productData.status) {
           value.setDisabled(false)
         } else {

@@ -3,19 +3,19 @@ import { Database, Discord } from '@/functions'
 import { setPresence, delModalPresence } from './configCollector/Presence'
 
 const system = {
-  systemTicket: { info: 'Tickets' },
-  systemPayments: { info: 'Pagamentos' },
-  systemWelcomer: { info: 'Boas vindas' },
-  systemStatus: { info: 'Status' },
-  systemDeleteServers: { info: 'Deletar Servidores' },
-  systemTelegramNotif: { info: 'Notificação via Telegram' },
-  systemStatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
-  systemStatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
-  systemLogs: { info: 'Logs' },
-  systemStatusOnline: { type: 'systemStatusType', info: 'online' },
-  systemStatusAusente: { type: 'systemStatusType', info: 'idle' },
-  systemStatusNoPerturbe: { type: 'systemStatusType', info: 'dnd' },
-  systemStatusInvisível: { type: 'systemStatusType', info: 'invisible' }
+  Ticket: { info: 'Tickets' },
+  Payments: { info: 'Pagamentos' },
+  Welcomer: { info: 'Boas vindas' },
+  Status: { info: 'Status' },
+  DeleteServers: { info: 'Deletar Servidores' },
+  TelegramNotif: { info: 'Notificação via Telegram' },
+  StatusMinecraft: { info: 'Status', remove: 'systemStatusString' },
+  StatusString: { info: 'Status', remove: 'systemStatusMinecraft' },
+  Logs: { info: 'Logs' },
+  StatusOnline: { type: 'systemStatusType', info: 'online' },
+  StatusAusente: { type: 'systemStatusType', info: 'idle' },
+  StatusNoPerturbe: { type: 'systemStatusType', info: 'dnd' },
+  StatusInvisível: { type: 'systemStatusType', info: 'invisible' }
 }
 
 Object.entries(system).map(async ([key, value]) => {

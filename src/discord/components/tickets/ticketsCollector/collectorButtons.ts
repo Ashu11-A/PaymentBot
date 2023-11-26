@@ -1,8 +1,8 @@
 import { db } from '@/app'
-import { ActionRowBuilder, type CacheType, ModalBuilder, TextInputBuilder, type ButtonInteraction, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type TextChannel } from 'discord.js'
-import { createTicket, ticketButtonsConfig, buttonsUsers } from '@/discord/components/tickets'
-import { Discord, createRow } from '@/functions'
+import { buttonsUsers, createTicket, ticketButtonsConfig } from '@/discord/components/tickets'
+import { CustomButtonBuilder, Discord, createRow } from '@/functions'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ActionRowBuilder, ButtonStyle, ComponentType, EmbedBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType, type TextChannel } from 'discord.js'
 
 const listItens = {
   SetName: {
@@ -55,8 +55,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     const messagePrimary = await interaction.editReply({
       embeds: [embed],
       components: [createRow(
-        new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
-        new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+        await CustomButtonBuilder.create({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+        await CustomButtonBuilder.create({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
       )]
     })
     const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })

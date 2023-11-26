@@ -8,6 +8,8 @@ class CreatePixPayment {
   public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
     const { userName, userId, mpToken, valor } = req.body
 
+    console.log(Math.round(valor))
+
     if (
       userName === undefined ||
         userId === undefined ||
@@ -34,7 +36,7 @@ class CreatePixPayment {
             email: `${userName}@gmail.com`
           },
           description: `Pagamento Via Discord | ${userName} | R$${(valor).toFixed(2)}`,
-          transaction_amount: valor,
+          transaction_amount: Math.round(valor),
           payment_method_id: 'pix',
           installments: 0
         }

@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
-import { PaymentFunction } from '../cardCollector/functions/collectorFunctions'
-import { updateCard } from './updateCard'
+import { PaymentFunction } from '../cartCollector/functions/collectorFunctions'
+import { updateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
 
@@ -17,9 +17,9 @@ export class Payment {
     const { interaction, method } = options
     const { message, guildId, user } = interaction
     const tax = await db.payments.get(`${guildId}.config.taxes.${method}`)
-    const cardData = await db.payments.get(`${guildId}.process.${message.id}`)
-    const { amount: cardAmount, quantity, cupom } = cardData
-    const amount = Number(((typeof cupom?.porcent === 'number' ? (cardAmount - (cardAmount * cupom.porcent / 100)) : cardAmount) * (quantity ?? 1)).toFixed(2))
+    const cartData = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { amount: cartAmount, quantity, cupom } = cartData
+    const amount = Number(((typeof cupom?.porcent === 'number' ? (cartAmount - (cartAmount * cupom.porcent / 100)) : cartAmount) * (quantity ?? 1)).toFixed(2))
     const amountTax = Math.round(amount + (amount * (Number(tax) / 100)))
     const { mcToken, ipn } = await db.payments.get(`${guildId}.config`)
 
@@ -44,10 +44,10 @@ export class Payment {
 
         await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
 
-        const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
+        const { embeds: newEmbeds, components: newComponents } = await updateCart.embedAndButtons({
           data: {
-            ...cardData,
-            typeEmbed: cardData.typeEmbed += 1
+            ...cartData,
+            typeEmbed: cartData.typeEmbed += 1
           },
           interaction,
           paymentData,
@@ -104,9 +104,9 @@ export class Payment {
         guildId,
         messageId: message.id,
         price: amountTax,
-        UUID: cardData.UUID
+        UUID: cartData.UUID
       }
-      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`, {
+      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/cart`, {
         userName: user.username,
         userId: user.id,
         mpToken: mcToken,
@@ -122,10 +122,10 @@ export class Payment {
 
         await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
 
-        const { embeds: newEmbeds, components: newComponents } = await updateCard.embedAndButtons({
+        const { embeds: newEmbeds, components: newComponents } = await updateCart.embedAndButtons({
           data: {
-            ...cardData,
-            typeEmbed: (cardData.typeEmbed += 1)
+            ...cartData,
+            typeEmbed: (cartData.typeEmbed += 1)
           },
           interaction,
           paymentData,
@@ -135,7 +135,7 @@ export class Payment {
         embeds = newEmbeds
         components = newComponents
 
-        const cardEmbed = new EmbedBuilder({
+        const cartEmbed = new EmbedBuilder({
           title: '✅ URL de pagamento gerado com sucesso!',
           description: 'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
           thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
@@ -147,7 +147,7 @@ export class Payment {
           ]
         }).setColor('Green')
 
-        embeds.push(cardEmbed.toJSON())
+        embeds.push(cartEmbed.toJSON())
         components[0].components[0].setURL(paymentData.init_point)
       }
     }

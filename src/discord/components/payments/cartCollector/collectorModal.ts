@@ -1,7 +1,7 @@
 import { core, db } from '@/app'
 import { validarEmail } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
-import { updateCard } from '@/discord/components/payments'
+import { updateCart } from '@/discord/components/payments'
 import { ctrlPanel } from '@/functions/ctrlPanel'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 
@@ -26,7 +26,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
           await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
           await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDM`)
           const data = await db.payments.get(`${guildId}.process.${message.id}`)
-          await updateCard.embedAndButtons({
+          await updateCart.embedAndButtons({
             interaction,
             data,
             message
@@ -52,8 +52,8 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         ]
       })
     } else {
-      const cardData = await db.payments.get(`${guildId}.process.${message?.id}`)
-      if (codeVerify?.usosMax !== null && (cardData?.quantity > codeVerify?.usosMax || codeVerify[user.id]?.usos > codeVerify?.usosMax)) {
+      const cartData = await db.payments.get(`${guildId}.process.${message?.id}`)
+      if (codeVerify?.usosMax !== null && (cartData?.quantity > codeVerify?.usosMax || codeVerify[user.id]?.usos > codeVerify?.usosMax)) {
         await interaction.reply({
           ephemeral,
           embeds: [
@@ -81,7 +81,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
       const data = await db.payments.get(`${guildId}.process.${message?.id}`)
       const msg = await channel?.messages.fetch(String(message?.id))
-      await updateCard.embedAndButtons({
+      await updateCart.embedAndButtons({
         interaction,
         data,
         message: msg
@@ -97,13 +97,13 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
       await db.payments.set(`${guildId}.process.${msg.id}.properties.${customId}`, true)
       await db.payments.get(`${guildId}.process.${msg.id}`)
         .then(async (data) => {
-          await updateCard.embedAndButtons({
+          await updateCart.embedAndButtons({
             interaction,
             data,
             message: msg
           })
           /* Modo debug
-          await updateCard.displayData({
+          await updateCart.displayData({
             interaction,
             data,
             type: 'editReply'

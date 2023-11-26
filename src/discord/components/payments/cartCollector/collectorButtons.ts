@@ -13,17 +13,17 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
   const { title, label, placeholder, style, type, maxLength } = value
 
   const customIdHandlers: CustomIdHandlers = {
-    paymentVerify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
-    paymentUserDM: async () => { await PaymentFunction.paymentUserDM({ interaction }) },
-    paymentUserWTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
-    paymentUserAdd: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
-    paymentUserRem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
-    paymentUserGerarPix: async () => { await Payment.create({ interaction, method: 'pix' }) },
-    paymentUserCancelar: async () => { await PaymentFunction.paymentUserCancelar({ interaction }) },
-    paymentUserNext: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
-    paymentUserBefore: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
-    paymentUserGerarCardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
-    paymentUserGerarCardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
+    Verify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
+    DM: async () => { await PaymentFunction.paymentUserDM({ interaction }) },
+    WTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
+    Add: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
+    Rem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
+    GerarPix: async () => { await Payment.create({ interaction, method: 'pix' }) },
+    Cancelar: async () => { await PaymentFunction.paymentUserCancelar({ interaction }) },
+    Next: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
+    Before: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
+    GerarCardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
+    GerarCardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
   }
 
   const customIdHandler = customIdHandlers[customId]
