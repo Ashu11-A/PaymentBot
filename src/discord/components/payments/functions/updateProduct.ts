@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
+import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel } from 'discord.js'
 import { Check } from './checkConfig'
@@ -13,10 +13,10 @@ export class updateProduct {
   public static async embed (options: {
     interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
     message: Message<boolean>
-    button?: string
+    button?: string // isso será o customId
   }): Promise<void> {
     const { interaction, message, button } = options
-    const { guildId, channelId, customId } = interaction
+    const { guildId, channelId } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`) as productData
     const updateEmbed = new EmbedBuilder(productData?.embed)
 
@@ -28,7 +28,7 @@ export class updateProduct {
         }
       )
     }
-    if (productData?.properties?.paymentSetCtrlPanel && productData?.coins !== undefined) {
+    if (productData?.properties?.SetCtrlPanel && productData?.coins !== undefined) {
       updateEmbed.addFields({
         name: '🪙 | Coins:',
         value: String(productData.coins)
@@ -52,7 +52,7 @@ export class updateProduct {
 
     await message.edit({ embeds: [updateEmbed] })
       .then(async () => {
-        await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.properties.${customId}`, true)
+        await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.properties.${button}`, true)
           .then(async () => {
             await this.buttonsConfig({
               interaction,
@@ -70,7 +70,7 @@ export class updateProduct {
     interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<'cached'>
     message: Message<boolean>
     switchBotton?: boolean
-    button?: string // Isso é somente para o sistema de Edição de embeds
+    button?: string
   }): Promise<void> {
     const { interaction, message, switchBotton, button } = options
     const { guildId, channelId } = interaction
@@ -80,28 +80,36 @@ export class updateProduct {
     if (button !== undefined) {
       customId = button
     } else if (interaction.isButton() || interaction.isModalSubmit()) {
-      customId = interaction.customId
+      customId = CustomButtonBuilder.getAction(interaction.customId)
     }
 
     async function createSecondaryRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const row2Buttons = [
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_SetPrice',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'SetPrice',
           label: 'Preço',
           emoji: '💰'
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_SetRole',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'SetRole',
           label: 'Add Cargo',
           emoji: '🛂'
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_Export',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Export',
           label: 'Exportar',
           emoji: '📤'
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_Import',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Import',
           label: 'Importar',
           emoji: '📥'
         })
@@ -109,7 +117,9 @@ export class updateProduct {
 
       let componetUpdate: string = ''
       for (const value of row2Buttons) {
-        const { custom_id: customID } = Object(value.toJSON())
+        const { custom_id } = Object(value.toJSON())
+        const customID = CustomButtonBuilder.getAction(custom_id)
+
         if (productData?.properties?.[customID] !== undefined) {
           value.setStyle(ButtonStyle.Primary)
         } else {
@@ -124,26 +134,34 @@ export class updateProduct {
     async function createThirdRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const redeemSystem = [
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_SetEstoque',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'SetEstoque',
           label: 'Estoque',
           emoji: '🗃️',
           style: ButtonStyle.Secondary
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_AddEstoque',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'AddEstoque',
           label: 'Add Estoque',
           emoji: '➕',
           style: ButtonStyle.Secondary,
           disabled: true
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_SetCtrlPanel',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'SetCtrlPanel',
           label: 'CrtlPanel',
           emoji: '💻',
           style: ButtonStyle.Secondary
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_AddCoins',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'AddCoins',
           label: 'Moedas',
           emoji: '🪙',
           style: ButtonStyle.Secondary,
@@ -152,17 +170,19 @@ export class updateProduct {
       ]
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
-        const { custom_id: customID } = Object(value.toJSON())
+        const { custom_id } = Object(value.toJSON())
+        const customID = CustomButtonBuilder.getAction(custom_id)
+
         if (productData?.properties?.[customID]) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
 
-        if (customID === 'Product_Admin_AddEstoque' && productData?.properties?.paymentSetEstoque) {
+        if (customID === 'AddEstoque' && productData?.properties?.SetEstoque) {
           value.setDisabled(false)
         }
-        if (customID === 'Product_Admin_AddCoins' && productData?.properties?.paymentSetCtrlPanel) {
+        if (customID === 'AddCoins' && productData?.properties?.SetCtrlPanel) {
           value.setDisabled(false)
           if (productData?.coins !== undefined) {
             value.setStyle(ButtonStyle.Primary)
@@ -179,17 +199,23 @@ export class updateProduct {
     async function createFooterRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const footerBar = [
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_Save',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Save',
           label: 'Salvar',
           emoji: '✔️',
           style: ButtonStyle.Success
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_Status',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Status',
           label: 'Ativar/Desativar'
         }),
         await CustomButtonBuilder.create({
-          customId: 'Product_Admin_Delete',
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Delete',
           label: 'Apagar Produto',
           emoji: '✖️',
           style: ButtonStyle.Danger
@@ -197,8 +223,10 @@ export class updateProduct {
       ]
       let componetUpdate: string = ''
       for (const value of footerBar) {
-        const { custom_id: customID } = Object(value.toJSON())
-        if (customID === 'Product_Admin_Status') {
+        const { custom_id } = Object(value.toJSON())
+        const customID = CustomButtonBuilder.getAction(custom_id)
+
+        if (customID === 'Status') {
           if (productData?.status) {
             value.setLabel('Ativado')
               .setEmoji('✅')
@@ -235,11 +263,11 @@ export class updateProduct {
       Delete: 4
     }
 
-    if (message.components[1] !== undefined || (customId !== undefined && customId !== 'paymentConfig')) {
+    if (message.components[1] !== undefined || (customId !== undefined && customId !== 'Config')) {
       const rowNumber: number | undefined = customId === undefined ? undefined : buttonRowMap[customId]
 
+      // Chama a função apropriada com base no número da fileira
       if (typeof rowNumber === 'number') {
-        // Chama a função apropriada com base no número da fileira
         let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
 
         switch (rowNumber) {
@@ -314,13 +342,17 @@ export class updateProduct {
 
     const row1Buttons = [
       await CustomButtonBuilder.create({
+
+        type: 'Product',
         customId: 'Product_User_Buy',
         label: 'Adicionar ao Carrinho',
         style: ButtonStyle.Success,
         emoji: '🛒'
       }),
       await CustomButtonBuilder.create({
-        customId: 'Product_Admin_Config',
+        permission: 'Admin',
+        type: 'Product',
+        customId: 'Config',
         style: ButtonStyle.Secondary,
         emoji: '⚙️'
       })
@@ -329,7 +361,9 @@ export class updateProduct {
     const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
 
     for (const value of row1Buttons) {
-      const { custom_id: customID } = Object(value.toJSON())
+      const { custom_id } = Object(value.toJSON())
+      const customID = CustomButtonBuilder.getAction(custom_id)
+
       if (customID === 'Buy') {
         if (productData?.status !== undefined && productData.status) {
           value.setDisabled(false)

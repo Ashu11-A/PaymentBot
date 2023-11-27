@@ -1,11 +1,10 @@
 import { core, db } from '@/app'
-import { type ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, type ButtonInteraction, type CacheType, codeBlock, ActionRowBuilder } from 'discord.js'
-import { type cartData, updateCart } from '@/discord/components/payments'
+import { updateCart, type cartData } from '@/discord/components/payments'
+import { ctrlPanel } from '@/functions/ctrlPanel'
+import { settings } from '@/settings'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
-import { settings } from '@/settings'
-import { ctrlPanel } from '@/functions/ctrlPanel'
-import { CustomButtonBuilder } from '@/functions'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonInteraction, type CacheType } from 'discord.js'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
@@ -19,7 +18,7 @@ export class PaymentFunction {
     const { guildId, customId, message } = interaction
     await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 1)
     await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
-    await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDirect`)
+    await db.payments.delete(`${guildId}.process.${message.id}.properties.Direct`)
     await db.payments.delete(`${guildId}.process.${message.id}.user`)
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
     await updateCart.embedAndButtons({
@@ -53,8 +52,8 @@ export class PaymentFunction {
     const messagePrimary = await interaction.editReply({
       embeds: [embed],
       components: [createRow(
-        await CustomButtonBuilder.create({ custom_id: 'payment-confirm-delete', label: 'Confirmar', style: ButtonStyle.Success }),
-        await CustomButtonBuilder.create({ custom_id: 'payment-cancel-delete', label: 'Cancelar', style: ButtonStyle.Danger })
+        new ButtonBuilder({ custom_id: 'payment-confirm-delete', label: 'Confirmar', style: ButtonStyle.Success }),
+        new ButtonBuilder({ custom_id: 'payment-cancel-delete', label: 'Cancelar', style: ButtonStyle.Danger })
       )]
     })
     const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })
@@ -381,7 +380,7 @@ export class PaymentFunction {
             if (dashLink !== undefined) {
               components[0] = new ActionRowBuilder()
               components[0].addComponents([
-                await CustomButtonBuilder.create({
+                new ButtonBuilder({
                   url: dashLink,
                   style: ButtonStyle.Link,
                   label: 'Dash'

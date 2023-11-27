@@ -12,7 +12,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   const { type } = value
   const messageModal = fields.getTextInputValue('content')
 
-  if (customId === 'paymentUserDirect') {
+  if (customId === 'Direct') {
     const [validador, messageInfo] = validarEmail(messageModal)
     if (validador) {
       core.info(`Solicitação para o E-mail: ${messageModal}`)
@@ -24,7 +24,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
         if (message !== null) {
           await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 2)
           await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
-          await db.payments.delete(`${guildId}.process.${message.id}.properties.paymentUserDM`)
+          await db.payments.delete(`${guildId}.process.${message.id}.properties.DM`)
           const data = await db.payments.get(`${guildId}.process.${message.id}`)
           await updateCart.embedAndButtons({
             interaction,

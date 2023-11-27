@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { createRowEdit } from '@/discord/events/SUEE/functions/createRowEdit'
+import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
@@ -13,23 +13,31 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
 
   const setSystem = [
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_SetRole',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'SetRole',
       label: 'Add Cargo',
       emoji: '🛂'
     }),
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_SetSelect',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'SetSelect',
       label: 'SelectMenu',
       emoji: '🗄️'
     }),
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_AddSelect',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'AddSelect',
       label: 'Add Select',
       emoji: '📝',
       disabled: true
     }),
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_SetButton',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'SetButton',
       label: 'Botão',
       emoji: '🔘'
     })
@@ -37,13 +45,17 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
 
   const saveDelete = [
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_SendSave',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'SendSave',
       label: 'Enviar',
       emoji: '✔️',
       style: ButtonStyle.Success
     }),
     await CustomButtonBuilder.create({
-      customId: 'Ticket_Admin_EmbedDelete',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'EmbedDelete',
       label: 'Apagar',
       emoji: '✖️',
       style: ButtonStyle.Danger
@@ -69,7 +81,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   if (enabled !== undefined && enabled === true) {
     row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder({
-        custom_id: 'Ticket_Admin_RowSelect',
+        custom_id: 'Admin_Ticket_RowSelect',
         placeholder: 'Escolha qual tipo de ticket deseja abrir!',
         options
       })
@@ -90,7 +102,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   for (const value of setSystem) {
     const { custom_id: customID } = Object(value.toJSON())
 
-    if (customID === 'Ticket_Admin_AddSelect' || customID === 'Ticket_Admin_RemSelect') {
+    if (customID === 'Admin_Ticket_AddSelect' || customID === 'Admin_Ticket_RemSelect') {
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -108,7 +120,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   for (const value of saveDelete) {
     const { custom_id: customID } = Object(value.toJSON())
 
-    if (customID === 'Ticket_Admin_SendSave') {
+    if (customID === 'SendSave') {
       const { embedChannelID: embedSend } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
       if (embedSend !== undefined && typeof embedSend === 'string') {
         value.setEmoji('📝')
@@ -172,7 +184,9 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
 
   const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
     await CustomButtonBuilder.create({
-      customId: 'Ticket_User_Open',
+
+      type: 'Ticket',
+      customId: 'Open',
       label: 'Abra seu ticket',
       emoji: '📩',
       style: ButtonStyle.Success

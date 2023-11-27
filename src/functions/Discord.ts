@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel, AnySelectMenuInteraction, ModalSubmitInteraction } from 'discord.js'
 import { genButtonID } from './GenButton'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
@@ -14,7 +14,7 @@ export class Discord {
      * @param message A mensagem do log.
      */
   public static async sendLog (options: {
-    interaction: CommandInteraction<CacheType> | MessageInteraction | ButtonInteraction<CacheType> | MessageInteraction | null
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType> | null
     guild: Guild | null
     type: string
     cause: string
@@ -78,7 +78,7 @@ export class Discord {
   }
 
   public static async Permission (
-    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>,
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType>,
     typePermission: PermissionResolvable,
     typeLog?: string
   ): Promise<boolean> {
@@ -117,7 +117,7 @@ export class Discord {
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
     const { guildId, channelId, emoji, label } = options
     return new ActionRowBuilder<ButtonBuilder>().addComponents(
-      await CustomButtonBuilder.create({
+      new ButtonBuilder({
         emoji,
         label,
         url: `https://discord.com/channels/${guildId}/${channelId}`,
@@ -149,33 +149,47 @@ export class Discord {
   }
 }
 
-export class CustomButtonBuilder extends ButtonBuilder {
+interface ButtonType {
   customId?: string
   emoji?: string
   style?: ButtonStyle
   url?: string
   label?: string
-  constructor (customId?: string, emoji?: string, style?: ButtonStyle, url?: string, label?: string) {
+  disabled?: boolean
+  permission?: 'User' | 'Admin'
+  type: 'Ticket' | 'Cart' | 'Product' | 'System' | 'Cupom' | 'SSUE'
+}
+export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
+  customId
+  url
+  permission
+  type
+  constructor ({ customId, emoji, style, url, label, disabled, permission, type }: ButtonType) {
     super()
     this.customId = customId
-    this.emoji = emoji
-    this.style = style
+    this.data.emoji = { name: emoji }
+    this.data.style = style
     this.url = url
-    this.label = label
+    this.data.label = label
+    this.data.disabled = disabled ?? false
+    this.permission = permission ?? 'User'
+    this.type = type
   }
 
   async init (): Promise<this> {
     const { Id } = await genButtonID()
-    if (this.customId !== undefined) this.setCustomId(`${Id}_${this.customId}`)
-    if (this.emoji !== undefined) this.setEmoji(this.emoji)
-    if (this.style !== undefined) this.setStyle(this.style)
-    if (this.url !== undefined) this.setURL(this.url)
-    if (this.label !== undefined) this.setLabel(this.label)
+    if (this.customId !== undefined) { this.setCustomId(`${Id}_${this.permission}_${this.type}_${this.customId}`) }
+    if (this.url !== undefined && this.customId === undefined) { this.setURL(this.url) }
     return this
   }
 
-  static async create ({ customId, emoji, style, url, label }: any): Promise<CustomButtonBuilder> {
-    const builder = new CustomButtonBuilder(customId, emoji, style, url, label)
+  static async create (buttonType: ButtonType): Promise<CustomButtonBuilder> {
+    const builder = new CustomButtonBuilder(buttonType)
     return await builder.init()
+  }
+
+  static getAction (customId: string): string {
+    const parts = customId.split('_')
+    return parts[parts.length - 1]
   }
 }

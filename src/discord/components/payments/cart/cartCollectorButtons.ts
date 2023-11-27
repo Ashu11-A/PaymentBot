@@ -1,14 +1,18 @@
 import { db } from '@/app'
-import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { PaymentFunction } from './functions/collectorFunctions'
-import { Payment } from '../functions/createPayment'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
+import { Payment } from '../functions/createPayment'
+import { PaymentFunction } from './functions/cartCollectorFunctions'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
-export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
+export default async function collectorCartButtons (options: {
+  interaction: ButtonInteraction<CacheType>
+  key: string
+  value?: collectorButtonsForModals
+}): Promise<void> {
+  const { interaction, key, value } = options
   if (!interaction.inGuild()) return
-
   const { guildId, customId, message } = interaction
   const { title, label, placeholder, style, type, maxLength } = value
 
@@ -18,12 +22,12 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     WTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
     Add: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
     Rem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
-    GerarPix: async () => { await Payment.create({ interaction, method: 'pix' }) },
+    Pix: async () => { await Payment.create({ interaction, method: 'pix' }) },
     Cancelar: async () => { await PaymentFunction.paymentUserCancelar({ interaction }) },
     Next: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
     Before: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
-    GerarCardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
-    GerarCardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
+    CardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
+    CardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
   }
 
   const customIdHandler = customIdHandlers[customId]

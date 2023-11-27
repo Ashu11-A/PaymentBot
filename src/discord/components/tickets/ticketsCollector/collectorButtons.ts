@@ -1,8 +1,8 @@
 import { db } from '@/app'
 import { buttonsUsers, createTicket, ticketButtonsConfig } from '@/discord/components/tickets'
-import { CustomButtonBuilder, Discord, createRow } from '@/functions'
+import { Discord, createRow } from '@/functions'
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
-import { ActionRowBuilder, ButtonStyle, ComponentType, EmbedBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType, type TextChannel } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType, type TextChannel } from 'discord.js'
 
 const listItens = {
   SetName: {
@@ -55,8 +55,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     const messagePrimary = await interaction.editReply({
       embeds: [embed],
       components: [createRow(
-        await CustomButtonBuilder.create({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
-        await CustomButtonBuilder.create({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+        new ButtonBuilder({ customId: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+        new ButtonBuilder({ customId: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
       )]
     })
     const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })
@@ -113,13 +113,13 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     return
   }
 
-  if (customId === 'ticketSetSelect' || customId === 'ticketSetButton') {
-    if (customId === 'ticketSetSelect') {
-      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, true)
-      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, false)
+  if (customId === 'SetSelect' || customId === 'SetButton') {
+    if (customId === 'SetSelect') {
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.SetSelect`, true)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.SetButton`, false)
     } else {
-      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetButton`, true)
-      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.ticketSetSelect`, false)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.SetButton`, true)
+      await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message.id}.properties.SetSelect`, false)
     }
     await interaction.reply({ content: '⏱️ | Aguarde só um pouco...', ephemeral: true })
     await ticketButtonsConfig(interaction, message)
@@ -128,8 +128,8 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
 
   if (await Discord.Permission(interaction, 'Administrator')) return
 
-  if (customId === 'ticketAddSelect') {
-    const modal = new ModalBuilder({ customId: 'ticketSelectMenu', title: 'Adicionar Opções no Select Menu' })
+  if (customId === 'AddSelect') {
+    const modal = new ModalBuilder({ customId: 'SelectMenu', title: 'Adicionar Opções no Select Menu' })
     Object.entries(listItens).map(async ([, value]) => {
       const { label, placeholder, style, type, maxLength, valuee } = value
       const content = new ActionRowBuilder<TextInputBuilder>({
@@ -151,7 +151,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
     return
   }
 
-  if (customId === 'ticketSendSave') {
+  if (customId === 'SendSave') {
     try {
       const { embedChannelID: channelEmbedID, embedMessageID: messageID } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
       const channel = interaction.guild?.channels.cache.get(channelEmbedID) as TextChannel

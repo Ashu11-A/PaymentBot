@@ -16,11 +16,11 @@ export class Check {
     const errors: string[] = []
 
     if (productData !== undefined) {
-      if (productData.properties?.paymentSetCtrlPanel === undefined && productData.properties?.paymentSetEstoque === undefined) {
+      if (productData.properties?.SetCtrlPanel === undefined && productData.properties?.SetEstoque === undefined) {
         errors.push('Nenhum método de envio foi configurado.')
       }
 
-      if (productData.properties?.paymentSetCtrlPanel) {
+      if (productData.properties?.SetCtrlPanel) {
         const ctrlPanelData = await db.payments.get(`${guildId}.config.ctrlPanel`)
 
         if (productData.coins === undefined) {

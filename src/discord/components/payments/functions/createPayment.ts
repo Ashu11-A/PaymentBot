@@ -1,9 +1,9 @@
 import { db } from '@/app'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
-import { PaymentFunction } from '../cartCollector/functions/collectorFunctions'
 import { updateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
+import { PaymentFunction } from '../cart/functions/cartCollectorFunctions'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Payment {

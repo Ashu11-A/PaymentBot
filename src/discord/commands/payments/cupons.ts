@@ -177,19 +177,25 @@ export async function panelCupons (options: {
 
   const buttons = [
     await CustomButtonBuilder.create({
-      customId: 'Cupom_Admin_Add',
+      permission: 'Admin',
+      type: 'Cupom',
+      customId: 'Add',
       emoji: '➕',
       label: 'Adicionar',
       style: ButtonStyle.Success
     }),
     await CustomButtonBuilder.create({
-      customId: 'Cupom_Admin_Rem',
+      permission: 'Admin',
+      type: 'Cupom',
+      customId: 'Rem',
       emoji: '✖️',
       label: 'Remover',
       style: ButtonStyle.Danger
     }),
     await CustomButtonBuilder.create({
-      customId: 'Cupom_Admin_List',
+      permission: 'Admin',
+      type: 'Cupom',
+      customId: 'List',
       emoji: '🗒️',
       label: 'Listar',
       style: ButtonStyle.Secondary

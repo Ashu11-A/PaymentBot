@@ -2,22 +2,19 @@ import { db } from '@/app'
 import { updateProduct } from '@/discord/components/payments'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
-import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { getModalData } from './functions/getModalData'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
+export async function productCollectorModal (options: { interaction: ModalSubmitInteraction<CacheType>, key: string }): Promise<void> {
+  const { interaction, key } = options
   if (!interaction.inGuild()) return
-
-  const { customId, guildId, channel, channelId, message, fields } = interaction
-  const { type } = value
-  let messageModal: string | number = fields.getTextInputValue('content')
-
   await interaction.deferReply({ ephemeral: true })
 
-  if (messageModal.toLowerCase() === 'vazio') {
-    messageModal = ''
-  }
+  const { guildId, channel, channelId, message, fields } = interaction
+  const { type } = getModalData(key)
+  let messageModal: string | number = fields.getTextInputValue('content')
 
-  if (customId === 'paymentSetPrice' || customId === 'paymentAddCoins') {
+  if (messageModal.toLowerCase() === 'vazio') messageModal = ''
+  if (key === 'SetPrice' || key === 'AddCoins') {
     const [validador, message] = validarValor(messageModal)
     messageModal = Number(messageModal.replace(',', '.'))
     if (!validador) {
@@ -29,10 +26,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.${type}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
-      await updateProduct.embed({
-        interaction,
-        message: msg
-      })
+      await updateProduct.embed({ interaction, message: msg, button: key })
         .then(async () => {
           await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
         })

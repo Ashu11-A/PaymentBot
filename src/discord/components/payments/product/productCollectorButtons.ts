@@ -1,17 +1,16 @@
 import { db } from '@/app'
-import { ActionRowBuilder, type ButtonInteraction, type CacheType, ModalBuilder, TextInputBuilder } from 'discord.js'
-import { updateProduct, createCart } from '@/discord/components/payments'
-import { Discord } from '@/functions/Discord'
+import { createCart, updateProduct } from '@/discord/components/payments'
 import { Database } from '@/functions'
-import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
+import { getModalData } from './functions/getModalData'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
-export default async function collectorButtons (interaction: ButtonInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
+export async function productCollectorButtons (options: { interaction: ButtonInteraction<CacheType>, key: string }): Promise<void> {
+  const { interaction, key } = options
   if (!interaction.inGuild()) return
 
-  const { guildId, message, channelId, customId } = interaction
-  const { title, label, placeholder, style, type, maxLength } = value
+  const { guildId, message, channelId } = interaction
 
   const customIdHandlers: CustomIdHandlers = {
     Save: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
@@ -28,7 +27,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'swap',
         otherSystemNames: ['paymentSetCtrlPanel']
       })
-      await updateProduct.embed({ interaction, message })
+      await updateProduct.embed({ interaction, message, button: key })
     },
     SetCtrlPanel: async () => {
       await Database.setDelete({
@@ -40,27 +39,25 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         enabledType: 'swap',
         otherSystemNames: ['paymentSetEstoque']
       })
-      await updateProduct.embed({ interaction, message })
+      await updateProduct.embed({ interaction, message, button: key })
     },
     Export: async () => {
       await updateProduct.export({ interaction, message })
-      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${customId}`, true)
+      await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${key}`, true)
     },
     Import: async () => { await updateProduct.import({ interaction, message }) }
 
   }
 
-  const customIdHandler = customIdHandlers[customId]
+  const customIdHandler = customIdHandlers[key]
 
   if (typeof customIdHandler === 'function') {
-    if (customId !== 'Buy') {
-      if (await Discord.Permission(interaction, 'Administrator')) return
-    }
     await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
+    const { title, label, placeholder, style, type, maxLength } = getModalData(key)
     const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${type}`)
-    const modal = new ModalBuilder({ customId: key, title })
+    const modal = new ModalBuilder({ customId: interaction.customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
         new TextInputBuilder({
@@ -74,6 +71,7 @@ export default async function collectorButtons (interaction: ButtonInteraction<C
         })
       ]
     })
+
     modal.setComponents(content)
     await interaction.showModal(modal)
   }

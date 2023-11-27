@@ -55,88 +55,114 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
 
   const config = [
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_Ticket',
+      permission: 'Admin',
+      type: 'System',
       label: 'Ticket',
-      emoji: { name: '🎫' }
+      customId: 'Ticket',
+      emoji: '🎫'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_Welcomer',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'Welcomer',
       label: 'Boas Vindas',
-      emoji: { name: '❤️' }
+      emoji: '❤️'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_Logs',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'Logs',
       label: 'Logs',
-      emoji: { name: '📰' }
+      emoji: '📰'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_Payments',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'Payments',
       label: 'Pagamentos',
-      emoji: { name: '💲' }
+      emoji: '💲'
     })
   ]
 
   const config2 = [
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_DeleteServers',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'DeleteServers',
       label: 'Delete Servers',
-      emoji: { name: '🗑️' }
+      emoji: '🗑️'
     })
   ]
 
   const configTelegram = [
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_TelegramNotif',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'TelegramNotif',
       label: 'Notificações',
-      emoji: { name: '📤' }
+      emoji: '📤'
     })
   ]
 
   const presence = [
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_Status',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'Status',
       label: 'Status',
       emoji: '⚙️'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusMinecraft',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusMinecraft',
       label: 'Minecraft',
       emoji: '🧱'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusString',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusString',
       label: 'Mensagens',
       emoji: '📃'
     })
   ]
   const presence2 = [
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusOnline',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusOnline',
       label: 'Online',
       emoji: '🟢'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusAusente',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusAusente',
       label: 'Ausente',
       emoji: '🟠'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusNoPerturbe',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusNoPerturbe',
       label: 'Não Perturbe',
       emoji: '🔴'
     }),
     await CustomButtonBuilder.create({
-      customId: 'System_Admin_StatusInvisível',
+      permission: 'Admin',
+      type: 'System',
+      customId: 'StatusInvisível',
       label: 'Invisível',
       emoji: '⚫'
     })
   ]
 
   const typeStatus: Record<string, string> = {
-    System_StatusOnline: 'online',
-    System_StatusAusente: 'idle',
-    System_StatusNoPerturbe: 'dnd',
-    System_StatusInvisível: 'invisible'
+    StatusOnline: 'online',
+    StatusAusente: 'idle',
+    StatusNoPerturbe: 'dnd',
+    StatusInvisível: 'invisible'
   }
 
   for (const value of config) {

@@ -24,6 +24,7 @@
         "no-duplicate-imports":"warn",
         "no-extra-semi":"warn",
         */
-        "no-new": "off"
+        "no-new": "off",
+        "@typescript-eslint/naming-convention": "off"
     }
 }

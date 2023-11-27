@@ -177,17 +177,21 @@ export class updateCart {
 
     const Primary = [
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Rem',
+        type: 'Cart',
+        customId: 'Rem',
         emoji: '➖',
         style: ButtonStyle.Primary
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Add',
+
+        type: 'Cart',
+        customId: 'Add',
         emoji: '➕',
         style: ButtonStyle.Primary
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Cupom',
+        type: 'Cart',
+        customId: 'Cupom',
         label: 'Cupom',
         emoji: '🎫',
         style: ButtonStyle.Primary
@@ -196,19 +200,23 @@ export class updateCart {
 
     const Secondary = [
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_DM',
+        type: 'Cart',
+        customId: 'DM',
         label: 'Mensagem via DM',
         emoji: '💬',
         style: ButtonStyle.Primary,
         disabled: true
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Direct',
+
+        type: 'Cart',
+        customId: 'Direct',
         label: 'Instantaneamente',
         emoji: '📲',
         style: ButtonStyle.Primary
       }),
       await CustomButtonBuilder.create({
+        type: 'Cart',
         url: 'https://google.com/',
         emoji: '🔗',
         style: ButtonStyle.Link
@@ -217,20 +225,24 @@ export class updateCart {
 
     const Third = [
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_GerarPix',
+        type: 'Cart',
+        customId: 'GerarPix',
         label: 'PIX',
         emoji: '💠',
         style: ButtonStyle.Success
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_GerarCardDebito',
+
+        type: 'Cart',
+        customId: 'GerarCardDebito',
         label: 'Cartão de Débito',
         emoji: '💳',
         style: ButtonStyle.Success,
         disabled: true
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_GerarCardCredito',
+        type: 'Cart',
+        customId: 'GerarCardCredito',
         label: 'Cartão de Crédito',
         emoji: '💳',
         style: ButtonStyle.Success,
@@ -240,18 +252,22 @@ export class updateCart {
 
     const Payment = [
       await CustomButtonBuilder.create({
+        type: 'Cart',
         label: 'Pagar',
         url: 'https://www.mercadopago.com.br/',
         style: ButtonStyle.Link
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Verify',
+        type: 'Cart',
+        customId: 'Verify',
         label: 'Verificar Pagamento',
         emoji: '✔️',
         style: ButtonStyle.Success
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Cancelar',
+
+        type: 'Cart',
+        customId: 'Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
         style: ButtonStyle.Danger
@@ -260,25 +276,29 @@ export class updateCart {
 
     const footerBar = [
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Before',
+        type: 'Cart',
+        customId: 'Before',
         label: 'Voltar',
         emoji: '⬅️',
         style: ButtonStyle.Secondary
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Next',
+        type: 'Cart',
+        customId: 'Next',
         label: 'Proximo',
         emoji: '➡️',
         style: ButtonStyle.Success
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_WTF',
+        type: 'Cart',
+        customId: 'WTF',
         label: 'Saiba Mais 🔔',
         emoji: '❔',
         style: ButtonStyle.Primary
       }),
       await CustomButtonBuilder.create({
-        customId: 'Cart_User_Cancelar',
+        type: 'Cart',
+        customId: 'Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
         style: ButtonStyle.Danger
@@ -308,16 +328,16 @@ export class updateCart {
     for (const value of footerBar) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'Cart_User_Before' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
+      if (customID === 'Before' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
         value.setDisabled(true)
       }
 
-      if (customID === 'Cart_User_Next' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
+      if (customID === 'Next' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
         value.setDisabled(true)
         value.setStyle(ButtonStyle.Secondary)
       }
 
-      if (customID === 'Cart_User_WTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
+      if (customID === 'WTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
         value.setStyle(ButtonStyle.Secondary)
         value.setLabel('Saiba Mais')
       }
@@ -326,11 +346,11 @@ export class updateCart {
     for (const value of Primary) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'Cart_User_Rem' && data?.quantity !== undefined && data.quantity <= 1) {
+      if (customID === 'Rem' && data?.quantity !== undefined && data.quantity <= 1) {
         value.setDisabled(true)
       }
 
-      if (customID === 'Cart_User_Cupom' && ((data?.properties?.cupom) === true)) {
+      if (customID === 'Cupom' && ((data?.properties?.cupom) === true)) {
         value.setDisabled(true)
       }
     }
@@ -338,10 +358,10 @@ export class updateCart {
     for (const value of Secondary) {
       const { custom_id: customID } = Object(value.toJSON())
 
-      if (customID === 'Cart_User_DM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
+      if (customID === 'DM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
-      if (customID === 'Cart_User_Direct' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
+      if (customID === 'Direct' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
         value.setDisabled(true)
       }
     }
