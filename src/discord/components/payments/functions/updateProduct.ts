@@ -117,15 +117,14 @@ export class updateProduct {
 
       let componetUpdate: string = ''
       for (const value of row2Buttons) {
-        const { custom_id } = Object(value.toJSON())
-        const customID = CustomButtonBuilder.getAction(custom_id)
+        const { customId } = value
 
-        if (productData?.properties?.[customID] !== undefined) {
+        if (productData?.properties?.[customId] !== undefined) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
-        componetUpdate += (customID + ' ')
+        componetUpdate += (customId + ' ')
       }
       console.log('Atualizando os componentes: ', componetUpdate)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
@@ -170,19 +169,18 @@ export class updateProduct {
       ]
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
-        const { custom_id } = Object(value.toJSON())
-        const customID = CustomButtonBuilder.getAction(custom_id)
+        const { customId } = value
 
-        if (productData?.properties?.[customID]) {
+        if (productData?.properties?.[customId]) {
           value.setStyle(ButtonStyle.Primary)
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
 
-        if (customID === 'AddEstoque' && productData?.properties?.SetEstoque) {
+        if (customId === 'AddEstoque' && productData?.properties?.SetEstoque) {
           value.setDisabled(false)
         }
-        if (customID === 'AddCoins' && productData?.properties?.SetCtrlPanel) {
+        if (customId === 'AddCoins' && productData?.properties?.SetCtrlPanel) {
           value.setDisabled(false)
           if (productData?.coins !== undefined) {
             value.setStyle(ButtonStyle.Primary)
@@ -190,7 +188,7 @@ export class updateProduct {
             value.setStyle(ButtonStyle.Secondary)
           }
         }
-        componetUpdate += (customID + ' ')
+        componetUpdate += (customId + ' ')
       }
       console.log('Atualizando os componentes: ', componetUpdate)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
@@ -223,10 +221,9 @@ export class updateProduct {
       ]
       let componetUpdate: string = ''
       for (const value of footerBar) {
-        const { custom_id } = Object(value.toJSON())
-        const customID = CustomButtonBuilder.getAction(custom_id)
+        const { customId } = value
 
-        if (customID === 'Status') {
+        if (customId === 'Status') {
           if (productData?.status) {
             value.setLabel('Ativado')
               .setEmoji('✅')
@@ -237,7 +234,7 @@ export class updateProduct {
               .setStyle(ButtonStyle.Secondary)
           }
         }
-        componetUpdate += (customID + ' ')
+        componetUpdate += (customId + ' ')
       }
       console.log('Atualizando os componentes: ', componetUpdate)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...footerBar)
@@ -344,7 +341,7 @@ export class updateProduct {
       await CustomButtonBuilder.create({
 
         type: 'Product',
-        customId: 'Product_User_Buy',
+        customId: 'Buy',
         label: 'Adicionar ao Carrinho',
         style: ButtonStyle.Success,
         emoji: '🛒'
@@ -361,10 +358,9 @@ export class updateProduct {
     const row1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...row1Buttons)
 
     for (const value of row1Buttons) {
-      const { custom_id } = Object(value.toJSON())
-      const customID = CustomButtonBuilder.getAction(custom_id)
+      const { customId } = value
 
-      if (customID === 'Buy') {
+      if (customId === 'Buy') {
         if (productData?.status !== undefined && productData.status) {
           value.setDisabled(false)
         } else {

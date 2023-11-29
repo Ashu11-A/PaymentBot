@@ -114,7 +114,7 @@ export class Database {
       }
 
       // console.log(`Dados atuais do System: ${typeDB ?? 'system'}`, await dbInstance.get(`${guildId}.${pathDB}`))
-      await setSystem(interaction)
+      setSystem(interaction).catch(err => { console.log('setSystem: ', err) })
 
       const statusMsg = datatype
         ? `✅ | Sistema **\`${displayName ?? systemName}\`** foi definido como **${activate}**!`

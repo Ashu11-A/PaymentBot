@@ -14,7 +14,7 @@ import {
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const { guildId } = interaction
   const channelDB = (await db.guilds.get(`${guildId}.channel.system`)) as string
-  const systemData = await db.system.get(`${guildId}.status`)
+  const systemData: Record<string, boolean | string> | null = await db.system.get(`${guildId}.status`)
 
   let channelSend
 
@@ -164,56 +164,25 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
     StatusNoPerturbe: 'dnd',
     StatusInvisível: 'invisible'
   }
+  const allConfigs = [...config, ...config2, ...configTelegram, ...presence]
 
-  for (const value of config) {
-    const { custom_id: customID } = Object(value.toJSON())
-    const result = systemData?.[customID]
-    if (result !== undefined && result === true) {
-      value.setStyle(ButtonStyle.Success)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
-  }
+  for (const value of allConfigs) {
+    const { customId } = value
+    if (customId === undefined) continue
+    if (systemData === null) continue
 
-  for (const value of config2) {
-    const { custom_id: customID } = Object(value.toJSON())
-    const result = systemData?.[customID]
-    if (result !== undefined && result === true) {
-      value.setStyle(ButtonStyle.Success)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
-  }
-
-  for (const value of configTelegram) {
-    const { custom_id: customID } = Object(value.toJSON())
-    const result = systemData?.[customID]
-    if (result !== undefined && result === true) {
-      value.setStyle(ButtonStyle.Success)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
-  }
-
-  for (const value of presence) {
-    const { custom_id: customID } = Object(value.toJSON())
-    const result = systemData?.[customID]
-    if (result !== undefined && result === true) {
-      value.setStyle(ButtonStyle.Success)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
+    const isTrue = systemData[customId]
+    value.setStyle(isTrue === true ? ButtonStyle.Success : ButtonStyle.Secondary)
   }
 
   for (const value of presence2) {
-    const { custom_id: customID } = Object(value.toJSON())
-    const result = typeStatus[customID]
-    const systemEnabled = systemData?.status?.systemStatusType
-    if (systemEnabled === result) {
-      value.setStyle(ButtonStyle.Success)
-    } else {
-      value.setStyle(ButtonStyle.Secondary)
-    }
+    const { customId } = value
+    if (customId === undefined) continue
+    if (systemData === null) continue
+
+    const result = typeStatus[customId]
+    const systemEnabled = systemData?.StatusType
+    value.setStyle(systemEnabled === result ? ButtonStyle.Success : ButtonStyle.Secondary)
   }
 
   const configRow1 = new ActionRowBuilder<ButtonBuilder>().addComponents(...config)

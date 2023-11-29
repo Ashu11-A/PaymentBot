@@ -1,20 +1,18 @@
 import { db } from '@/app'
-import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { Payment } from '../functions/createPayment'
 import { PaymentFunction } from './functions/cartCollectorFunctions'
+import { getModalData } from './functions/getModalData'
 
 type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
-export default async function collectorCartButtons (options: {
+export default async function cartCollectorButtons (options: {
   interaction: ButtonInteraction<CacheType>
   key: string
-  value?: collectorButtonsForModals
 }): Promise<void> {
-  const { interaction, key, value } = options
+  const { interaction, key } = options
   if (!interaction.inGuild()) return
-  const { guildId, customId, message } = interaction
-  const { title, label, placeholder, style, type, maxLength } = value
+  const { guildId, message } = interaction
 
   const customIdHandlers: CustomIdHandlers = {
     Verify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
@@ -30,14 +28,15 @@ export default async function collectorCartButtons (options: {
     CardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
   }
 
-  const customIdHandler = customIdHandlers[customId]
+  const customIdHandler = customIdHandlers[key]
 
   if (typeof customIdHandler === 'function') {
     await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
+    const { title, label, placeholder, style, type, maxLength } = getModalData(key)
     const textValue = await db.payments.get(`${guildId}.process.${message.id}.${type}`)
-    const modal = new ModalBuilder({ customId: key, title })
+    const modal = new ModalBuilder({ customId: interaction.customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
         new TextInputBuilder({

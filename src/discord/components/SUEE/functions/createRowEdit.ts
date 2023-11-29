@@ -11,35 +11,35 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
   const rowButtons = [
     await CustomButtonBuilder.create({
       permission: 'Admin',
-      type: 'SSUE',
+      type: 'SUEE',
       customId: `${type}-SetName`,
       label: 'Nome',
       emoji: '📝'
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
-      type: 'SSUE',
+      type: 'SUEE',
       customId: `${type}-SetDesc`,
       label: 'Descrição',
       emoji: '📑'
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
-      type: 'SSUE',
+      type: 'SUEE',
       customId: `${type}-SetMiniature`,
       label: 'Miniatura',
       emoji: '🖼️'
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
-      type: 'SSUE',
+      type: 'SUEE',
       customId: `${type}-SetBanner`,
       label: 'Banner',
       emoji: '🌄'
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
-      type: 'SSUE',
+      type: 'SUEE',
       customId: `${type}-SetColor`,
       label: 'Cor',
       emoji: '🎨'
@@ -47,16 +47,14 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
   ]
   let componetUpdate: string = ''
   for (const value of rowButtons) {
-    const { custom_id } = Object(value.toJSON())
-    const customID = CustomButtonBuilder.getAction(custom_id)
-    console.log('custom_id: ' + custom_id, 'customID: ' + customID)
+    const { customId } = value
 
-    if (data?.properties !== undefined && data?.properties[customID] !== undefined) {
+    if (data?.properties !== undefined && data?.properties[customId] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
     }
-    componetUpdate += (customID + ' ')
+    componetUpdate += (customId + ' ')
   }
   console.log('Atualizando os componentes: ', componetUpdate)
   return new ActionRowBuilder<ButtonBuilder>().addComponents(...rowButtons)

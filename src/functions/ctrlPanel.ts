@@ -2,7 +2,7 @@ import { core, db } from '@/app'
 import { type Server, type User } from '@/discord/components/payments'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
-import { ActionRowBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, ButtonBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'
 import { CustomButtonBuilder, updateProgressAndEstimation } from '.'
 import { numerosParaLetras } from './Format'
 
@@ -61,7 +61,9 @@ export class ctrlPanel {
           ],
           components: [createRow(
             await CustomButtonBuilder.create({
-              customId: 'deleteMsg',
+              permission: 'User',
+              type: 'Event',
+              customId: 'deleteMSG',
               label: 'Sim, sou eu!',
               style: ButtonStyle.Success
             })
@@ -90,7 +92,7 @@ export class ctrlPanel {
         if (runs === 0) {
           embed.setFooter({ iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined), text: 'Se sua conta for nova, faça uma pesquisa avançada' })
           row.addComponents(
-            await CustomButtonBuilder.create({
+            new ButtonBuilder({
               customId: 'ctrlpanel-advanced-search',
               emoji: '🔎',
               label: 'Pesquisa Avançada',
@@ -100,7 +102,9 @@ export class ctrlPanel {
         }
         row.addComponents(
           await CustomButtonBuilder.create({
-            customId: 'deleteMsg',
+            permission: 'User',
+            type: 'Event',
+            customId: 'deleteMSG',
             label: 'Entendo',
             style: ButtonStyle.Danger
           })

@@ -1,25 +1,12 @@
 import { type AnySelectMenuInteraction, type ButtonInteraction, type CacheType, type ModalSubmitInteraction } from 'discord.js'
-import { productCollectorButtons } from './payments/product/productCollectorButtons'
-import { productCollectorModal } from './payments/product/productCollectorModal'
 import { collectorEditButtons } from './SUEE/collectorButtons'
 import { collectorEditModal } from './SUEE/collectorModal'
-
-const cartModals = {
-  Direct: {
-    modal: true,
-    title: '❓| Qual é o seu email cadastrado no Dash?',
-    label: 'Seu E-mail',
-    style: 1,
-    type: 'email'
-  },
-  Cupom: {
-    modal: true,
-    title: '❓| Qual cupom deseja utilizar?',
-    label: 'Seu Cupom',
-    style: 1,
-    type: 'cupom.name'
-  }
-}
+import cartCollectorButtons from './payments/cart/cartCollectorButtons'
+import cartCollectorModal from './payments/cart/cartCollectorModal'
+import { productCollectorButtons } from './payments/product/productCollectorButtons'
+import { productCollectorModal } from './payments/product/productCollectorModal'
+import eventCollectorButtons from './events/eventCollectorButtons'
+import { systemCollectorButtons } from './system/systemCollectorButtons'
 
 interface ControllerType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
@@ -34,13 +21,36 @@ export class ButtonController implements ControllerType {
     this.key = key
   }
 
-  static async product ({ interaction, key }: ControllerType): Promise<void> {
+  async product (): Promise<void> {
+    const { interaction, key } = this
+
     if (interaction.isButton()) await productCollectorButtons({ interaction, key })
     if (interaction.isModalSubmit()) await productCollectorModal({ interaction, key })
   }
 
-  static async SSUE ({ interaction, key }: ControllerType): Promise<void> {
+  async SUEE (): Promise<void> {
+    const { interaction, key } = this
+
     if (interaction.isButton()) await collectorEditButtons({ interaction, key })
     if (interaction.isModalSubmit()) await collectorEditModal({ interaction, key })
+  }
+
+  async cart (): Promise<void> {
+    const { interaction, key } = this
+
+    if (interaction.isButton()) await cartCollectorButtons({ interaction, key })
+    if (interaction.isModalSubmit()) await cartCollectorModal({ interaction, key })
+  }
+
+  async event (): Promise<void> {
+    const { interaction, key } = this
+
+    if (interaction.isButton()) await eventCollectorButtons({ interaction, key })
+  }
+
+  async system (): Promise<void> {
+    const { interaction, key } = this
+
+    if (interaction.isButton()) await systemCollectorButtons({ interaction, key })
   }
 }

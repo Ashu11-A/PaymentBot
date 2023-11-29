@@ -106,7 +106,7 @@ export class Payment {
         price: amountTax,
         UUID: cartData.UUID
       }
-      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/cart`, {
+      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`, {
         userName: user.username,
         userId: user.id,
         mpToken: mcToken,

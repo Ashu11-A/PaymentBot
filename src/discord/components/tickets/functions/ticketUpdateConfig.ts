@@ -100,9 +100,9 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   const row3 = new ActionRowBuilder<ButtonBuilder>().addComponents(...saveDelete)
 
   for (const value of setSystem) {
-    const { custom_id: customID } = Object(value.toJSON())
+    const { customId } = value
 
-    if (customID === 'Admin_Ticket_AddSelect' || customID === 'Admin_Ticket_RemSelect') {
+    if (customId === 'Admin_Ticket_AddSelect' || customId === 'Admin_Ticket_RemSelect') {
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {
@@ -110,7 +110,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       }
     }
 
-    if (data?.properties !== undefined && data?.properties[customID] === true) {
+    if (data?.properties !== undefined && data?.properties[customId] === true) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)
@@ -118,9 +118,9 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   }
 
   for (const value of saveDelete) {
-    const { custom_id: customID } = Object(value.toJSON())
+    const { customId } = value
 
-    if (customID === 'SendSave') {
+    if (customId === 'SendSave') {
       const { embedChannelID: embedSend } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
       if (embedSend !== undefined && typeof embedSend === 'string') {
         value.setEmoji('📝')

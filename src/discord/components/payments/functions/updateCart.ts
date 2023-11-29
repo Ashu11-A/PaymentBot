@@ -18,7 +18,7 @@ export class updateCart {
     const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
     const { guildId } = interaction
     const valor = Number(((typeof cupom?.porcent === 'number' ? (amount - (amount * cupom.porcent / 100)) : amount) * (quantity ?? 1)).toFixed(2))
-    const valorPagamento = paymentData?.transaction_amount ?? paymentData?.additional_info?.items?.[0]?.unit_price ?? (valor * (quantity))
+    const valorPagamento = paymentData?.transaction_amount ?? paymentData?.additional_info?.items?.[0]?.unit_price ?? valor
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
     let titulo
@@ -226,7 +226,7 @@ export class updateCart {
     const Third = [
       await CustomButtonBuilder.create({
         type: 'Cart',
-        customId: 'GerarPix',
+        customId: 'Pix',
         label: 'PIX',
         emoji: '💠',
         style: ButtonStyle.Success
@@ -234,7 +234,7 @@ export class updateCart {
       await CustomButtonBuilder.create({
 
         type: 'Cart',
-        customId: 'GerarCardDebito',
+        customId: 'CardDebito',
         label: 'Cartão de Débito',
         emoji: '💳',
         style: ButtonStyle.Success,
@@ -242,7 +242,7 @@ export class updateCart {
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
-        customId: 'GerarCardCredito',
+        customId: 'CardCredito',
         label: 'Cartão de Crédito',
         emoji: '💳',
         style: ButtonStyle.Success,
@@ -325,44 +325,55 @@ export class updateCart {
       components[0].setComponents(...Payment)
     }
 
-    for (const value of footerBar) {
-      const { custom_id: customID } = Object(value.toJSON())
-
-      if (customID === 'Before' && data?.typeEmbed !== undefined && data.typeEmbed === 0) {
-        value.setDisabled(true)
-      }
-
-      if (customID === 'Next' && data?.typeEmbed !== undefined && data.typeEmbed >= 2) {
-        value.setDisabled(true)
-        value.setStyle(ButtonStyle.Secondary)
-      }
-
-      if (customID === 'WTF' && data?.typeEmbed !== undefined && ((data?.properties?.[`${customID}_${data.typeEmbed}`]) === true)) {
-        value.setStyle(ButtonStyle.Secondary)
-        value.setLabel('Saiba Mais')
+    const actions: Record<string, (options: {
+      value: CustomButtonBuilder
+      customId: string
+      typeEmbed: number | undefined
+      quantity: number
+      properties: Record<string, boolean> | undefined
+      typeRedeem: number | undefined
+    }) => void> = {
+      Before: ({ value, typeEmbed }) => {
+        if (typeEmbed === 0) value.setDisabled(true)
+      },
+      Next: ({ value, typeEmbed }) => {
+        if (typeEmbed !== undefined && typeEmbed >= 2) {
+          value.setDisabled(true)
+          value.setStyle(ButtonStyle.Secondary)
+        }
+      },
+      WTF: ({ value, customId, typeEmbed, properties }) => {
+        if (typeEmbed !== undefined && properties?.[`${customId}_${typeEmbed}`] === true) {
+          value.setStyle(ButtonStyle.Secondary)
+          value.setLabel('Saiba Mais')
+        }
+      },
+      Rem: ({ value, quantity }) => {
+        if (quantity <= 1) value.setDisabled(true)
+      },
+      Cupom: ({ value, properties }) => {
+        if (properties?.cupom === true) value.setDisabled(true)
+      },
+      DM: ({ value, customId, typeRedeem, properties }) => {
+        if (typeRedeem === 1 && properties?.[customId] === true) value.setDisabled(true)
+      },
+      Direct: ({ value, customId, typeRedeem, properties }) => {
+        if (typeRedeem === 2 && properties?.[customId] === true) value.setDisabled(true)
       }
     }
 
-    for (const value of Primary) {
-      const { custom_id: customID } = Object(value.toJSON())
+    const allValues = [...footerBar, ...Primary, ...Secondary]
 
-      if (customID === 'Rem' && data?.quantity !== undefined && data.quantity <= 1) {
-        value.setDisabled(true)
-      }
+    for (const value of allValues) {
+      const { customId } = value
+      if (customId === undefined) continue
+      const typeEmbed = data?.typeEmbed
+      const typeRedeem = data?.typeRedeem
+      const quantity = data?.quantity
+      const properties = data?.properties
 
-      if (customID === 'Cupom' && ((data?.properties?.cupom) === true)) {
-        value.setDisabled(true)
-      }
-    }
-
-    for (const value of Secondary) {
-      const { custom_id: customID } = Object(value.toJSON())
-
-      if (customID === 'DM' && data?.typeRedeem === 1 && data?.properties?.[customID] === true) {
-        value.setDisabled(true)
-      }
-      if (customID === 'Direct' && data?.typeRedeem === 2 && data?.properties?.[customID] === true) {
-        value.setDisabled(true)
+      if (typeof actions[customId] === 'function') {
+        actions[customId]({ value, customId, typeEmbed, quantity, properties, typeRedeem })
       }
     }
 

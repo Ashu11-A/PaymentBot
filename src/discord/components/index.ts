@@ -6,7 +6,7 @@ import { ButtonController } from './controller'
 
 const getInfos = (customId: string): string[] | null[] => {
   const parts = customId.split('_')
-  if (parts.length > 0) {
+  if (parts.length === 4) {
     return [parts[0], parts[1], parts[2], parts[3]]
   }
   return [null, null, null, null]
@@ -23,24 +23,30 @@ new Event({
 
     if (action === null) return
     if (permission !== 'User') if (await Discord.Permission(interaction, 'Administrator', 'noPermission')) return
-    const controllerData = new ButtonController({ interaction, key: action })
+    const Controller = new ButtonController({ interaction, key: action })
 
     switch (type) {
       case 'Product': {
-        await ButtonController.product(controllerData)
+        await Controller.product()
         break
       }
-      case 'SSUE': {
-        await ButtonController.SSUE(controllerData)
+      case 'SUEE': {
+        await Controller.SUEE()
         break
       }
       case 'Cart': {
+        await Controller.cart()
         break
       }
       case 'System': {
+        await Controller.system()
         break
       }
       case 'Ticket': {
+        break
+      }
+      case 'Event': {
+        await Controller.event()
         break
       }
     }

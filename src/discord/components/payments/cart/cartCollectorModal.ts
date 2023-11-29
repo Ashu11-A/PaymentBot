@@ -1,18 +1,22 @@
 import { core, db } from '@/app'
-import { validarEmail } from '@/functions'
-import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
 import { updateCart } from '@/discord/components/payments'
+import { validarEmail } from '@/functions'
 import { ctrlPanel } from '@/functions/ctrlPanel'
-import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { EmbedBuilder, type CacheType, type ModalSubmitInteraction } from 'discord.js'
+import { getModalData } from './functions/getModalData'
 
-export default async function collectorModal (interaction: ModalSubmitInteraction<CacheType>, key: string, value: collectorButtonsForModals): Promise<void> {
+export default async function cartCollectorModal (options: {
+  interaction: ModalSubmitInteraction<CacheType>
+  key: string
+}): Promise<void> {
+  const { interaction, key } = options
   if (!interaction.inGuild()) return
 
-  const { customId, guildId, user, channel, message, fields } = interaction
-  const { type } = value
+  const { guildId, user, channel, message, fields } = interaction
+  const { type } = getModalData(key)
   const messageModal = fields.getTextInputValue('content')
 
-  if (customId === 'Direct') {
+  if (key === 'Direct') {
     const [validador, messageInfo] = validarEmail(messageModal)
     if (validador) {
       core.info(`Solicitação para o E-mail: ${messageModal}`)
@@ -23,7 +27,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
 
         if (message !== null) {
           await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 2)
-          await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
+          await db.payments.set(`${guildId}.process.${message.id}.properties.${key}`, true)
           await db.payments.delete(`${guildId}.process.${message.id}.properties.DM`)
           const data = await db.payments.get(`${guildId}.process.${message.id}`)
           await updateCart.embedAndButtons({
@@ -39,7 +43,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
     return
   }
 
-  if (customId === 'paymentUserCupom') {
+  if (key === 'Cupom') {
     const codeVerify = await db.payments.get(`${guildId}.cupons.${messageModal.toLowerCase()}`)
 
     if (codeVerify === undefined) {
@@ -94,7 +98,7 @@ export default async function collectorModal (interaction: ModalSubmitInteractio
   await db.payments.set(`${guildId}.process.${message?.id}.${type}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
-      await db.payments.set(`${guildId}.process.${msg.id}.properties.${customId}`, true)
+      await db.payments.set(`${guildId}.process.${msg.id}.properties.${key}`, true)
       await db.payments.get(`${guildId}.process.${msg.id}`)
         .then(async (data) => {
           await updateCart.embedAndButtons({
