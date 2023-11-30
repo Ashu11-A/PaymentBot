@@ -1,6 +1,6 @@
-import { EmbedBuilder, type CommandInteraction, type CacheType, TextChannel, CategoryChannel, type ButtonInteraction, type ModalSubmitInteraction } from 'discord.js'
 import { db } from '@/app'
 import { setSystem } from '@/discord/commands/configs/utils/setSystem'
+import { CategoryChannel, EmbedBuilder, TextChannel, type ButtonInteraction, type CacheType, type CommandInteraction, type ModalSubmitInteraction } from 'discord.js'
 import { Discord } from './Discord'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class

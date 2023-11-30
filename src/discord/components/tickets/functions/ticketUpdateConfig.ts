@@ -101,8 +101,9 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
 
   for (const value of setSystem) {
     const { customId } = value
+    if (customId === undefined) continue
 
-    if (customId === 'Admin_Ticket_AddSelect' || customId === 'Admin_Ticket_RemSelect') {
+    if (customId === 'AddSelect' || customId === 'RemSelect') {
       if (enabled !== undefined && enabled === true) {
         value.setDisabled(false)
       } else {

@@ -25,7 +25,7 @@ type CommandProps<DmPermission extends boolean> =
 {
   type: ApplicationCommandType.ChatInput
   autoComplete?: (interaction: C<DmPermission, AutocompleteInteraction>) => any
-  run: (interaction: C<DmPermission, ChatInputCommandInteraction>,) => any
+  run: (interaction: C<DmPermission, ChatInputCommandInteraction>) => any
 } | {
   type: ApplicationCommandType.User
   run: (interaction: C<DmPermission, UserContextMenuCommandInteraction>) => any

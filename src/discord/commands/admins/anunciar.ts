@@ -1,7 +1,7 @@
 import { Command, Component } from '@/discord/base'
 import { CustomButtonBuilder, Discord } from '@/functions'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
-import { ApplicationCommandOptionType, ApplicationCommandType, AttachmentBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder, ModalBuilder, TextInputStyle, codeBlock, type Attachment, type ColorResolvable, type TextChannel } from 'discord.js'
+import { ApplicationCommandOptionType, ApplicationCommandType, AttachmentBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder, ModalBuilder, TextInputStyle, codeBlock, type Attachment, type ColorResolvable, type TextChannel, ButtonBuilder } from 'discord.js'
 
 interface MessageProps {
   channelId: string
@@ -168,8 +168,8 @@ new Component({
       ],
       files,
       components: [createRow(
-        await CustomButtonBuilder.create({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
-        await CustomButtonBuilder.create({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+        new ButtonBuilder({ custom_id: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+        new ButtonBuilder({ custom_id: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
       )]
     })
     const collector = message.createMessageComponentCollector({ componentType: ComponentType.Button })

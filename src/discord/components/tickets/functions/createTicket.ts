@@ -92,6 +92,8 @@ export async function createTicket (interaction: CommandInteraction<CacheType> |
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
         await CustomButtonBuilder.create({
+          type: 'Ticket',
+          permission: 'User',
           customId: 'del-ticket',
           label: 'Fechar Ticket',
           emoji: '✖️',

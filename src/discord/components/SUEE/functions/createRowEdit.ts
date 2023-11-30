@@ -48,6 +48,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
   let componetUpdate: string = ''
   for (const value of rowButtons) {
     const { customId } = value
+    if (customId === undefined) continue
 
     if (data?.properties !== undefined && data?.properties[customId] !== undefined) {
       value.setStyle(ButtonStyle.Primary)

@@ -118,6 +118,7 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of row2Buttons) {
         const { customId } = value
+        if (customId === undefined) continue
 
         if (productData?.properties?.[customId] !== undefined) {
           value.setStyle(ButtonStyle.Primary)
@@ -170,6 +171,7 @@ export class updateProduct {
       let componetUpdate: string = ''
       for (const value of redeemSystem) {
         const { customId } = value
+        if (customId === undefined) continue
 
         if (productData?.properties?.[customId]) {
           value.setStyle(ButtonStyle.Primary)

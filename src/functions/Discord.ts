@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type AnySelectMenuInteraction, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type ModalSubmitInteraction, type PermissionResolvable, type TextChannel } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type AnySelectMenuInteraction, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type ModalSubmitInteraction, type PermissionResolvable, type TextChannel, MessageInteraction } from 'discord.js'
 import { genButtonID } from './GenButton'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
@@ -14,7 +14,7 @@ export class Discord {
      * @param message A mensagem do log.
      */
   public static async sendLog (options: {
-    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType> | null
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType> | MessageInteraction | null
     guild: Guild | null
     type: string
     cause: string
@@ -111,7 +111,7 @@ export class Discord {
    */
   public static async buttonRedirect (options: {
     guildId: string | null
-    channelId: string | null
+    channelId: string | undefined
     emoji?: string
     label: string
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
