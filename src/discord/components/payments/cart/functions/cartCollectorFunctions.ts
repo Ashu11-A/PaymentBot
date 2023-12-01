@@ -62,7 +62,7 @@ export class PaymentFunction {
       const clearData = { components: [], embeds: [] }
 
       if (subInteraction.customId === 'payment-cancel-delete') {
-        await subInteraction.editReply({
+        await subInteraction.update({
           ...clearData,
           embeds: [
             new EmbedBuilder()
@@ -357,7 +357,7 @@ export class PaymentFunction {
               guildId,
               userID: cartData.user?.id,
               post: {
-                credits: (cartData.coins * cartData.amount),
+                credits: (cartData.coins * cartData.quantity),
                 email: cartData.user.email,
                 name: cartData.user.name,
                 role: 'client'

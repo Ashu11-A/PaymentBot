@@ -1,7 +1,7 @@
 import { Command, Component } from '@/discord/base'
-import { CustomButtonBuilder, Discord } from '@/functions'
+import { Discord } from '@/functions'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
-import { ApplicationCommandOptionType, ApplicationCommandType, AttachmentBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder, ModalBuilder, TextInputStyle, codeBlock, type Attachment, type ColorResolvable, type TextChannel, ButtonBuilder } from 'discord.js'
+import { ApplicationCommandOptionType, ApplicationCommandType, AttachmentBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder, ModalBuilder, TextInputStyle, codeBlock, type Attachment, type ColorResolvable, type TextChannel } from 'discord.js'
 
 interface MessageProps {
   channelId: string

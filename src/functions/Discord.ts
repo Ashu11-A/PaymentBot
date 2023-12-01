@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type AnySelectMenuInteraction, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type ModalSubmitInteraction, type PermissionResolvable, type TextChannel, MessageInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type AnySelectMenuInteraction, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type ModalSubmitInteraction, type PermissionResolvable, type TextChannel, type MessageInteraction } from 'discord.js'
 import { genButtonID } from './GenButton'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
