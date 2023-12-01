@@ -19,10 +19,12 @@ new Event({
     const start = Date.now() // Mostrar delay
     const { customId, user: { username } } = interaction
     const typeAction = interaction.isButton() ? 'Buttom' : interaction.isModalSubmit() ? 'Modal' : 'Select'
+    console.log(customId)
     const [id, permission, type, action] = getInfos(customId)
 
     if (action === null) return
     if (permission !== 'User') if (await Discord.Permission(interaction, 'Administrator', 'noPermission')) return
+    core.info(`${username} | Id: ${id} | Permission: ${permission} | Type: ${type} | typeAction: ${typeAction} | Action: ${action}`)
     const Controller = new ButtonController({ interaction, key: action })
 
     switch (type) {
@@ -43,6 +45,7 @@ new Event({
         break
       }
       case 'Ticket': {
+        await Controller.ticket()
         break
       }
       case 'Event': {
@@ -52,7 +55,6 @@ new Event({
     }
     const end = Date.now()
     const timeSpent = (end - start) / 1000 + 's'
-    core.info(`${username} | Id: ${id} | Permission: ${permission} | Type: ${type} | typeAction: ${typeAction} | Action: ${action}`)
     core.info(`${type} | ${action} | ${timeSpent}`)
   }
 })

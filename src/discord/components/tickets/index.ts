@@ -1,2 +1,2 @@
-export * from './functions/createTicket'
+export * from './functions/TicketFunctions'
 export * from './functions/ticketUpdateConfig'

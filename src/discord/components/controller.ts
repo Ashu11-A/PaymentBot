@@ -7,6 +7,9 @@ import { productCollectorButtons } from './payments/product/productCollectorButt
 import { productCollectorModal } from './payments/product/productCollectorModal'
 import eventCollectorButtons from './events/eventCollectorButtons'
 import { systemCollectorButtons } from './system/systemCollectorButtons'
+import ticketCollectorButtons from './tickets/collectorButtons'
+import { ticketCollectorSelect } from './tickets/collectorSelect'
+import { ticketCollectorModal } from './tickets/collectorModal'
 
 interface ControllerType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
@@ -52,5 +55,13 @@ export class ButtonController implements ControllerType {
     const { interaction, key } = this
 
     if (interaction.isButton()) await systemCollectorButtons({ interaction, key })
+  }
+
+  async ticket (): Promise<void> {
+    const { interaction, key } = this
+
+    if (interaction.isButton()) await ticketCollectorButtons({ interaction, key })
+    if (interaction.isModalSubmit()) await ticketCollectorModal({ interaction, key })
+    if (interaction.isStringSelectMenu()) await ticketCollectorSelect({ interaction })
   }
 }
