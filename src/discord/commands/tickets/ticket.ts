@@ -1,7 +1,7 @@
 import { EmbedBuilder, ApplicationCommandOptionType, ApplicationCommandType, type TextChannel } from 'discord.js'
 import { Command } from '@/discord/base'
 import { db } from '@/app'
-import { Ticket, ticketButtonsConfig } from '@/discord/components/tickets'
+import { TicketButtons, ticketButtonsConfig } from '@/discord/components/tickets'
 import { Discord } from '@/functions'
 
 new Command({
@@ -21,7 +21,7 @@ new Command({
     const { guild, guildId, channelId, options } = interaction
     const channel = options.getChannel('panel-embed')
     const sendChannel = guild?.channels.cache.get(String(channel?.id)) as TextChannel
-    const ticketConstructor = new Ticket({ interaction })
+    const ticketConstructor = new TicketButtons({ interaction })
 
     if (channel === null) {
       await ticketConstructor.createTicket({ about: 'Ticket aberto por meio do comando /ticket' })

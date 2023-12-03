@@ -27,21 +27,21 @@ export class ButtonController implements ControllerType {
   async product (): Promise<void> {
     const { interaction, key } = this
 
-    if (interaction.isButton()) await productCollectorButtons({ interaction, key })
+    if (interaction.isButton()) { await productCollectorButtons({ interaction, key }); return }
     if (interaction.isModalSubmit()) await productCollectorModal({ interaction, key })
   }
 
   async SUEE (): Promise<void> {
     const { interaction, key } = this
 
-    if (interaction.isButton()) await collectorEditButtons({ interaction, key })
+    if (interaction.isButton()) { await collectorEditButtons({ interaction, key }); return }
     if (interaction.isModalSubmit()) await collectorEditModal({ interaction, key })
   }
 
   async cart (): Promise<void> {
     const { interaction, key } = this
 
-    if (interaction.isButton()) await cartCollectorButtons({ interaction, key })
+    if (interaction.isButton()) { await cartCollectorButtons({ interaction, key }); return }
     if (interaction.isModalSubmit()) await cartCollectorModal({ interaction, key })
   }
 
@@ -60,8 +60,8 @@ export class ButtonController implements ControllerType {
   async ticket (): Promise<void> {
     const { interaction, key } = this
 
-    if (interaction.isButton()) await ticketCollectorButtons({ interaction, key })
-    if (interaction.isModalSubmit()) await ticketCollectorModal({ interaction, key })
-    if (interaction.isStringSelectMenu()) await ticketCollectorSelect({ interaction, key })
+    if (interaction.isButton()) { await ticketCollectorButtons({ interaction, key }); return }
+    if (interaction.isModalSubmit()) { await ticketCollectorModal({ interaction, key }); return }
+    if (interaction.isStringSelectMenu()) { await ticketCollectorSelect({ interaction, key }) }
   }
 }
