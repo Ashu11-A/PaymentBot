@@ -1,9 +1,8 @@
 import { db } from '@/app'
-import { Ticket } from '@/discord/components/tickets'
+import { TicketButtons } from '@/discord/components/tickets'
+import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
-
-type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
 const listItens = {
   SetName: {
@@ -38,7 +37,7 @@ export default async function ticketCollectorButtons (options: {
 }): Promise<void> {
   const { interaction, key } = options
   const { guildId, message, channelId, customId } = interaction
-  const Constructor = new Ticket({ interaction })
+  const Constructor = new TicketButtons({ interaction })
 
   const customIdHandlers: CustomIdHandlers = {
     Open: async () => { await Constructor.createTicket({ about: 'Não foi possível descobrir.' }) },

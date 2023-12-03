@@ -15,14 +15,14 @@ const getInfos = (customId: string): string[] | null[] => {
 new Event({
   name: 'interactionCreate',
   async run (interaction) {
-    if (!interaction.isButton() && !interaction.isAnySelectMenu() && !interaction.isModalSubmit()) return
+    if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return
     const start = Date.now() // Mostrar delay
     const { customId, user: { username } } = interaction
     const typeAction = interaction.isButton() ? 'Buttom' : interaction.isModalSubmit() ? 'Modal' : 'Select'
-    console.log(customId)
     const [id, permission, type, action] = getInfos(customId)
+    console.log(id, permission, type, action)
 
-    if (action === null) return
+    if (action === null) { console.log('Nenhuma ação foi expecificada no botão'); return }
     if (permission !== 'User') if (await Discord.Permission(interaction, 'Administrator', 'noPermission')) return
     core.info(`${username} | Id: ${id} | Permission: ${permission} | Type: ${type} | typeAction: ${typeAction} | Action: ${action}`)
     const Controller = new ButtonController({ interaction, key: action })

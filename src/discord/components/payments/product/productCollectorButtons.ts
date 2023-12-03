@@ -3,8 +3,7 @@ import { createCart, updateProduct } from '@/discord/components/payments'
 import { Database } from '@/functions'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
-
-type CustomIdHandlers = Record<string, () => Promise<void> | void>
+import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
 
 export async function productCollectorButtons (options: { interaction: ButtonInteraction<CacheType>, key: string }): Promise<void> {
   const { interaction, key } = options

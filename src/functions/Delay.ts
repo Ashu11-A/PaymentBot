@@ -14,26 +14,10 @@ export function updateProgressAndEstimation (options: {
   } {
   const { currentTable, totalTables, startTime } = options
   const currentTime = Date.now()
-
-  // Calcule o tempo decorrido desde o início da pesquisa
-  const elapsedTime = (currentTime - startTime) / 1000
-
-  // Calcule o tempo médio por tabela (considerando todas as tabelas pesquisadas até agora)
-  const averageTimePerTable = elapsedTime / currentTable
-
-  // Calcule a estimativa de término
-  const remainingTables = totalTables - currentTable
+  const elapsedTime = (currentTime - startTime) / 1000 // Tempo decorrido desde o início da pesquisa
+  const averageTimePerTable = elapsedTime / currentTable // Tempo médio por tabela (considerando todas as tabelas pesquisadas até agora)
+  const remainingTables = totalTables - currentTable // Estimativa de término
   const estimatedTimeRemaining = remainingTables * averageTimePerTable
 
-  /*
-  console.log(`
-  Tempo decorrido: ${elapsedTime}
-  Tempo / Tabela: ${averageTimePerTable}
-  estimativa: ${estimatedTimeRemaining}
-  Faltam: ${remainingTables} tabelas
-  `)
-  */
-
-  // Retorne o progresso e a estimativa
   return { progress: (currentTable / totalTables) * 100, estimatedTimeRemaining }
 }

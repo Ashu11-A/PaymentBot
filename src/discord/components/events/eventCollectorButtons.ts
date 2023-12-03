@@ -1,6 +1,5 @@
-import { type Message, type ButtonInteraction, type CacheType } from 'discord.js'
-
-type CustomIdHandlers = Record<string, () => Promise<Message<boolean>>>
+import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type ButtonInteraction, type CacheType } from 'discord.js'
 
 export default async function eventCollectorButtons (options: {
   interaction: ButtonInteraction<CacheType>

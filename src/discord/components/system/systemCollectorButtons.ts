@@ -1,7 +1,6 @@
 import { Database } from '@/functions'
+import { type SystemCustomIdHandlers } from '@/settings/interfaces/Collector'
 import { type ButtonInteraction, type CacheType } from 'discord.js'
-
-type CustomIdHandlers = Record<string, { info: string, remove?: string, type?: string }>
 
 export async function systemCollectorButtons (options: {
   interaction: ButtonInteraction<CacheType>
@@ -10,7 +9,7 @@ export async function systemCollectorButtons (options: {
   const { interaction, key } = options
   await interaction.deferReply({ ephemeral })
 
-  const customIdHandlers: CustomIdHandlers = {
+  const customIdHandlers: SystemCustomIdHandlers = {
     Ticket: { info: 'Tickets' },
     Payments: { info: 'Pagamentos' },
     Welcomer: { info: 'Boas vindas' },

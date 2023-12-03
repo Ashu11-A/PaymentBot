@@ -1,14 +1,13 @@
-import { Ticket } from '@/discord/components/tickets'
+import { TicketModals } from '@/discord/components/tickets'
+import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
 import { type CacheType, type ModalSubmitInteraction } from 'discord.js'
-
-type CustomIdHandlers = Record<string, () => Promise<void> | void>
 
 export async function ticketCollectorModal (options: {
   interaction: ModalSubmitInteraction<CacheType>
   key: string
 }): Promise<void> {
   const { interaction, key } = options
-  const ticketConstructor = new Ticket({ interaction })
+  const ticketConstructor = new TicketModals({ interaction })
 
   const customIdHandlers: CustomIdHandlers = {
     AddSelect: async () => { await ticketConstructor.AddSelect(key) },

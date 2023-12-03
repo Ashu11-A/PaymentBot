@@ -62,6 +62,6 @@ export class ButtonController implements ControllerType {
 
     if (interaction.isButton()) await ticketCollectorButtons({ interaction, key })
     if (interaction.isModalSubmit()) await ticketCollectorModal({ interaction, key })
-    if (interaction.isStringSelectMenu()) await ticketCollectorSelect({ interaction })
+    if (interaction.isStringSelectMenu()) await ticketCollectorSelect({ interaction, key })
   }
 }

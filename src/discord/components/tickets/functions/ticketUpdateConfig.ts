@@ -80,7 +80,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   if (enabled !== undefined && enabled === true) {
     row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder({
-        custom_id: 'RowSelect',
+        custom_id: '-1_User_Ticket_RowSelect',
         placeholder: 'Escolha qual tipo de ticket deseja abrir!',
         options
       })
@@ -171,7 +171,7 @@ export async function buttonsUsers (interaction: CommandInteraction<'cached'> | 
 
   const row1Buttons = [
     new StringSelectMenuBuilder({
-      custom_id: 'RowSelectProduction',
+      custom_id: '-1_User_Ticket_RowSelectProduction',
       placeholder: 'Escolha qual tipo de ticket deseja abrir!',
       options
     })

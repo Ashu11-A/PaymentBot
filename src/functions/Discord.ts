@@ -1,7 +1,7 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, codeBlock, type AnyComponentBuilder, type AnySelectMenuInteraction, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type ModalSubmitInteraction, type PermissionResolvable, type TextChannel, type MessageInteraction } from 'discord.js'
-import { genButtonID } from './GenButton'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type PermissionResolvable, type TextChannel, StringSelectMenuInteraction } from 'discord.js'
+import { genButtonID } from './UuidGen'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
   return new ActionRowBuilder<Component>({ components })
@@ -14,7 +14,7 @@ export class Discord {
      * @param message A mensagem do log.
      */
   public static async sendLog (options: {
-    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType> | MessageInteraction | null
+    interaction: CommandInteraction<CacheType> | StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction
     guild: Guild | null
     type: string
     cause: string
@@ -40,7 +40,7 @@ export class Discord {
 
       switch (cause) {
         case 'noPermission': {
-          if (!(interaction instanceof ButtonInteraction)) {
+          if (!(interaction instanceof ButtonInteraction) && !(interaction instanceof StringSelectMenuInteraction) && !(interaction instanceof ModalSubmitInteraction)) {
             name = 'Usuário sem permissão tentou executar um comando'
             value = `<@${interaction?.user.id}> Tentou usar o comando` + codeBlock(`/${interaction?.commandName}`)
           }
@@ -78,7 +78,7 @@ export class Discord {
   }
 
   public static async Permission (
-    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | AnySelectMenuInteraction<CacheType> | ModalSubmitInteraction<CacheType>,
+    interaction: StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction,
     typePermission: PermissionResolvable,
     typeLog?: string
   ): Promise<boolean> {

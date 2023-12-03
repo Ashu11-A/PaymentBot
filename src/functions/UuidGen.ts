@@ -1,6 +1,7 @@
 import { v4 as uuidv4, v5 as uuidv5, NIL as nilUUID } from 'uuid'
 import { json } from './Json'
 import { settings } from '@/settings'
+import { db } from '@/app'
 
 // Gera um UUID v4 aleatorío
 export function genv4 (): string {
@@ -14,3 +15,10 @@ export function genv5 (name: string, type: string): string {
 }
 
 export function nill (): string { return nilUUID }
+
+export async function genButtonID (): Promise<{ Id: string, dateExpire: Date }> {
+  const Id = genv4()
+  const dateExpire = new Date(new Date().getTime() + 24 * 60 * 60 * 1000) // 24h
+  await db.tokens.set(Id, { expireIn: dateExpire })
+  return { Id, dateExpire }
+}
