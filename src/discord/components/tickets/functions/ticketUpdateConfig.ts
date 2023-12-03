@@ -80,7 +80,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   if (enabled !== undefined && enabled === true) {
     row4 = new ActionRowBuilder<StringSelectMenuBuilder>().addComponents(
       new StringSelectMenuBuilder({
-        custom_id: '-1_User_Ticket_RowSelect',
+        custom_id: '-1_Admin_Ticket_RowSelect',
         placeholder: 'Escolha qual tipo de ticket deseja abrir!',
         options
       })
