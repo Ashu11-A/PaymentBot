@@ -1,13 +1,14 @@
+/* eslint-disable no-var */
 declare global {
-  let animated: true
-  let fetchReply: true
-  let ephemeral: true
-  let required: true
-  let inline: true
-  let disabled: true
-  let dmPermission: false
-  let components: []
-  let embeds: []
+  var animated: true
+  var fetchReply: true
+  var ephemeral: true
+  var required: true
+  var inline: true
+  var disabled: true
+  var dmPermission: false
+  var components: []
+  var embeds: []
 }
 
 export {}

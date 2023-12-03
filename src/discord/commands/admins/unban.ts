@@ -43,7 +43,7 @@ new Command({
       }
 
       const bans = await guild?.bans.fetch()
-      if (bans?.has(userID) !== null && !(bans?.has(userID))) {
+      if (bans?.has(userID) !== null && !((bans?.has(userID)) ?? false)) {
         const embed = new EmbedBuilder()
           .setTitle('Erro')
           .setDescription('O usuário especificado não está banido.')
