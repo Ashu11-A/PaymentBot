@@ -61,7 +61,7 @@ new Command({
     const image = options.getAttachment('imagem')
     const cargoSlash = options.getRole('marcar')
 
-    members.set(member.id, { channelId: channel.id, image })
+    if (member !== null) members.set(member.user.id, { channelId: channel.id, image })
 
     await interaction.showModal(new ModalBuilder({
       custom_id: 'modalAnunciar',

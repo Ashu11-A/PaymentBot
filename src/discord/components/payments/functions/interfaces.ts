@@ -1,4 +1,4 @@
-import { type APIEmbed } from 'discord.js'
+import { type EmbedType, type EmbedFooterData, type EmbedAssetData, type APIEmbedProvider, type EmbedAuthorData, type APIEmbedField } from 'discord.js'
 import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethods } from 'mercadopago/models/preferences/create-payload.model'
 
 export interface cartData {
@@ -20,10 +20,26 @@ export interface cartData {
   fields?: Array<{ value: string }>
 }
 
+interface EmbedData {
+  title?: string
+  type?: EmbedType
+  description?: string
+  url?: string
+  timestamp?: string | number | Date
+  color?: number | string
+  footer?: EmbedFooterData
+  image?: EmbedAssetData
+  thumbnail?: EmbedAssetData
+  provider?: APIEmbedProvider
+  author?: EmbedAuthorData
+  fields?: APIEmbedField[]
+  video?: EmbedAssetData
+}
+
 export interface productData {
   id: string
   role: string
-  embed: APIEmbed
+  embed: EmbedData
   status: boolean
   price?: number
   coins?: number

@@ -3,7 +3,7 @@ import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
-export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
+export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<CacheType> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
   const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
@@ -150,7 +150,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
   }
 }
 
-export async function buttonsUsers (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>, originID: string | undefined, messageSend: Message<boolean>): Promise<void> {
+export async function buttonsUsers (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>, originID: string | undefined, messageSend: Message<boolean>): Promise<void> {
   const { guildId, channelId } = interaction
 
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []

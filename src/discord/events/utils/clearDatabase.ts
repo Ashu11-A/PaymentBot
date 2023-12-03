@@ -16,14 +16,16 @@ export default new Event({
       if (await db.messages.has(key)) {
         await db.messages.delete(key)
           .then(async () => {
-            await Discord.sendLog({
-              interaction,
-              guild,
-              type: 'warn',
-              cause: 'messageDelete',
-              color: 'Red',
-              infos: []
-            })
+            if (interaction !== null) {
+              await Discord.sendLog({
+                interaction,
+                guild,
+                type: 'warn',
+                cause: 'messageDelete',
+                color: 'Red',
+                infos: []
+              })
+            }
             console.log(`Mensagem apagada em ${category}: ${id}`)
           })
       }

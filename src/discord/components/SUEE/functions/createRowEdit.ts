@@ -4,7 +4,7 @@ import { db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, type ButtonInteraction, type CommandInteraction, type Message, type ModalSubmitInteraction, type StringSelectMenuInteraction, type CacheType } from 'discord.js'
 
-export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<'cached'> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: 'ticket' | 'payments'): Promise<ActionRowBuilder<ButtonBuilder>> {
+export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<CacheType> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: 'ticket' | 'payments'): Promise<ActionRowBuilder<ButtonBuilder>> {
   const { guildId, channelId } = interaction
   const data = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${message.id}`)
 

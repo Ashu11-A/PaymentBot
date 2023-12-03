@@ -7,4 +7,3 @@ global.disabled = true
 global.dmPermission = false
 global.components = []
 global.embeds = []
-global.__rootname = process.cwd()

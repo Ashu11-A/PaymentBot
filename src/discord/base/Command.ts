@@ -7,18 +7,19 @@ import {
   type ChatInputCommandInteraction,
   Collection, type CommandInteraction,
   type MessageContextMenuCommandInteraction,
-  type UserContextMenuCommandInteraction
+  type UserContextMenuCommandInteraction,
+  type CacheType
 } from 'discord.js'
 
 type C<B extends boolean, I extends CommandInteraction | AutocompleteInteraction> =
 I extends ChatInputCommandInteraction
-  ? B extends false ? ChatInputCommandInteraction<'cached'> : ChatInputCommandInteraction
+  ? B extends false ? ChatInputCommandInteraction<CacheType> : ChatInputCommandInteraction
   : I extends UserContextMenuCommandInteraction
-    ? B extends false ? UserContextMenuCommandInteraction<'cached'> : UserContextMenuCommandInteraction
+    ? B extends false ? UserContextMenuCommandInteraction<CacheType> : UserContextMenuCommandInteraction
     : I extends MessageContextMenuCommandInteraction
-      ? B extends false ? MessageContextMenuCommandInteraction<'cached'> : MessageContextMenuCommandInteraction
+      ? B extends false ? MessageContextMenuCommandInteraction<CacheType> : MessageContextMenuCommandInteraction
       : I extends AutocompleteInteraction
-        ? B extends false ? AutocompleteInteraction<'cached'> : AutocompleteInteraction
+        ? B extends false ? AutocompleteInteraction<CacheType> : AutocompleteInteraction
         : never
 
 type CommandProps<DmPermission extends boolean> =

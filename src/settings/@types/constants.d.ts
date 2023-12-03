@@ -8,8 +8,6 @@ declare global {
   let dmPermission: false
   let components: []
   let embeds: []
-  // eslint-disable-next-line @typescript-eslint/naming-convention
-  let __rootname: string
 }
 
 export {}

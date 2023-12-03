@@ -1,10 +1,10 @@
-import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message, codeBlock } from 'discord.js'
+import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message, codeBlock, type CacheType } from 'discord.js'
 import { db } from '@/app'
 import { updateProduct } from './updateProduct'
 
-export async function sendEmbed (interaction: CommandInteraction<'cached'>, channel: TextChannel): Promise<void> {
-  const { guildId, channelId } = interaction
-  const icon = interaction.guild.iconURL({ size: 2048 }) as string ?? undefined
+export async function sendEmbed (interaction: CommandInteraction<CacheType>, channel: TextChannel): Promise<void> {
+  const { guildId, channelId, guild } = interaction
+  const icon = guild?.iconURL({ size: 2048 }) as string ?? undefined
   const embed = new EmbedBuilder({
     title: 'Plano',
     description: codeBlock('Sem nenhuma descrição'),

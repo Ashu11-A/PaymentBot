@@ -24,25 +24,25 @@ new Command({
   ],
   async run (interaction) {
     await interaction.deferReply()
-
-    const { options } = interaction
+    const { options, guild, member } = interaction
 
     try {
       const size: any = Number(options.getString('tamanho')) ?? 4096
-      const img = interaction.guild?.iconURL({ size }) as string
+      const img = guild?.iconURL({ size }) as string
       const tamanho = await calculateImageSize(String(img))
 
-      const embed = new EmbedBuilder()
-        .setColor('Blue')
-        .setAuthor({ iconURL: img, name: interaction.guild?.name })
+      const embed = new EmbedBuilder({
+        author: { iconURL: img, name: guild?.name ?? member?.user.username ?? 'Error' }
+      }).setColor('Blue')
         .setImage(img)
 
       const button = new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setEmoji('🔗')
-          .setLabel(`Baixar Imagem (${formatBytes(tamanho)})`)
-          .setURL(img)
-          .setStyle(ButtonStyle.Link)
+        new ButtonBuilder({
+          emoji: { name: '🔗' },
+          label: `Baixar Imagem (${formatBytes(tamanho)})`,
+          url: img,
+          style: ButtonStyle.Link
+        })
       )
 
       await interaction.editReply({

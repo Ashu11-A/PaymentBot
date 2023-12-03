@@ -6,7 +6,7 @@ import {
   type ButtonInteraction
 } from 'discord.js'
 
-export async function modelPresence (interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>): Promise<void> {
+export async function modelPresence (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
   const modal = new ModalBuilder({ custom_id: 'MessagePresence', title: 'Messages for Presence' })
   const input1 = new ActionRowBuilder<TextInputBuilder>({
     components: [
@@ -51,7 +51,7 @@ export async function modelPresence (interaction: CommandInteraction<'cached'> |
   await interaction.showModal(modal)
 }
 
-export async function delPresence (interaction: CommandInteraction<'cached'>): Promise<void> {
+export async function delPresence (interaction: CommandInteraction<CacheType>): Promise<void> {
   const dataDb = await db.messages.get(`${interaction.guildId}.system.status.messages`)
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
   let number = 0

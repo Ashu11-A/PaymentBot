@@ -5,18 +5,14 @@ import { Signale } from 'signale'
 import settings from './settings.json'
 import './constants'
 
-const developmentEnvPath = resolve(__rootname, '.env.development')
-
+const developmentEnvPath = resolve(process.cwd(), '.env.development')
 const dev = existsSync(developmentEnvPath)
-
 const { parsed: parsedEnv } = dotenv.config({
   path: existsSync(developmentEnvPath)
     ? developmentEnvPath
-    : resolve(__rootname, '.env')
+    : resolve(process.cwd(), '.env')
 })
-
 const processEnv = { ...(parsedEnv as NodeJS.ProcessEnv), dev }
-
 const log = new Signale({
   types: {
     successComamnd: { badge: '√', color: 'blue', label: 'Command' },

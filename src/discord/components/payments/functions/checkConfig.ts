@@ -8,7 +8,7 @@ export class Check {
     * Verificar se as informações do produto estão coerentes antes de continuar
     */
   public static async product (options: {
-    interaction: ButtonInteraction<CacheType> | CommandInteraction<'cached'>
+    interaction: ButtonInteraction<CacheType> | CommandInteraction<CacheType>
     productData: productData
   }): Promise<[boolean, string] | [boolean]> {
     const { interaction, productData } = options

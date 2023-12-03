@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type PermissionResolvable, type TextChannel, StringSelectMenuInteraction, type ChatInputCommandInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type PermissionResolvable, type TextChannel, StringSelectMenuInteraction, type ChatInputCommandInteraction, type MessageInteraction } from 'discord.js'
 import { genButtonID } from './UuidGen'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
@@ -14,7 +14,7 @@ export class Discord {
      * @param message A mensagem do log.
      */
   public static async sendLog (options: {
-    interaction: CommandInteraction<CacheType> | StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction | ChatInputCommandInteraction<'cached'>
+    interaction: CommandInteraction<CacheType> | StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction | ChatInputCommandInteraction<CacheType> | MessageInteraction
     guild: Guild | null
     type: string
     cause: string
@@ -78,7 +78,7 @@ export class Discord {
   }
 
   public static async Permission (
-    interaction: StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction | ChatInputCommandInteraction<'cached'>,
+    interaction: StringSelectMenuInteraction | ButtonInteraction | ModalSubmitInteraction | ChatInputCommandInteraction<CacheType>,
     typePermission: PermissionResolvable,
     typeLog?: string
   ): Promise<boolean> {

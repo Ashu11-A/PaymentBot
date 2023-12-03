@@ -8,15 +8,15 @@ new Command({
   type: ApplicationCommandType.ChatInput,
   async run (interaction) {
     await interaction.deferReply({ ephemeral: true })
-    const embed = new EmbedBuilder()
-      .setColor('Green')
-      .setTitle('Uptime do Bot')
-      .addFields(
+    const embed = new EmbedBuilder({
+      title: '⌛ | Uptime do Bot!',
+      fields: [
         {
           name: 'Tempo Ativo:',
           value: `<t:${~~((Date.now() - interaction.client.uptime) / 1000)}> (<t:${~~((Date.now() - interaction.client.uptime) / 1000)}:R>)`
         }
-      )
+      ]
+    }).setColor('Green')
     await interaction.editReply({ embeds: [embed] })
   }
 })

@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit'
 import { CustomButtonBuilder } from '@/functions'
-import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel } from 'discord.js'
+import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel, type EmbedData } from 'discord.js'
 import { Check } from './checkConfig'
 import { type productData } from './interfaces'
 
@@ -18,7 +18,7 @@ export class updateProduct {
     const { interaction, message, button } = options
     const { guildId, channelId } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`) as productData
-    const updateEmbed = new EmbedBuilder(productData?.embed)
+    const updateEmbed = new EmbedBuilder(productData?.embed as EmbedData)
 
     if (productData?.price !== undefined) {
       updateEmbed.addFields(
@@ -42,11 +42,9 @@ export class updateProduct {
       })
     }
 
-    if (productData?.embed !== undefined) {
-      if (productData.embed?.color !== undefined && typeof productData.embed.color === 'string') {
-        if (productData.embed.color?.startsWith('#') === true) {
-          updateEmbed.setColor(parseInt(productData.embed.color.slice(1), 16))
-        }
+    if (productData?.embed !== undefined && typeof productData.embed.color === 'string') {
+      if (productData.embed.color?.startsWith('#')) {
+        updateEmbed.setColor(parseInt(productData.embed.color.slice(1), 16))
       }
     }
 
@@ -67,7 +65,7 @@ export class updateProduct {
  * Atualiza/Cria os botões de configuração do Produto
  */
   public static async buttonsConfig (options: {
-    interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<'cached'>
+    interaction: ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>
     message: Message<boolean>
     switchBotton?: boolean
     button?: string
@@ -319,7 +317,7 @@ export class updateProduct {
    * Muda os botões para os usuários (Modo Produção)
    */
   public static async buttonsUsers (options: {
-    interaction: CommandInteraction<'cached'> | ButtonInteraction<CacheType>
+    interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>
     message: Message<boolean>
   }): Promise<void> {
     const { interaction, message } = options

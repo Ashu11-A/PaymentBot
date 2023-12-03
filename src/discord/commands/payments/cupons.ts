@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { Command } from '@/discord/base'
 import { CustomButtonBuilder, Discord } from '@/functions'
-import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock, ChannelType, type ChatInputCommandInteraction, type ButtonBuilder, ButtonStyle, ActionRowBuilder } from 'discord.js'
+import { ApplicationCommandOptionType, ApplicationCommandType, EmbedBuilder, type TextChannel, codeBlock, ChannelType, type ChatInputCommandInteraction, type ButtonBuilder, ButtonStyle, ActionRowBuilder, type CacheType } from 'discord.js'
 
 new Command({
   name: 'cupons',
@@ -67,7 +67,7 @@ new Command({
     if (await Discord.Permission(interaction, 'Administrator')) return
     const { options, guildId, user, guild } = interaction
     const logsDB = await db.guilds.get(`${guildId}.channel.logs`) as string
-    const logsChannel = guild.channels.cache.get(logsDB) as TextChannel | undefined
+    const logsChannel = guild?.channels.cache.get(logsDB) as TextChannel | undefined
     const panel = options.getChannel('channel') as TextChannel
 
     try {
@@ -166,7 +166,7 @@ new Command({
 })
 
 export async function panelCupons (options: {
-  interaction: ChatInputCommandInteraction<'cached'>
+  interaction: ChatInputCommandInteraction<CacheType>
   channel?: TextChannel
 }): Promise<void> {
   const { interaction, channel } = options
