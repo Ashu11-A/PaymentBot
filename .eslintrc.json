@@ -16,14 +16,6 @@
         "@typescript-eslint"
     ],
     "rules": {
-        /*
-        "quotes": "warn",
-        "brace-style": "warn",
-        "semi":"warn",
-        "camelcase":"warn",
-        "no-duplicate-imports":"warn",
-        "no-extra-semi":"warn",
-        */
         "no-new": "off",
         "@typescript-eslint/naming-convention": "off"
     }
