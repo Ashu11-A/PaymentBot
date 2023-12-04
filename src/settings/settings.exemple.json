@@ -1,27 +1,20 @@
 {
     "Express": {
-        "ip": "localhost",
-        "Port": 3005,
-        "encryptionKey": "i am something very precious and i have to have 32 characters",
-        "permIps": [
-            "::1",
-            "localhost"
+      "ip": "localhost",
+      "Port": 3000,
+      "encryptionKey": "i am something very precious and i have to have 32 characters",
+      "cors": {
+        "active": true,
+        "allow": [
+          "::1",
+          "::ffff:127.0.0.1",
+          "127.0.0.1",
+          "localhost"
         ]
+      }
     },
     "Logs": {
-        "configPATH": "./src/config",
-        "loggingsPATH": "./storage/logs"
-    },
-    "colors": {
-        "theme": {
-            "info": "#fde047",
-            "default": "#2F3136",
-            "success": "#22c55e",
-            "danger": "#ef4444",
-            "primary": "#3b82f6",
-            "secondary": "#4f545c",
-            "warning": "#fbbd23",
-            "magic": "#c026d3"
-        }
+      "configPATH": "./src/config",
+      "loggingsPATH": "./storage/logs"
     }
-}
+  }
