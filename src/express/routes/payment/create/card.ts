@@ -54,7 +54,7 @@ class CreatePayment {
           notification_url: ipn ?? undefined,
           metadata: {
             userId,
-            price: valor,
+            price: Math.round(valor * 100) / 100,
             ...infoPayment
           },
           date_of_expiration: isoDate

@@ -20,7 +20,7 @@ export class Payment {
     const cartData = await db.payments.get(`${guildId}.process.${message.id}`)
     const { amount: cartAmount, quantity, cupom } = cartData
     const amount = Number(((typeof cupom?.porcent === 'number' ? (cartAmount - (cartAmount * cupom.porcent / 100)) : cartAmount) * (quantity ?? 1)).toFixed(2))
-    const amountTax = Math.round(amount + (amount * (Number(tax) / 100)))
+    const amountTax = Math.round((amount + (amount * (Number(tax) / 100))) * 100) / 100 // Pode receber numeros quebrados por isso do "* 100) / 100"
     const { mcToken, ipn } = await db.payments.get(`${guildId}.config`)
 
     let embeds: Array<APIEmbed | JSONEncodable<APIEmbed>> = [] // Inicialize embeds como um array vazio
