@@ -35,7 +35,7 @@ class CreatePayment {
           payer: {
             first_name: userName,
             last_name: userId,
-            email: `${userName}@gmail.com`
+            email: `${userId}@gmail.com`
           },
           additional_info: {
             items: [

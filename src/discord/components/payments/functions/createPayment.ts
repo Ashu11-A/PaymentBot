@@ -34,8 +34,20 @@ export class Payment {
         userId: user.id,
         mpToken: mcToken,
         valor: amountTax
+      }).catch(async (err) => {
+        console.log(err)
+        const embed = new EmbedBuilder({
+          title: `👋 Olá,  ${user.username}`,
+          description: 'Ocorreu um inconveniente durante a execução da consulta no nosso sistema de backend. Recomendo que entre em contato com um administrador para solucionar essa questão.'
+        }).setColor('Red')
+        if (err.message !== undefined) {
+          embed.addFields([
+            { name: '❌ Error:', value: err.message }
+          ])
+        }
+        await interaction.editReply({ embeds: [embed] })
       })
-
+      if (paymentCreate === undefined) return
       if (paymentCreate.status === 200) {
         const { unixTimestamp, paymentData } = paymentCreate.data
 

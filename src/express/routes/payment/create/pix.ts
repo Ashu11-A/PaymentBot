@@ -33,7 +33,7 @@ class CreatePixPayment {
           payer: {
             first_name: userName,
             last_name: userId,
-            email: `${userName}@gmail.com`
+            email: `${userId}@gmail.com`
           },
           description: `Pagamento Via Discord | ${userName} | R$${(valor).toFixed(2)}`,
           transaction_amount: Math.round(valor),
