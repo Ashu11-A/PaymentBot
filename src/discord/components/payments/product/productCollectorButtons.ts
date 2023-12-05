@@ -24,7 +24,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         displayName: 'Estoque',
         typeDB: 'messages',
         enabledType: 'swap',
-        otherSystemNames: ['paymentSetCtrlPanel']
+        otherSystemNames: ['SetCtrlPanel']
       })
       await updateProduct.embed({ interaction, message, button: key })
     },
@@ -36,7 +36,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         displayName: 'CtrlPanel',
         typeDB: 'messages',
         enabledType: 'swap',
-        otherSystemNames: ['paymentSetEstoque']
+        otherSystemNames: ['SetEstoque']
       })
       await updateProduct.embed({ interaction, message, button: key })
     },

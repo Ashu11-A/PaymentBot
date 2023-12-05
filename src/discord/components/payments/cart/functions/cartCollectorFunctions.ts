@@ -13,11 +13,12 @@ export class PaymentFunction {
      */
   public static async paymentUserDM (options: {
     interaction: ButtonInteraction<CacheType>
+    key: string
   }): Promise<void> {
-    const { interaction } = options
-    const { guildId, customId, message } = interaction
+    const { interaction, key } = options
+    const { guildId, message } = interaction
     await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 1)
-    await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}`, true)
+    await db.payments.set(`${guildId}.process.${message.id}.properties.${key}`, true)
     await db.payments.delete(`${guildId}.process.${message.id}.properties.Direct`)
     await db.payments.delete(`${guildId}.process.${message.id}.user`)
     const data = await db.payments.get(`${guildId}.process.${message.id}`)
@@ -111,9 +112,10 @@ export class PaymentFunction {
    */
   public static async paymentUserWTF (options: {
     interaction: ButtonInteraction<CacheType>
+    key: string
   }): Promise<void> {
-    const { interaction } = options
-    const { guildId, message, customId } = interaction
+    const { interaction, key } = options
+    const { guildId, message } = interaction
     const { typeEmbed } = await db.payments.get(`${guildId}.process.${message.id}`)
     const embed = new EmbedBuilder().setColor('Purple')
     if (typeEmbed === 0 || typeEmbed === undefined) {
@@ -141,7 +143,7 @@ export class PaymentFunction {
     }
     await interaction.editReply({ embeds: [embed] })
       .then(async () => {
-        await db.payments.set(`${guildId}.process.${message.id}.properties.${customId}_${typeEmbed}`, true)
+        await db.payments.set(`${guildId}.process.${message.id}.properties.${key}_${typeEmbed}`, true)
         const data = await db.payments.get(`${guildId}.process.${message.id}`)
 
         await updateCart.embedAndButtons({

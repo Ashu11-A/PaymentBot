@@ -15,8 +15,8 @@ export default async function cartCollectorButtons (options: {
 
   const customIdHandlers: CustomIdHandlers = {
     Verify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
-    DM: async () => { await PaymentFunction.paymentUserDM({ interaction }) },
-    WTF: async () => { await PaymentFunction.paymentUserWTF({ interaction }) },
+    DM: async () => { await PaymentFunction.paymentUserDM({ interaction, key }) },
+    WTF: async () => { await PaymentFunction.paymentUserWTF({ interaction, key }) },
     Add: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
     Rem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
     Pix: async () => { await Payment.create({ interaction, method: 'pix' }) },
