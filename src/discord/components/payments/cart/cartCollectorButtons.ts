@@ -11,16 +11,17 @@ export default async function cartCollectorButtons (options: {
 }): Promise<void> {
   const { interaction, key } = options
   if (!interaction.inGuild()) return
-  const { guildId, message } = interaction
+  const { guildId, channelId } = interaction
 
   const customIdHandlers: CustomIdHandlers = {
     Verify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
-    DM: async () => { await PaymentFunction.paymentUserDM({ interaction, key }) },
-    WTF: async () => { await PaymentFunction.paymentUserWTF({ interaction, key }) },
+    DM: async () => { await PaymentFunction.DM({ interaction, key }) },
+    WTF: async () => { await PaymentFunction.WTF({ interaction, key }) },
     Add: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
     Rem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
+    Remove: async () => { await PaymentFunction.RemoveItem({ interaction }) },
     Pix: async () => { await Payment.create({ interaction, method: 'pix' }) },
-    Cancelar: async () => { await PaymentFunction.paymentUserCancelar({ interaction }) },
+    Cancelar: async () => { await PaymentFunction.Cancelar({ interaction }) },
     Next: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
     Before: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
     CardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
@@ -34,7 +35,7 @@ export default async function cartCollectorButtons (options: {
     await customIdHandler()
   } else {
     const { title, label, placeholder, style, type, maxLength } = getModalData(key)
-    const textValue = await db.payments.get(`${guildId}.process.${message.id}.${type}`)
+    const textValue = await db.payments.get(`${guildId}.process.${channelId}.${type}`)
     const modal = new ModalBuilder({ customId: interaction.customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [

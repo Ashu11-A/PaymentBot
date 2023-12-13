@@ -1,64 +1,91 @@
 import { db } from '@/app'
-import { type ButtonInteraction, type CacheType, EmbedBuilder, PermissionsBitField, ChannelType, type OverwriteResolvable, type Collection } from 'discord.js'
-import { updateCart } from './updateCart'
 import { Discord, genv4 } from '@/functions'
-import { type productData } from './interfaces'
+import { ChannelType, EmbedBuilder, PermissionsBitField, type ButtonInteraction, type CacheType, type Collection, type OverwriteResolvable, TextChannel } from 'discord.js'
+import { type cartData, type productData } from './interfaces'
+import { updateCart } from './updateCart'
 
 export async function createCart (interaction: ButtonInteraction<CacheType>): Promise<void> {
-  if (!interaction.inGuild()) return
-
+  if (!interaction.inGuild() || !interaction.inCachedGuild()) return
   const { channelId, guild, guildId, user, message } = interaction
   const name = `🛒-${user.id}`
-  const sendChannel = guild?.channels.cache.find((c) => c.name === name)
+  const sendChannel = guild.channels.cache.find((c) => c.name === name)
+  const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
+  const product = productData?.embed?.title
+  const status = await db.system.get(`${guildId}.status`)
+  const paymentsConfig = await db.payments.get(`${guildId}.config`)
 
-  if (sendChannel !== undefined) {
+  // Verificar se o produto está configurado
+  if (productData?.properties?.SetCtrlPanel === undefined && productData?.coins === undefined) {
     await interaction.editReply({
       embeds: [
         new EmbedBuilder({
-          title: `👋 Olá ${user.username}`,
-          description: '☺️ | Você já tem um carrinho aberto!'
-        })
-          .setColor('Red')
-      ],
-      components: [
-        await Discord.buttonRedirect({
-          guildId,
-          channelId: sendChannel.id,
-          emoji: '🛒',
-          label: 'Ir ao carrinho'
-        })
+          title: 'Nenhum método de envio foi configurado.'
+        }).setColor('Aqua')
       ]
     })
-  } else {
-    try {
-      const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
-      const product = productData?.embed?.title
-      const status = await db.system.get(`${guildId}.status`)
-      const paymentsConfig = await db.payments.get(`${guildId}.config`)
+    return
+  }
 
-      // Verificar se o produto está configurado
-      if (productData?.properties?.paymentSetCtrlPanel === undefined && productData?.coins === undefined) {
+  const { coins, price, role, id } = productData
+
+  if (price === undefined) {
+    await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
+    return
+  }
+  if (status?.Payments !== undefined && status.Payments === false) {
+    await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
+    return
+  }
+
+  if (sendChannel !== undefined && sendChannel instanceof TextChannel) {
+    try {
+      const cartData = await db.payments.get(`${guildId}.process.${sendChannel.id}`) as cartData
+      if (cartData.products.some((product) => product.id === message.id)) {
         await interaction.editReply({
-          embeds: [
-            new EmbedBuilder({
-              title: 'Nenhum método de envio foi configurado.'
-            }).setColor('Aqua')
-          ]
+          embeds: [new EmbedBuilder({
+            title: '🤚 Desculpe, mas esse item já está no seu carrinho!'
+          }).setColor('Red')]
         })
         return
       }
-
-      const { coins, price, role } = productData
-
-      if (price === undefined) {
-        await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
-        return
-      }
-      if (status?.systemPayments !== undefined && status.systemPayments === false) {
-        await interaction.editReply({ content: '❌ | O sistema de pagamentos está desabilitado no momento!' })
-        return
-      }
-
+      await db.payments.push(`${guildId}.process.${sendChannel.id}.products`, {
+        id,
+        name: product,
+        amount: price,
+        quantity: 1,
+        coins
+      })
+      await updateCart.embedAndButtons({
+        interaction,
+        data: await db.payments.get(`${guildId}.process.${sendChannel.id}`) as cartData,
+        channel: sendChannel,
+        message
+      })
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: `📦 | Produto: ${product} adicionado ao carrinho com sucesso!`
+          })
+            .setColor('Green')
+        ],
+        components: [
+          await Discord.buttonRedirect({
+            guildId,
+            channelId: sendChannel.id,
+            emoji: '🛒',
+            label: 'Ir ao carrinho'
+          })
+        ]
+      })
+    } catch {
+      await interaction.editReply({
+        embeds: [new EmbedBuilder({
+          title: '❌ | Ocorreu um erro ao abrir o carrinho!'
+        }).setColor('Red')]
+      })
+    }
+  } else {
+    try {
       // Permissões de visualização do novo channel
       const permissionOverwrites = [
         {
@@ -72,8 +99,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
       ] as OverwriteResolvable[] | Collection<string, OverwriteResolvable>
 
       /* Cria o chat de Pagamento */
-      const category = interaction.guild?.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === paymentsConfig?.category)
-      const paymentChannel = await guild?.channels.create({
+      const category = guild.channels.cache.find(category => category.type === ChannelType.GuildCategory && category.id === paymentsConfig?.category)
+      const paymentChannel = await guild.channels.create({
         name,
         type: ChannelType.GuildText,
         topic: `Carrinho do(a) ${user.username}, ID: ${user.id}`,
@@ -81,64 +108,51 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
         parent: category?.id
       })
 
-      const { embeds, components } = await updateCart.embedAndButtons({
-        interaction,
-        data: {
-          product,
-          amount: price,
-          typeEmbed: 0,
-          quantity: 1,
-          coins
-        }
+      const data: any = await db.payments.set(`${guildId}.process.${paymentChannel.id}`, {
+        UUID: genv4(),
+        userID: user.id,
+        channelId: paymentChannel.id,
+        role,
+        typeEmbed: 0,
+        products: [
+          {
+            id,
+            name: product,
+            amount: price,
+            quantity: 1,
+            coins
+          }
+        ]
       })
 
-      if (paymentChannel !== undefined) {
-        await paymentChannel.send({
-          embeds,
-          components
-        })
-          .then(async (msg) => {
-            await interaction.editReply({
-              embeds: [
-                new EmbedBuilder({
-                  title: `👋Olá ${user.username}`,
-                  description: '✅ | Seu carrinho foi aberto com sucesso!'
-                })
-                  .setColor('Green')
-              ],
-              components: [
-                await Discord.buttonRedirect({
-                  guildId,
-                  channelId: paymentChannel.id,
-                  emoji: '🛒',
-                  label: 'Ir ao carrinho'
-                })
-              ]
-            })
-            await db.payments.set(`${guildId}.process.${msg.id}`, {
-              userID: user.id,
-              channelId: paymentChannel.id,
-              messageId: msg.id,
-              role,
-              product,
-              amount: price,
-              coins,
-              quantity: 1,
-              typeEmbed: 0,
-              UUID: genv4()
-            })
-          })
-          .catch(async (err) => {
-            console.log(err)
-            await paymentChannel.delete()
-            await interaction.editReply({
-              content: '❌ | Ocorreu um erro!'
-            })
-          })
-      } else {
+      const { main: { embeds } } = await updateCart.embedAndButtons({
+        interaction,
+        channel: paymentChannel,
+        data: data.process[paymentChannel.id]
+      })
+
+      if (paymentChannel !== undefined && embeds !== undefined) {
         await interaction.editReply({
-          content: '❌ | Ocorreu um erro!'
+          embeds: [
+            new EmbedBuilder({
+              title: `👋Olá ${user.username}`,
+              description: '✅ | Seu carrinho foi aberto com sucesso!'
+            })
+              .setColor('Green')
+          ],
+          components: [
+            await Discord.buttonRedirect({
+              guildId,
+              channelId: paymentChannel.id,
+              emoji: '🛒',
+              label: 'Ir ao carrinho'
+            })
+          ]
         })
+      } else {
+        await interaction.editReply({ content: '❌ | Ocorreu um erro!' })
+        await paymentChannel?.delete()
+        await db.payments.delete(`${guildId}.process.${paymentChannel.id}`)
       }
     } catch (err) {
       console.log(err)

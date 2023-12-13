@@ -4,24 +4,26 @@ import { ctrlPanel } from '@/functions/ctrlPanel'
 import { settings } from '@/settings'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
-import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonInteraction, type CacheType } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonInteraction, type CacheType, type ModalSubmitInteraction, TextChannel, Message } from 'discord.js'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class PaymentFunction {
   /**
      * Selecionar metodo de resgate.
      */
-  public static async paymentUserDM (options: {
+  public static async DM (options: {
     interaction: ButtonInteraction<CacheType>
     key: string
   }): Promise<void> {
     const { interaction, key } = options
-    const { guildId, message } = interaction
-    await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 1)
-    await db.payments.set(`${guildId}.process.${message.id}.properties.${key}`, true)
-    await db.payments.delete(`${guildId}.process.${message.id}.properties.Direct`)
-    await db.payments.delete(`${guildId}.process.${message.id}.user`)
-    const data = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { guildId, message, channelId } = interaction
+    await db.payments.set(`${guildId}.process.${channelId}.typeRedeem`, 1)
+    await db.payments.set(`${guildId}.process.${channelId}.properties.${key}`, true)
+    await db.payments.delete(`${guildId}.process.${channelId}.properties.Direct`)
+    await db.payments.delete(`${guildId}.process.${channelId}.user`)
+    await PaymentFunction.NextOrBefore({ interaction, type: 'next' })
+
+    const data = await db.payments.get(`${guildId}.process.${channelId}`)
     await updateCart.embedAndButtons({
       interaction,
       data,
@@ -40,11 +42,11 @@ export class PaymentFunction {
   /**
    * Cancelar Pedido (Deleta database e chat)
    */
-  public static async paymentUserCancelar (options: {
+  public static async Cancelar (options: {
     interaction: ButtonInteraction<CacheType>
   }): Promise<void> {
     const { interaction } = options
-    const { message, guildId } = interaction
+    const { message, guildId, channelId } = interaction
 
     const embed = new EmbedBuilder()
       .setColor('Gold')
@@ -83,7 +85,7 @@ export class PaymentFunction {
         })
 
         try {
-          const paymentId = await db.payments.get(`${guildId}.process.${message.id}.paymentId`)
+          const paymentId = await db.payments.get(`${guildId}.process.${channelId}.paymentId`)
 
           if (paymentId !== undefined) {
             const token = await db.payments.get(`${guildId}.config.mcToken`)
@@ -95,7 +97,7 @@ export class PaymentFunction {
           }
 
           await message.delete()
-          await db.payments.delete(`${guildId}.process.${message.id}`)
+          await db.payments.delete(`${guildId}.process.${channelId}`)
 
           setTimeout(() => {
             subInteraction?.channel?.delete().catch(console.error)
@@ -110,13 +112,13 @@ export class PaymentFunction {
   /**
    * Botão que exibe as informações atuais do Pedido.
    */
-  public static async paymentUserWTF (options: {
+  public static async WTF (options: {
     interaction: ButtonInteraction<CacheType>
     key: string
   }): Promise<void> {
     const { interaction, key } = options
-    const { guildId, message } = interaction
-    const { typeEmbed } = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { guildId, message, channelId } = interaction
+    const { typeEmbed } = await db.payments.get(`${guildId}.process.${channelId}`)
     const embed = new EmbedBuilder().setColor('Purple')
     if (typeEmbed === 0 || typeEmbed === undefined) {
       embed
@@ -143,8 +145,8 @@ export class PaymentFunction {
     }
     await interaction.editReply({ embeds: [embed] })
       .then(async () => {
-        await db.payments.set(`${guildId}.process.${message.id}.properties.${key}_${typeEmbed}`, true)
-        const data = await db.payments.get(`${guildId}.process.${message.id}`)
+        await db.payments.set(`${guildId}.process.${channelId}.properties.${key}_${typeEmbed}`, true)
+        const data = await db.payments.get(`${guildId}.process.${channelId}`)
 
         await updateCart.embedAndButtons({
           interaction,
@@ -163,13 +165,23 @@ export class PaymentFunction {
     type: 'Add' | 'Rem'
   }): Promise<void> {
     const { interaction, type } = options
-    const { guildId, message } = interaction
-    const { quantity, cupom } = await db.payments.get(`${guildId}.process.${message.id}`)
+    const { guildId, message, channelId } = interaction
+    const { products } = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
+    const indexProduct = products.findIndex((product) => product.messageId === message.id)
+    if (indexProduct === undefined) {
+      await interaction.editReply({
+        embeds: [new EmbedBuilder({
+          title: '❌ | Esse Produto não existe em meu Database!'
+        }).setColor('Red')]
+      })
+      return
+    }
+    const product = products[indexProduct]
 
     if (type === 'Add') {
-      if (cupom?.name !== undefined) {
-        const cupomData = await db.payments.get(`${guildId}.cupons.${cupom.name.toLowerCase()}`)
-        if (cupomData?.usosMax !== null && ((quantity + 1) > cupomData.usosMax)) {
+      if (product?.cupom !== undefined) {
+        const cupomData = await db.payments.get(`${guildId}.cupons.${product.cupom.name.toLowerCase()}`)
+        if (cupomData?.usosMax !== null && ((product.quantity + 1) > cupomData.usosMax)) {
           await interaction.editReply({
             embeds: [
               new EmbedBuilder({
@@ -180,22 +192,15 @@ export class PaymentFunction {
           return
         }
       }
-      await db.payments.add(`${guildId}.process.${message.id}.quantity`, 1)
-    } else if (type === 'Rem' && quantity > 1) {
-      await db.payments.sub(`${guildId}.process.${message.id}.quantity`, 1)
+      await db.payments.add(`${guildId}.process.${channelId}.products.${indexProduct}.quantity`, 1)
+    } else if (type === 'Rem' && product !== undefined && product?.quantity > 1) {
+      await db.payments.sub(`${guildId}.process.${channelId}.products.${indexProduct}.quantity`, 1)
     } else {
       await interaction.editReply({ content: '❌ | Não foi possivel completar a ação.' })
       return
     }
 
-    const data = await db.payments.get(`${guildId}.process.${message.id}`)
-
-    await updateCart.embedAndButtons({
-      interaction,
-      data,
-      message
-    })
-
+    await updateCart.embedAndButtons({ interaction, data: await db.payments.get(`${guildId}.process.${channelId}`) as cartData })
     await interaction.deleteReply()
   }
 
@@ -203,14 +208,16 @@ export class PaymentFunction {
    * Passar/Retroceder a etapa do pagamento.
    */
   public static async NextOrBefore (options: {
-    interaction: ButtonInteraction<CacheType>
+    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
     type: 'next' | 'before'
     update?: 'Yes' | 'No'
   }): Promise<void> {
     const { interaction, type, update } = options
-    const { guildId, user, message } = interaction
+    const { guildId, user, message, channelId } = interaction
 
-    let data = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
+    let data = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
+    const { products, typeEmbed, typeRedeem } = data
+    const cartChannelId = data?.channelId
 
     function stringNextBefore (numberType: number): string {
       let typeString
@@ -241,11 +248,11 @@ export class PaymentFunction {
     if (type === 'next') {
       if (data?.typeEmbed !== undefined) {
         if (
-          (data.typeEmbed === 0 && data?.quantity !== undefined && data.quantity >= 1) ||
-          (data.typeEmbed === 1 && data?.typeRedeem !== undefined && data.typeRedeem >= 1) ||
-          (data.typeEmbed === 2)
+          (typeEmbed === 0 && products.map((product) => product.quantity).some((quantity) => quantity >= 1)) ||
+          (typeEmbed === 1 && typeRedeem !== undefined && typeRedeem >= 1) ||
+          (typeEmbed === 2)
         ) {
-          const number = await db.payments.add(`${guildId}.process.${message.id}.typeEmbed`, 1)
+          const number = await db.payments.add(`${guildId}.process.${channelId}.typeEmbed`, 1)
           const typeString = stringNextBefore(number)
 
           await interaction.editReply({
@@ -270,7 +277,7 @@ export class PaymentFunction {
       }
     } else {
       if (data?.typeEmbed !== undefined && data.typeEmbed > 0) {
-        const number = await db.payments.sub(`${guildId}.process.${message.id}.typeEmbed`, 1)
+        const number = await db.payments.sub(`${guildId}.process.${channelId}.typeEmbed`, 1)
         const typeString = stringNextBefore(number)
 
         await interaction.editReply({
@@ -284,12 +291,24 @@ export class PaymentFunction {
       }
     }
     if (update === undefined || update === 'Yes') {
-      data = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
+      data = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
       await updateCart.embedAndButtons({
         interaction,
         data,
         message
       })
+    }
+    if (typeEmbed === 0) {
+      if (cartChannelId !== undefined) {
+        const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
+        for (const [position, product] of products.entries()) {
+          if (channelCart instanceof TextChannel && product.messageId !== undefined) {
+            const msg = await channelCart?.messages.fetch(product.messageId).catch((err) => { console.log(err) })
+            if (msg instanceof Message) await msg.delete()
+            await db.payments.delete(`${guildId}.process.${channelId}.products.${position}.messageId`)
+          }
+        }
+      }
     }
   }
 
@@ -301,10 +320,13 @@ export class PaymentFunction {
   }): Promise<undefined> {
     const { interaction } = options
     if (!interaction.inCachedGuild()) return
-    const { guildId, message, user, guild, member } = interaction
-    const cartData = await db.payments.get(`${guildId}.process.${message.id}`) as cartData
+    const { guildId, message, user, guild, member, channelId } = interaction
+    const cartData = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
     const tokenAuth = await db.tokens.get('token')
     const mpToken = await db.payments.get(`${guildId}.config.mcToken`)
+    const valorTotal: number = cartData.products.reduce((allValue, product) => allValue + (product.quantity * product.amount), 0) ?? 0
+    const coinsTotal: number = cartData.products.reduce((allCoins, product) => allCoins + (((product?.coins ?? 0) * product.quantity) ?? 0), 0) ?? 0
+    const productsTotal: string = cartData.products.map((product) => product.name).join(' - ')
 
     if (cartData?.paymentId !== undefined) {
       const pagamentoRes = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment`, {
@@ -328,14 +350,12 @@ export class PaymentFunction {
       }
 
       if (pagamentoRes.data.status === 'approved') {
-        const components = await updateCart.buttons({ data: cartData })
+        const components = await updateCart.typeButtons({ data: cartData })
         components[0].components[1].setDisabled(true)
 
         let voucherCode: string | undefined
         let voucherId: number | undefined
-        await message.edit({
-          components
-        })
+        await message.edit({ components })
         await interaction.channel?.send({
           embeds: [
             new EmbedBuilder({
@@ -350,7 +370,7 @@ export class PaymentFunction {
 
         if (cartData.typeRedeem === 2) {
           if (
-            cartData?.coins !== undefined &&
+            cartData.products !== undefined &&
             cartData.user?.email !== undefined &&
             cartData.user?.name !== undefined &&
             cartData?.UUID !== undefined
@@ -359,7 +379,7 @@ export class PaymentFunction {
               guildId,
               userID: cartData.user?.id,
               post: {
-                credits: (cartData.coins * cartData.quantity),
+                credits: coinsTotal,
                 email: cartData.user.email,
                 name: cartData.user.name,
                 role: 'client'
@@ -420,7 +440,7 @@ export class PaymentFunction {
                   fields: [
                     { name: 'E-mail', value: (cartData?.user?.email ?? 'Error') },
                     { name: 'userName', value: (cartData?.user?.name ?? 'Error') },
-                    { name: 'Coins', value: (String(cartData?.coins) ?? 'Error') },
+                    { name: 'Coins', value: (String(coinsTotal) ?? 'Error') },
                     { name: 'UUID', value: (String(cartData?.UUID) ?? 'Error') }
                   ]
                 }).setColor('Red')
@@ -442,9 +462,9 @@ export class PaymentFunction {
               name: user.username
             },
             productId: cartData.paymentId,
-            credits: Number(cartData.coins),
-            price: Number(cartData.amount),
-            name: cartData.product
+            credits: coinsTotal,
+            price: valorTotal,
+            name: productsTotal
           }
 
           const response = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/ctrlpanel/voucher/create`, Post, {
@@ -483,9 +503,9 @@ export class PaymentFunction {
                 title: 'Compra efetuada com sucesso!',
                 description: `<@${user.id}> Agradecemos por escolher nossos produtos e serviços e esperamos atendê-lo novamente em breve.`,
                 fields: [
-                  { name: '🛒 | Produto: ', value: (cartData.product ?? 'Error') },
-                  { name: '💰 | Créditos: ', value: (String(cartData.coins ?? 'Error')) },
-                  { name: '💵 | Valor: ', value: `R$${cartData.amount}` },
+                  { name: `🛒 | Produto${cartData.products.length > 1 ? '(s)' : ''}: `, value: (productsTotal ?? 'Error') },
+                  { name: '💰 | Créditos: ', value: (String(coinsTotal ?? 'Error')) },
+                  { name: '💵 | Valor: ', value: `R$${valorTotal}` },
                   {
                     name: '📆 | Data: ',
                     value: codeBlock(new Date(Date.now()).toLocaleString('pt-BR'))
@@ -537,8 +557,8 @@ export class PaymentFunction {
           paymentId: cartData.paymentId,
           userName: user.username,
           userId: user.id,
-          price: cartData.amount,
-          product: cartData.product,
+          price: valorTotal,
+          product: productsTotal,
           voucherId,
           voucherCode
         })
@@ -548,7 +568,7 @@ export class PaymentFunction {
         }
 
         setTimeout(() => {
-          void db.payments.delete(`${guildId}.process.${message.id}`)
+          void db.payments.delete(`${guildId}.process.${channelId}`)
           interaction?.channel?.delete().catch(console.error)
         }, 15000)
         return undefined
@@ -568,6 +588,51 @@ export class PaymentFunction {
           new EmbedBuilder({
             title: '🟠 Pagamento não foi definido, acesse a URL acima.'
           }).setColor('Orange')
+        ]
+      })
+    }
+  }
+
+  /**
+   * Remova o item do carrinho, se não houver nenhum item, o carrinho é fechado.
+   */
+  public static async RemoveItem ({
+    interaction
+  }: {
+    interaction: ButtonInteraction<CacheType>
+  }): Promise<void> {
+    const { message, guildId, channelId, channel } = interaction
+    const cartData = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
+    const indexToRemove = cartData.products.findIndex((product) => product.messageId === message.id)
+
+    try {
+      await message.delete()
+
+      if (cartData.products.length <= 1) {
+        await db.payments.delete(`${guildId}.process.${channelId}`)
+        channel?.delete().catch(console.error)
+      } else {
+        cartData.products.splice(indexToRemove, 1)
+        await db.payments.set(`${guildId}.process.${channelId}`, cartData)
+        await interaction.editReply({
+          embeds: [
+            new EmbedBuilder({
+              title: '📦 Produto removido com sucesso!'
+            }).setColor('Green')
+          ]
+        })
+        await updateCart.embedAndButtons({
+          interaction,
+          data: await db.payments.get(`${guildId}.process.${channelId}`) as cartData
+        })
+      }
+    } catch (err) {
+      console.log(err)
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: '❌ | Ocorreu um erro ao remover o item!'
+          })
         ]
       })
     }

@@ -64,7 +64,7 @@ export class ctrlPanel {
               permission: 'User',
               type: 'Event',
               customId: 'deleteMSG',
-              label: 'Sim, sou eu!',
+              label: 'Ok',
               style: ButtonStyle.Success
             })
           )]

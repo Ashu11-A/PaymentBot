@@ -1,42 +1,173 @@
 import { db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
-import { ActionRowBuilder, ButtonStyle, EmbedBuilder, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonStyle, EmbedBuilder, TextChannel, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
-import { type cartData } from './interfaces'
+import { type ProductCartData, type User, type cartData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCart {
   public static async embedAndButtons (options: {
     interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
     data: cartData
-    message?: Message<boolean>
+    channel?: TextChannel // Somente para a criação de um novo carrinho
+    message?: Message<boolean> | null
     typeEdit?: 'update' | 'remover&update'
     paymentData?: PaymentResponse
     taxa?: number
-  }): Promise<{ embeds: APIEmbed[], components: Array<ActionRowBuilder<ButtonBuilder>> }> {
-    const { interaction, data, message, typeEdit, paymentData, taxa } = options
-    const { typeEmbed, typeRedeem, cupom, coins, amount, quantity, product, user } = data
-    const { guildId } = interaction
-    const valor = Number(((typeof cupom?.porcent === 'number' ? (amount - (amount * cupom.porcent / 100)) : amount) * (quantity ?? 1)).toFixed(2))
-    const valorPagamento = paymentData?.transaction_amount ?? paymentData?.additional_info?.items?.[0]?.unit_price ?? valor
+  }): Promise<{
+      main: {
+        embeds: APIEmbed[]
+        components: Array<ActionRowBuilder<ButtonBuilder>>
+      }
+      product: {
+        embeds: APIEmbed[]
+        components: Array<ActionRowBuilder<ButtonBuilder>>
+      }
+    }> {
+    const { interaction, data, message, typeEdit, channel } = options
+    const { typeEmbed, typeRedeem, products, user, properties } = data
+    const { guildId, user: { id: userId }, channelId } = interaction
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
-    let titulo
-    let descrição
+    const paymentEmbeds: EmbedBuilder[] = []
+    const paymentComponents = await this.typeButtons({ data })
+    const productEmbeds: EmbedBuilder[] = []
+    const productComponents: Array<ActionRowBuilder<ButtonBuilder>> = []
+
+    const cartData = await db.payments.get(`${guildId}.process.${channel?.id ?? channelId}`) as cartData | undefined
+    const mainMessageId = cartData?.messageId
+    const cartChannelId = cartData?.channelId ?? data.channelId
+
+    let setMessageId: string | undefined
+
+    paymentEmbeds.push(...(await this.generateInfoEmbed({ products, user, typeEmbed, typeRedeem, discord: { userId, guildId } })))
+
+    for (const product of products) {
+      productEmbeds.push(this.generateProductEmbed(product))
+      productComponents.push(await this.generateProductComponents({ product, properties }))
+    }
+
+    if (typeEmbed === 1) paymentComponents[0].components[2].setURL(ctrlUrl)
+    if (message !== null && message !== undefined && channel?.id !== channelId) { // Caso venha de uma interação que já foi criada
+      if (message.id === mainMessageId || channelId === cartChannelId) {
+        if (typeEdit !== 'update') await message?.edit({ components: [] })
+        const msg = await message.edit({
+          embeds: paymentEmbeds,
+          components: paymentComponents
+        })
+        setMessageId = msg.id
+      }
+    } if (cartChannelId !== undefined && mainMessageId !== undefined) { // Se a interação não vier de dentro do carrinho OU da embed principal
+      const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
+      if (channelCart instanceof TextChannel) {
+        const msg = await channelCart.messages.fetch(mainMessageId)
+        await msg.edit({
+          embeds: paymentEmbeds,
+          components: paymentComponents
+        })
+        setMessageId = msg.id
+      }
+    } else if (channel !== undefined) { // Criação
+      const msg = await channel.send({
+        embeds: paymentEmbeds,
+        components: paymentComponents
+      })
+      setMessageId = msg.id
+    }
+    if (setMessageId !== undefined) await db.payments.set(`${guildId}.process.${channel?.id ?? channelId}.messageId`, setMessageId)
+
+    // Cria as embeds junto com os components de cada produto do carrinho
+    if (typeEmbed === 0) {
+      for (const [position, productEmbed] of productEmbeds.entries()) {
+        const messageProductId = await db.payments.get(`${guildId}.process.${channel?.id ?? channelId}.products.${position}.messageId`) as string | undefined
+        let messageId: string | undefined
+
+        if (cartChannelId !== undefined && channel?.id !== channelId) {
+          const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
+          if (channelCart instanceof TextChannel) {
+            if (messageProductId !== undefined) {
+              await channelCart.messages.fetch(String(messageProductId)).then(async (msg) => {
+                await msg.edit({
+                  embeds: [productEmbed.toJSON()],
+                  components: [productComponents[position].toJSON()]
+                })
+              })
+            } else {
+              const msg = await channelCart?.send({
+                embeds: [productEmbed.toJSON()],
+                components: [productComponents[position].toJSON()]
+              })
+              messageId = msg.id
+            }
+          }
+        } else {
+          if (message !== undefined) {
+            const msg = await message?.channel.send({
+              embeds: [productEmbed.toJSON()],
+              components: [productComponents[position].toJSON()]
+            })
+            if (msg !== undefined) messageId = msg.id
+          } else if (channel !== undefined) {
+            const msg = await channel?.send({
+              embeds: [productEmbed.toJSON()],
+              components: [productComponents[position].toJSON()]
+            })
+            messageId = msg.id
+          }
+        }
+        if (messageId !== undefined) await db.payments.set(`${guildId}.process.${channel?.id ?? channelId}.products.${position}.messageId`, messageId)
+      }
+    }
+
+    return {
+      main: {
+        embeds: paymentEmbeds.map((embed) => embed.toJSON()),
+        components: paymentComponents
+      },
+      product: {
+        embeds: productEmbeds.map((embed) => embed.toJSON()),
+        components: productComponents
+      }
+    }
+  }
+
+  public static async generateInfoEmbed ({
+    products,
+    typeEmbed,
+    typeRedeem,
+    user,
+    discord
+  }: {
+    products: ProductCartData[]
+    typeEmbed: number
+    typeRedeem?: number
+    user?: User
+    discord: {
+      guildId: string | null
+      userId: string
+    }
+
+  }): Promise<EmbedBuilder[]> {
+    const valorTotal = products.reduce((allValue, product) => allValue + (product.quantity * product.amount), 0) ?? 0
+    const coinsTotal: number = products.reduce((allCoins, product) => allCoins + (((product?.coins ?? 0) * product.quantity) ?? 0), 0) ?? 0
+    const productTotal: number = products.reduce((allCount, product) => allCount + product.quantity, 0) ?? 0
+    const embeds: EmbedBuilder[] = []
+    let title
+    let description
     let type
 
-    if (typeEmbed === 0 || typeEmbed === undefined) {
-      titulo = 'Checkout & Quantidade.'
-      descrição = 'Selecione quantos produtos deseja no seu carrinho, e se quer aplicar algum cupom.'
-    } else if (typeEmbed === 1 || typeEmbed === undefined) {
-      titulo = 'Checkout & Envio.'
-      descrição = `<@${interaction?.user.id}> Confira as informações sobre os produtos e escolha a forma que deseja receber seus créditos:`
+    if (typeEmbed === 0) {
+      title = 'Checkout & Quantidade.'
+      description = 'Selecione quantos produtos deseja no seu carrinho, e se quer aplicar algum cupom.'
+    } else if (typeEmbed === 1) {
+      title = 'Checkout & Envio.'
+      description = `<@${discord.userId}> Confira as informações sobre os produtos e escolha a forma que deseja receber seus créditos:`
     } else if (typeEmbed === 2) {
-      titulo = 'Checkout & Tipo de pagamento.'
-      descrição = 'Confira as informações sobre os produtos e gere o link para o pagamento:'
+      title = 'Checkout & Tipo de pagamento.'
+      description = 'Confira as informações sobre os produtos e gere o link para o pagamento:'
     } else {
-      titulo = 'Pagamento.'
-      descrição = 'Realize o pagamento abaixo para adquirir o seu produto!'
+      title = 'Pagamento.'
+      description = 'Realize o pagamento abaixo para adquirir o seu produto!'
     }
     if (typeRedeem === 1) {
       type = 'DM'
@@ -46,144 +177,104 @@ export class updateCart {
       type = 'Não selecionado.'
     }
 
-    const mainEmbed = new EmbedBuilder({
-      title: titulo,
-      description: descrição
-    }).setColor('LightGrey')
-
-    const infoPayment = new EmbedBuilder({
-      title: 'Informações do Pedido',
-      fields: [
-        {
-          name: 'Produto:',
-          value: (product ?? 'Indefinido'),
-          inline: false
-        },
-        {
-          name: '**💰 Valor unitário:**',
-          value: `R$${amount}`,
-          inline: true
-        },
-        {
-          name: '**📦 Quantidade:**',
-          value: `${quantity}`,
-          inline: true
-        },
-        {
-          name: '\u200b',
-          value: '\u200b',
-          inline: true
-        },
-        {
-          name: `**🛒 Valor Total ${typeof cupom?.porcent === 'number' ? '(Desconto incluso)' : '(Taxas não inclusas)'}:**`,
-          value: `R$${valor}`,
-          inline: true
-        },
-        {
-          name: '**🍃 Taxas:**',
-          value: `R$${(valorPagamento - valor).toFixed(2)} (${taxa ?? 0}%)`,
-          inline: true
-        },
-        {
-          name: '\u200b',
-          value: '\u200b',
-          inline: true
-        },
-        {
-          name: '**✉️ Método de envio:**',
-          value: type
-        }
-      ]
-    }).setColor('LightGrey')
-
-    if ((typeEmbed === 0) || (cupom?.name !== undefined)) {
-      infoPayment.addFields(
-        {
-          name: '**🎫 Cupom:**',
-          value: typeof cupom?.name === 'string' ? `${cupom.name} (${cupom?.porcent ?? 0}%)` : 'Indefinido'
-        }
-      )
-    }
-
-    if (coins !== undefined) {
-      infoPayment.addFields(
-        {
-          name: '**🪙 Créditos totais:**',
-          value: `${(coins * quantity) ?? 'Indefinido'}`
-        }
-      )
-    }
-
-    const embedsPayment = [mainEmbed, infoPayment]
-    if (user !== undefined && typeEmbed !== 3) {
-      const userEmbed = new EmbedBuilder()
-        .setColor('LightGrey')
-        .setTitle('Informações do Usuário')
-        .addFields(
-          {
-            name: '**📧 E-mail:**',
-            value: user?.email ?? 'Indefinido',
-            inline: false
-          },
-          {
-            name: '**🤝 Usuário:**',
-            value: user?.name ?? 'Indefinido',
-            inline: false
-          }
-        )
-
-      embedsPayment.push(userEmbed)
-    }
-    const { pix, debit_card: debit, credit_card: credit } = await db.payments.get(`${guildId}.config.taxes`)
-    if (typeEmbed === 2) {
-      const infoTax = new EmbedBuilder({
-        title: 'Taxas dos Métodos de pagamento:',
+    embeds.push(
+      new EmbedBuilder({
+        title,
+        description,
         fields: [
-          { name: '**💠 PIX:**', value: (pix ?? '1') + '%', inline: false },
-          { name: '**💳 Cartão de Débito:**', value: (debit ?? '1.99') + '%', inline: false },
-          { name: '**💳 Cartão de Crédito:**', value: (credit ?? '4.98') + '%', inline: false }
+          { name: '📦 Produtos:', value: (String(productTotal ?? 'Indefinido')) },
+          { name: '🛒 Valor Total', value: `R$${valorTotal}` }
         ]
-      })
-        .setColor('LightGrey')
-      embedsPayment.push(infoTax)
-    }
-
-    const components = await this.buttons({ data })
-
-    const embeds = embedsPayment.map((embedBuilder) =>
-      embedBuilder.toJSON()
+      }).setColor('Blue')
     )
+    if (coinsTotal > 0) embeds[0].addFields({ name: '🪙 Créditos totais:', value: `${coinsTotal}` })
+    if (typeEmbed > 1) embeds[0].addFields({ name: '✉️ Método de envio:', value: type })
 
-    if (typeEmbed === 1) {
-      components[0].components[2].setURL(ctrlUrl)
+    if (user !== undefined && typeEmbed !== 3 && typeEmbed !== 0) {
+      embeds.push(
+        new EmbedBuilder({
+          title: 'Informações do Usuário',
+          fields: [
+            { name: '📧 E-mail:', value: user?.email ?? 'Indefinido' },
+            { name: '🤝 Usuário:', value: user?.name ?? 'Indefinido' }
+          ]
+        }).setColor('Blue')
+      )
     }
 
-    if (message !== undefined) {
-      if (typeEdit === 'update') {
-        await message.edit({ embeds, components })
-      } else {
-        await message.edit({ components: [] })
-        await message.edit({ embeds, components })
-      }
+    if (typeEmbed === 2) {
+      const { pix, debit_card: debit, credit_card: credit } = await db.payments.get(`${discord.guildId}.config.taxes`)
+      embeds.push(
+        new EmbedBuilder({
+          title: 'Taxas dos Métodos de pagamento:',
+          fields: [
+            { name: '💠 PIX:', value: (pix ?? '1') + '%', inline: false },
+            { name: '💳 Cartão de Débito:', value: (debit ?? '1.99') + '%', inline: false },
+            { name: '💳 Cartão de Crédito:', value: (credit ?? '4.98') + '%', inline: false }
+          ]
+        }).setColor('Blue')
+      )
     }
-    return { embeds, components }
+
+    return embeds
   }
 
-  public static async buttons (options: {
-    data: cartData
-  }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
-    const { data } = options
-    const { typeEmbed: type } = data
+  public static generateProductEmbed (product: ProductCartData): EmbedBuilder {
+    const embed = new EmbedBuilder({
+      title: product.name,
+      fields: [
+        { name: '💵 | Valor unitário:', value: `R$${(Math.round(product.amount * 100) / 100) ?? 'Error'}` },
+        { name: '📦 | Quantidade:', value: `${product.quantity ?? 'Error'}` }
+      ],
+      footer: { text: `Product ID: ${product.id}` }
+    }).setColor('Blue')
 
-    const Primary = [
+    if (product.quantity > 1) {
+      embed.addFields(
+        {
+          name: '💰 | Valor total:',
+          value: `R$${(Math.round(product.amount * 100) / 100) * product.quantity}`
+        }
+      )
+    }
+
+    if (product.coins !== undefined && product.coins > 0) {
+      embed.addFields({ name: '🪙 | Créditos individuais:', value: String(product.coins), inline: product.quantity > 1 })
+      if (product.quantity > 1) embed.addFields({ name: '💰 | Créditos total:', value: String(product.coins * product.quantity), inline: true })
+    }
+
+    return embed
+
+    /*
+    if ((typeEmbed === 0) || (product.cupom !== undefined)) {
+      productEmbeds[productNow].addFields(
+        {
+          name: '🎫 Cupom:',
+          value: typeof product.cupom?.name === 'string' ? `${product.cupom?.name} (${product.cupom?.porcent ?? 0}%)` : 'Indefinido',
+          inline: true
+        }
+      )
+    }
+    */
+  }
+
+  public static async generateProductComponents ({
+    product,
+    properties
+  }: {
+    product: ProductCartData
+    properties: Record<string, boolean> | undefined
+  }): Promise<ActionRowBuilder<ButtonBuilder>> {
+    const components = new ActionRowBuilder<ButtonBuilder>()
+    const productComponents = [
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Rem',
+        disabled: product.quantity <= 1,
         emoji: '➖',
         style: ButtonStyle.Primary
       }),
       await CustomButtonBuilder.create({
-
         type: 'Cart',
         customId: 'Add',
         emoji: '➕',
@@ -192,11 +283,25 @@ export class updateCart {
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Cupom',
-        label: 'Cupom',
+        disabled: properties?.cupom,
         emoji: '🎫',
         style: ButtonStyle.Primary
+      }),
+      await CustomButtonBuilder.create({
+        type: 'Cart',
+        customId: 'Remove',
+        emoji: '✖️',
+        style: ButtonStyle.Danger
       })
     ]
+    return components.setComponents(productComponents)
+  }
+
+  public static async typeButtons (options: {
+    data: cartData
+  }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
+    const { data } = options
+    const { typeEmbed: type } = data
 
     const Secondary = [
       await CustomButtonBuilder.create({
@@ -204,16 +309,15 @@ export class updateCart {
         customId: 'DM',
         label: 'Mensagem via DM',
         emoji: '💬',
-        style: ButtonStyle.Primary,
+        style: ButtonStyle.Success,
         disabled: true
       }),
       await CustomButtonBuilder.create({
-
         type: 'Cart',
         customId: 'Direct',
         label: 'Instantaneamente',
         emoji: '📲',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Success
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -232,7 +336,6 @@ export class updateCart {
         style: ButtonStyle.Success
       }),
       await CustomButtonBuilder.create({
-
         type: 'Cart',
         customId: 'CardDebito',
         label: 'Cartão de Débito',
@@ -274,7 +377,7 @@ export class updateCart {
       })
     ]
 
-    const footerBar = [
+    const headerBar = [
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Before',
@@ -309,17 +412,16 @@ export class updateCart {
 
     components[0] = new ActionRowBuilder()
     if (type === undefined || type <= 2) {
-      components[1] = new ActionRowBuilder()
-
       if (type === 0 || type === undefined) {
-        components[0].setComponents(...Primary)
-        components[1].setComponents(...footerBar)
+        components[0].setComponents(...headerBar)
       } else if (type === 1) {
+        components[1] = new ActionRowBuilder()
         components[0].setComponents(...Secondary)
-        components[1].setComponents(...footerBar)
+        components[1].setComponents(...headerBar)
       } else if (type === 2) {
+        components[1] = new ActionRowBuilder()
         components[0].setComponents(...Third)
-        components[1].setComponents(...footerBar)
+        components[1].setComponents(...headerBar)
       }
     } else if (type === 3) {
       components[0].setComponents(...Payment)
@@ -329,17 +431,16 @@ export class updateCart {
       value: CustomButtonBuilder
       customId: string
       typeEmbed: number | undefined
-      quantity: number
+      quantity?: number
       properties: Record<string, boolean> | undefined
       typeRedeem: number | undefined
     }) => void> = {
       Before: ({ value, typeEmbed }) => {
         if (typeEmbed === 0) value.setDisabled(true)
       },
-      Next: ({ value, typeEmbed }) => {
-        if (typeEmbed !== undefined && typeEmbed >= 2) {
+      Next: ({ value, typeEmbed, typeRedeem }) => {
+        if (typeEmbed !== undefined && (typeEmbed >= 2 || (typeEmbed === 1 && typeRedeem === undefined))) {
           value.setDisabled(true)
-          value.setStyle(ButtonStyle.Secondary)
         }
       },
       WTF: ({ value, customId, typeEmbed, properties }) => {
@@ -347,12 +448,6 @@ export class updateCart {
           value.setStyle(ButtonStyle.Secondary)
           value.setLabel('Saiba Mais')
         }
-      },
-      Rem: ({ value, quantity }) => {
-        if (quantity <= 1) value.setDisabled(true)
-      },
-      Cupom: ({ value, properties }) => {
-        if (properties?.cupom === true) value.setDisabled(true)
       },
       DM: ({ value, customId, typeRedeem, properties }) => {
         if (typeRedeem === 1 && properties?.[customId] === true) value.setDisabled(true)
@@ -362,18 +457,16 @@ export class updateCart {
       }
     }
 
-    const allValues = [...footerBar, ...Primary, ...Secondary]
+    const allValues = [...headerBar, ...Secondary]
 
     for (const value of allValues) {
       const { customId } = value
       if (customId === undefined) continue
-      const typeEmbed = data?.typeEmbed
-      const typeRedeem = data?.typeRedeem
-      const quantity = data?.quantity
-      const properties = data?.properties
+
+      const { typeEmbed, typeRedeem, properties } = data ?? {}
 
       if (typeof actions[customId] === 'function') {
-        actions[customId]({ value, customId, typeEmbed, quantity, properties, typeRedeem })
+        actions[customId]({ value, customId, typeEmbed, properties, typeRedeem })
       }
     }
 

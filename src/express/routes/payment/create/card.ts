@@ -1,3 +1,4 @@
+import { type infoPayment } from '@/discord/components/payments'
 import { type Request, type Response } from 'express'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 
@@ -6,16 +7,16 @@ class CreatePayment {
      * post
      */
   public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
-    const { userName, userId, mpToken, valor, method, ipn, infoPayment } = req.body
+    const infoPayment = req.body as infoPayment
+    const { userName, userId, mpToken, price, method, ipn } = infoPayment
 
     if (
       userName === undefined ||
-        userId === undefined ||
-        mpToken === undefined ||
-        valor === undefined ||
-        method === undefined ||
-        ipn === undefined ||
-        infoPayment === undefined
+      userId === undefined ||
+      mpToken === undefined ||
+      price === undefined ||
+      method === undefined ||
+      ipn === undefined
     ) {
       return res.status(400).json({
         error: 'Bad Request: Missing required fields',
@@ -42,8 +43,8 @@ class CreatePayment {
               {
                 id: userId,
                 title: 'Pagamento Via Discord',
-                description: `${userName} | R$${valor.toFixed(2)}`,
-                unit_price: valor,
+                description: `${userName} | R$${price.toFixed(2)}`,
+                unit_price: price,
                 quantity: 1,
                 currency_id: 'BRL'
               }
@@ -53,9 +54,8 @@ class CreatePayment {
           installments: 1,
           notification_url: ipn ?? undefined,
           metadata: {
-            userId,
-            price: Math.round(valor * 100) / 100,
-            ...infoPayment
+            ...infoPayment,
+            price: Math.round(price * 100) / 100
           },
           date_of_expiration: isoDate
         }

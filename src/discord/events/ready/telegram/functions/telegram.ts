@@ -17,20 +17,20 @@ export class NtTelegram {
    * Começa o bot no Telegram
    */
   public async setTgBotEvents (): Promise<void> {
-    const { token } = this
+    // const { token } = this
     const bot = new TelegramBot(this.token, { polling: true })
 
     try {
-      bot.onText(/\/start/, async (msg: { chat: { id: number } }) => {
+      bot.onText(/\/start/, (msg: { chat: { id: number } }) => {
         const chatId = msg.chat.id
-        bot.sendMessage(chatId, 'Use /sub para se inscrever')
+        void bot.sendMessage(chatId, 'Use /sub para se inscrever')
       })
 
-      bot.onText(/\/sub/, async (msg: { chat: { id: number } }) => {
+      bot.onText(/\/sub/, (msg: { chat: { id: number } }) => {
         const chatId = msg.chat.id
         console.log(chatId)
         // await addSubscriber(chatId)
-        bot.sendMessage(chatId, 'Concluído.')
+        void bot.sendMessage(chatId, 'Concluído.')
       })
     } catch (error) {
       console.log(error)

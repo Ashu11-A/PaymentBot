@@ -4,6 +4,7 @@ import { updateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
 import { PaymentFunction } from '../cart/functions/cartCollectorFunctions'
+import { type cartData, type infoPayment } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class Payment {
@@ -15,11 +16,22 @@ export class Payment {
     method: 'pix' | 'debit_card' | 'credit_card'
   }): Promise<void> {
     const { interaction, method } = options
-    const { message, guildId, user } = interaction
+    if (!interaction.inGuild()) {
+      await interaction.editReply({
+        embeds: [new EmbedBuilder({
+          title: 'Houve um erro, parece que você não está numa Guilda!?'
+        }).setColor('Red')]
+      })
+      return
+    }
+    const { message, guildId, user, channelId } = interaction
     const tax = await db.payments.get(`${guildId}.config.taxes.${method}`)
-    const cartData = await db.payments.get(`${guildId}.process.${message.id}`)
-    const { amount: cartAmount, quantity, cupom } = cartData
-    const amount = Number(((typeof cupom?.porcent === 'number' ? (cartAmount - (cartAmount * cupom.porcent / 100)) : cartAmount) * (quantity ?? 1)).toFixed(2))
+    const cartData = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
+    const amount: number = cartData.products.reduce((allValue, product) => allValue + (
+      typeof product.cupom?.porcent === 'number'
+        ? (product.amount - (product.amount * product.cupom.porcent / 100))
+        : (product.amount)
+    ) * product.quantity, 0) ?? 0
     const amountTax = Math.round((amount + (amount * (Number(tax) / 100))) * 100) / 100 // Pode receber numeros quebrados por isso do "* 100) / 100"
     const { mcToken, ipn } = await db.payments.get(`${guildId}.config`)
 
@@ -27,14 +39,18 @@ export class Payment {
     let components: Array<ActionRowBuilder<ButtonBuilder>> = []
 
     const files: AttachmentBuilder[] = []
+    const dataPix: infoPayment = {
+      userName: user.username,
+      userId: user.id,
+      mpToken: mcToken,
+      channelId,
+      guildId,
+      UUID: cartData.UUID as string,
+      price: amountTax
+    }
 
     if (method === 'pix') {
-      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/pix`, {
-        userName: user.username,
-        userId: user.id,
-        mpToken: mcToken,
-        valor: amountTax
-      }).catch(async (err) => {
+      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/pix`, dataPix).catch(async (err) => {
         console.log(err)
         const embed = new EmbedBuilder({
           title: `👋 Olá,  ${user.username}`,
@@ -56,7 +72,7 @@ export class Payment {
 
         await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
 
-        const { embeds: newEmbeds, components: newComponents } = await updateCart.embedAndButtons({
+        const updateCartData = await updateCart.embedAndButtons({
           data: {
             ...cartData,
             typeEmbed: cartData.typeEmbed += 1
@@ -65,8 +81,11 @@ export class Payment {
           paymentData,
           taxa: (tax ?? 1)
         })
+        const newEmbeds = updateCartData?.main.embeds
+        const newComponents = updateCartData?.main.components
+        if (newEmbeds === undefined || newComponents === undefined) return
 
-        await db.payments.set(`${guildId}.process.${message.id}.paymentId`, id)
+        await db.payments.set(`${guildId}.process.${channelId}.paymentId`, id)
 
         embeds = newEmbeds
         components = newComponents
@@ -111,22 +130,18 @@ export class Payment {
         })
       }
     } else if (method === 'debit_card' || method === 'credit_card') {
-      const infoPayment = {
-        userId: interaction.user.id,
-        guildId,
-        messageId: message.id,
-        price: amountTax,
-        UUID: cartData.UUID
-      }
-      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`, {
+      const dataCart: infoPayment = {
         userName: user.username,
         userId: user.id,
         mpToken: mcToken,
-        valor: amountTax,
+        channelId,
+        guildId,
+        UUID: cartData.UUID as string,
+        price: amountTax,
         method,
-        ipn,
-        infoPayment
-      })
+        ipn
+      }
+      const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`, dataCart)
 
       if (paymentCreate.status === 200) {
         const { paymentData, unixTimestamp } = paymentCreate.data
@@ -134,7 +149,7 @@ export class Payment {
 
         await PaymentFunction.NextOrBefore({ interaction, type: 'next', update: 'No' })
 
-        const { embeds: newEmbeds, components: newComponents } = await updateCart.embedAndButtons({
+        const updateCartData = await updateCart.embedAndButtons({
           data: {
             ...cartData,
             typeEmbed: (cartData.typeEmbed += 1)
@@ -143,6 +158,9 @@ export class Payment {
           paymentData,
           taxa: (method === 'debit_card' ? (tax ?? 2) : (tax ?? 5))
         })
+        const newEmbeds = updateCartData?.main.embeds
+        const newComponents = updateCartData?.main.components
+        if (newEmbeds === undefined || newComponents === undefined) return
 
         embeds = newEmbeds
         components = newComponents

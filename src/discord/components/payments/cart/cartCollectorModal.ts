@@ -4,6 +4,7 @@ import { validarEmail } from '@/functions'
 import { ctrlPanel } from '@/functions/ctrlPanel'
 import { EmbedBuilder, type CacheType, type ModalSubmitInteraction } from 'discord.js'
 import { getModalData } from './functions/getModalData'
+import { PaymentFunction } from './functions/cartCollectorFunctions'
 
 export default async function cartCollectorModal (options: {
   interaction: ModalSubmitInteraction<CacheType>
@@ -12,7 +13,7 @@ export default async function cartCollectorModal (options: {
   const { interaction, key } = options
   if (!interaction.inGuild()) return
 
-  const { guildId, user, channel, message, fields } = interaction
+  const { guildId, user, channel, message, fields, channelId } = interaction
   const { type } = getModalData(key)
   const messageModal = fields.getTextInputValue('content')
 
@@ -23,13 +24,15 @@ export default async function cartCollectorModal (options: {
       const userData = await ctrlPanel.searchEmail({ interaction, email: messageModal })
 
       if (userData !== undefined) {
-        await db.payments.set(`${guildId}.process.${message?.id}.user`, userData)
+        await db.payments.set(`${guildId}.process.${channelId}.user`, userData)
 
         if (message !== null) {
-          await db.payments.set(`${guildId}.process.${message.id}.typeRedeem`, 2)
-          await db.payments.set(`${guildId}.process.${message.id}.properties.${key}`, true)
-          await db.payments.delete(`${guildId}.process.${message.id}.properties.DM`)
-          const data = await db.payments.get(`${guildId}.process.${message.id}`)
+          await db.payments.set(`${guildId}.process.${channelId}.typeRedeem`, 2)
+          await db.payments.set(`${guildId}.process.${channelId}.properties.${key}`, true)
+          await db.payments.delete(`${guildId}.process.${channelId}.properties.DM`)
+          await PaymentFunction.NextOrBefore({ interaction, type: 'next' })
+
+          const data = await db.payments.get(`${guildId}.process.${channelId}`)
           await updateCart.embedAndButtons({
             interaction,
             data,
@@ -56,7 +59,7 @@ export default async function cartCollectorModal (options: {
         ]
       })
     } else {
-      const cartData = await db.payments.get(`${guildId}.process.${message?.id}`)
+      const cartData = await db.payments.get(`${guildId}.process.${channelId}`)
       if (codeVerify?.usosMax !== null && (cartData?.quantity > codeVerify?.usosMax || codeVerify[user.id]?.usos > codeVerify?.usosMax)) {
         await interaction.reply({
           ephemeral,
@@ -68,7 +71,7 @@ export default async function cartCollectorModal (options: {
         })
         return
       }
-      await db.payments.set(`${guildId}.process.${message?.id}.cupom`, {
+      await db.payments.set(`${guildId}.process.${channelId}.cupom`, {
         name: messageModal.toLowerCase(),
         porcent: codeVerify.desconto
       })
@@ -83,7 +86,7 @@ export default async function cartCollectorModal (options: {
         ]
       })
 
-      const data = await db.payments.get(`${guildId}.process.${message?.id}`)
+      const data = await db.payments.get(`${guildId}.process.${channelId}`)
       const msg = await channel?.messages.fetch(String(message?.id))
       await updateCart.embedAndButtons({
         interaction,
@@ -95,7 +98,7 @@ export default async function cartCollectorModal (options: {
   }
 
   await interaction.deferReply({ ephemeral: true })
-  await db.payments.set(`${guildId}.process.${message?.id}.${type}`, messageModal)
+  await db.payments.set(`${guildId}.process.${channelId}.${type}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
       await db.payments.set(`${guildId}.process.${msg.id}.properties.${key}`, true)
