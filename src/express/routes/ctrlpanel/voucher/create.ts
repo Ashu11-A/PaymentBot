@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { type Request, type Response } from 'express'
 import randomstring from 'randomstring'
 
@@ -42,15 +43,12 @@ class CreateVoucher {
         credits
       }
 
-      const response = await fetch(url + '/api/vouchers', {
-        method: 'POST',
-        body: JSON.stringify(postData),
+      const { data, status } = await axios.post(url + '/api/vouchers', postData, {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${token}`
         }
       })
-      const { data, status } = await response.json()
       if (status === 201 && data.status === 'VALID') {
         res.status(201).json({
           code,

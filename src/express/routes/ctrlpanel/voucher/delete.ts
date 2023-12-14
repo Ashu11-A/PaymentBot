@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { type Request, type Response } from 'express'
 
 interface deleteCtrlPanelVoucher {
@@ -26,13 +27,12 @@ class Voucher {
     }
 
     try {
-      const response = await (await fetch(`${url}/api/vouchers/${id}`, {
-        method: 'DELETE',
+      const response = await axios.delete(`${url}/api/vouchers/${id}`, {
         headers: {
           Accept: 'application/json',
           Authorization: `Bearer ${token}`
         }
-      })).json()
+      })
 
       const { data, status } = response
 

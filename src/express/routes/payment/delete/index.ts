@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { type Request, type Response } from 'express'
 
 class PaymentCancel {
@@ -7,14 +8,13 @@ class PaymentCancel {
   public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>>> {
     const { mpToken, paymentId } = req.body
 
-    const paymentCancel = await (await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-      method: 'PUT',
+    const paymentCancel: { status: string, id: string, items: object, transaction_details: string } = await axios.put(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
       headers: {
         Authorization: `Bearer ${mpToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({ status: 'cancelled' })
-    })).json()
+    })
     const { status, id, items, transaction_details: transactionDetails } = paymentCancel
 
     if (status === 'cancelled') {

@@ -1,3 +1,4 @@
+import axios from 'axios'
 import { type Request, type Response } from 'express'
 
 class Payment {
@@ -15,12 +16,11 @@ class Payment {
     }
 
     try {
-      const response = await (await fetch(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
-        method: 'GET',
+      const response = await axios.get(`https://api.mercadopago.com/v1/payments/${paymentId}`, {
         headers: {
           Authorization: `Bearer ${mpToken}`
         }
-      })).json()
+      })
 
       return res.status(200).json({
         code: 200,

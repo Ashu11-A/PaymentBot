@@ -298,15 +298,13 @@ export class PaymentFunction {
         message
       })
     }
-    if (typeEmbed === 0) {
-      if (cartChannelId !== undefined) {
-        const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
-        for (const [position, product] of products.entries()) {
-          if (channelCart instanceof TextChannel && product.messageId !== undefined) {
-            const msg = await channelCart?.messages.fetch(product.messageId).catch((err) => { console.log(err) })
-            if (msg instanceof Message) await msg.delete()
-            await db.payments.delete(`${guildId}.process.${channelId}.products.${position}.messageId`)
-          }
+    if (typeEmbed === 0 && cartChannelId !== undefined) {
+      const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
+      for (const [position, product] of products.entries()) {
+        if (channelCart instanceof TextChannel && product.messageId !== undefined) {
+          const msg = await channelCart?.messages.fetch(product.messageId).catch((err) => { console.log(err) })
+          if (msg instanceof Message) await msg.delete()
+          await db.payments.delete(`${guildId}.process.${channelId}.products.${position}.messageId`)
         }
       }
     }
