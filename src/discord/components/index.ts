@@ -10,7 +10,7 @@ new Event({
   async run (interaction) {
     if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return
     const start = Date.now() // Mostrar delay
-    const { customId, user: { username } } = interaction
+    const { customId, user: { username }, guild } = interaction
     const typeAction = interaction.isButton() ? 'Buttom' : interaction.isModalSubmit() ? 'Modal' : 'Select'
     const [id, permission, type, action] = CustomButtonBuilder.getInfos(customId)
 
@@ -26,8 +26,17 @@ new Event({
         ]
       })
       core.warn(`Usuário ${username} tentou clicar no botão ${action}, mas ele não tem permição para isso!`)
+      await Discord.sendLog({
+        interaction,
+        guild,
+        cause: 'noButtonPermission',
+        type: 'warn',
+        color: 'Orange',
+        infos: [{ type, action }]
+      })
       return
     }
+    // <-- Verifica a permição -->
     if (permission !== 'User') if (await Discord.Permission(interaction, 'Administrator', 'noPermission')) return
     core.info(`${username} | Id: ${id} | Permission: ${permission} | Type: ${type} | typeAction: ${typeAction} | Action: ${action}`)
     const Controller = new ButtonController({ interaction, key: action })

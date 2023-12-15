@@ -170,6 +170,7 @@ export async function panelCupons (options: {
   channel?: TextChannel
 }): Promise<void> {
   const { interaction, channel } = options
+  const { user } = interaction
   const embed = new EmbedBuilder({
     title: '🎟️ | Configurar Cupons',
     description: 'Crie, Remova ou Edite os cupons'
@@ -182,7 +183,8 @@ export async function panelCupons (options: {
       customId: 'Add',
       emoji: '➕',
       label: 'Adicionar',
-      style: ButtonStyle.Success
+      style: ButtonStyle.Success,
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
@@ -190,7 +192,8 @@ export async function panelCupons (options: {
       customId: 'Rem',
       emoji: '✖️',
       label: 'Remover',
-      style: ButtonStyle.Danger
+      style: ButtonStyle.Danger,
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
@@ -198,7 +201,8 @@ export async function panelCupons (options: {
       customId: 'List',
       emoji: '🗒️',
       label: 'Listar',
-      style: ButtonStyle.Secondary
+      style: ButtonStyle.Secondary,
+      isProtected: { user }
     })
   ]
 

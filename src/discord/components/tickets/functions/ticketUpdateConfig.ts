@@ -4,7 +4,7 @@ import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, type Message, type CommandInteraction, type CacheType, type ModalSubmitInteraction, type ButtonInteraction, StringSelectMenuBuilder, type StringSelectMenuInteraction } from 'discord.js'
 
 export async function ticketButtonsConfig (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<CacheType> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>): Promise<void> {
-  const { guildId, channelId } = interaction
+  const { guildId, channelId, user } = interaction
   const options: Array<{ label: string, description: string, value: string, emoji: string }> = []
   const data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}`)
   const embedEdit = await createRowEdit(interaction, message, 'ticket')
@@ -16,14 +16,16 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'SetRole',
       label: 'Add Cargo',
-      emoji: '🛂'
+      emoji: '🛂',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'Ticket',
       customId: 'SetSelect',
       label: 'SelectMenu',
-      emoji: '🗄️'
+      emoji: '🗄️',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
@@ -31,14 +33,16 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       customId: 'AddSelect',
       label: 'Add Select',
       emoji: '📝',
-      disabled: true
+      disabled: true,
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'Ticket',
       customId: 'SetButton',
       label: 'Botão',
-      emoji: '🔘'
+      emoji: '🔘',
+      isProtected: { user }
     })
   ]
 
@@ -49,7 +53,8 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       customId: 'SendSave',
       label: 'Enviar',
       emoji: '✔️',
-      style: ButtonStyle.Success
+      style: ButtonStyle.Success,
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
@@ -57,7 +62,8 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       customId: 'EmbedDelete',
       label: 'Apagar',
       emoji: '✖️',
-      style: ButtonStyle.Danger
+      style: ButtonStyle.Danger,
+      isProtected: { user }
     })
   ]
 

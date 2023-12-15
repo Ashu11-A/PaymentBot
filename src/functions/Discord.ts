@@ -57,6 +57,12 @@ export class Discord {
           value = 'Alguém Apagou uma mensagem que em teoria não poderia!\nDeletando mensagem do Database...'
           break
         }
+        case 'noButtonPermission': {
+          const [{ type, action }] = infos
+          name = 'Usuário ``' + interaction.user.username + '``, tentou usar um botão que ele não tem permissão para interagir!'
+          value = 'Tipo: ``' + type + '``, Botão: ``' + action + '``'
+          break
+        }
       }
 
       console.log(title, name, value)
@@ -156,7 +162,7 @@ interface ButtonType {
   url?: string
   label?: string
   disabled?: boolean
-  isProtected?: { enabled: boolean, user: User }
+  isProtected?: { user: User }
   permission?: 'User' | 'Admin'
   type: 'Ticket' | 'Cart' | 'Product' | 'System' | 'Cupom' | 'SUEE' | 'Event'
 }
@@ -196,7 +202,7 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
     interaction: Interaction
   }): Promise<boolean> {
     const { id, interaction } = options
-    const userDB = await db.tokens.get(id) as { enabled?: boolean, user?: User }
+    const userDB = await db.tokens.get(id) as { user?: User }
 
     if (userDB.user?.id === interaction.user.id || interaction.memberPermissions?.has('Administrator') === true) {
       return true

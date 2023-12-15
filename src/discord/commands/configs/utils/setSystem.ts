@@ -12,7 +12,7 @@ import {
 } from 'discord.js'
 
 export async function setSystem (interaction: CommandInteraction<CacheType> | ButtonInteraction<CacheType>): Promise<void> {
-  const { guildId } = interaction
+  const { guildId, user } = interaction
   const channelDB = (await db.guilds.get(`${guildId}.channel.system`)) as string
   const systemData: Record<string, boolean | string> | null = await db.system.get(`${guildId}.status`)
 
@@ -59,28 +59,32 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       label: 'Ticket',
       customId: 'Ticket',
-      emoji: '🎫'
+      emoji: '🎫',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'Welcomer',
       label: 'Boas Vindas',
-      emoji: '❤️'
+      emoji: '❤️',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'Logs',
       label: 'Logs',
-      emoji: '📰'
+      emoji: '📰',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'Payments',
       label: 'Pagamentos',
-      emoji: '💲'
+      emoji: '💲',
+      isProtected: { user }
     })
   ]
 
@@ -90,7 +94,8 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'DeleteServers',
       label: 'Delete Servers',
-      emoji: '🗑️'
+      emoji: '🗑️',
+      isProtected: { user }
     })
   ]
 
@@ -100,7 +105,8 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'TelegramNotif',
       label: 'Notificações',
-      emoji: '📤'
+      emoji: '📤',
+      isProtected: { user }
     })
   ]
 
@@ -110,21 +116,24 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'Status',
       label: 'Status',
-      emoji: '⚙️'
+      emoji: '⚙️',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'StatusMinecraft',
       label: 'Minecraft',
-      emoji: '🧱'
+      emoji: '🧱',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'StatusString',
       label: 'Mensagens',
-      emoji: '📃'
+      emoji: '📃',
+      isProtected: { user }
     })
   ]
   const presence2 = [
@@ -133,28 +142,32 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusOnline',
       label: 'Online',
-      emoji: '🟢'
+      emoji: '🟢',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'StatusAusente',
       label: 'Ausente',
-      emoji: '🟠'
+      emoji: '🟠',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'StatusNoPerturbe',
       label: 'Não Perturbe',
-      emoji: '🔴'
+      emoji: '🔴',
+      isProtected: { user }
     }),
     await CustomButtonBuilder.create({
       permission: 'Admin',
       type: 'System',
       customId: 'StatusInvisível',
       label: 'Invisível',
-      emoji: '⚫'
+      emoji: '⚫',
+      isProtected: { user }
     })
   ]
 

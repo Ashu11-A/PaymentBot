@@ -18,14 +18,14 @@ export function genv5 (name: string, type: string): string {
 export function nill (): string { return nilUUID }
 
 export async function genButtonID (
-  options: { isProtected?: { enabled?: boolean, user?: User } }
+  options: { isProtected?: { user?: User } }
 ): Promise<{ Id: string, dateExpire: Date }> {
   const Id = genv4()
   let dataToSave: object = {}
   const isProtected = options.isProtected
   const dateExpire = new Date(new Date().getTime() + 24 * 60 * 60 * 1000) // 24h
 
-  if (isProtected?.enabled === true && isProtected.user instanceof User) {
+  if (isProtected?.user instanceof User) {
     dataToSave = { userId: isProtected.user.id }
   }
   await db.tokens.set(Id, { ...dataToSave, expireIn: dateExpire })

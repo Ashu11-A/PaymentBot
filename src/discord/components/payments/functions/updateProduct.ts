@@ -1,4 +1,4 @@
-import { db } from '@/app'
+import { core, db } from '@/app'
 import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel, type EmbedData } from 'discord.js'
@@ -71,7 +71,7 @@ export class updateProduct {
     button?: string
   }): Promise<void> {
     const { interaction, message, switchBotton, button } = options
-    const { guildId, channelId } = interaction
+    const { guildId, channelId, user } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
 
     let customId: string | undefined
@@ -88,32 +88,36 @@ export class updateProduct {
           type: 'Product',
           customId: 'SetPrice',
           label: 'Preço',
-          emoji: '💰'
+          emoji: '💰',
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
           type: 'Product',
           customId: 'SetRole',
           label: 'Add Cargo',
-          emoji: '🛂'
+          emoji: '🛂',
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
           type: 'Product',
           customId: 'Export',
           label: 'Exportar',
-          emoji: '📤'
+          emoji: '📤',
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
           type: 'Product',
           customId: 'Import',
           label: 'Importar',
-          emoji: '📥'
+          emoji: '📥',
+          isProtected: { user }
         })
       ]
 
-      let componetUpdate: string = ''
+      const componetUpdate: string[] = []
       for (const value of row2Buttons) {
         const { customId } = value
         if (customId === undefined) continue
@@ -123,9 +127,9 @@ export class updateProduct {
         } else {
           value.setStyle(ButtonStyle.Secondary)
         }
-        componetUpdate += (customId + ' ')
+        componetUpdate.push(customId)
       }
-      console.log('Atualizando os componentes: ', componetUpdate)
+      core.info(`Atualizando componentes | ${componetUpdate.join(' | ')}`)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...row2Buttons)
     }
 
@@ -137,7 +141,8 @@ export class updateProduct {
           customId: 'SetEstoque',
           label: 'Estoque',
           emoji: '🗃️',
-          style: ButtonStyle.Secondary
+          style: ButtonStyle.Secondary,
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
@@ -146,7 +151,8 @@ export class updateProduct {
           label: 'Add Estoque',
           emoji: '➕',
           style: ButtonStyle.Secondary,
-          disabled: true
+          disabled: true,
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
@@ -154,7 +160,8 @@ export class updateProduct {
           customId: 'SetCtrlPanel',
           label: 'CrtlPanel',
           emoji: '💻',
-          style: ButtonStyle.Secondary
+          style: ButtonStyle.Secondary,
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
@@ -163,10 +170,11 @@ export class updateProduct {
           label: 'Moedas',
           emoji: '🪙',
           style: ButtonStyle.Secondary,
-          disabled: true
+          disabled: true,
+          isProtected: { user }
         })
       ]
-      let componetUpdate: string = ''
+      const componetUpdate: string[] = []
       for (const value of redeemSystem) {
         const { customId } = value
         if (customId === undefined) continue
@@ -188,9 +196,9 @@ export class updateProduct {
             value.setStyle(ButtonStyle.Secondary)
           }
         }
-        componetUpdate += (customId + ' ')
+        componetUpdate.push(customId)
       }
-      console.log('Atualizando os componentes: ', componetUpdate)
+      core.info(`Atualizando componentes | ${componetUpdate.join(' | ')}`)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...redeemSystem)
     }
 
@@ -202,13 +210,15 @@ export class updateProduct {
           customId: 'Save',
           label: 'Salvar',
           emoji: '✔️',
-          style: ButtonStyle.Success
+          style: ButtonStyle.Success,
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
           type: 'Product',
           customId: 'Status',
-          label: 'Ativar/Desativar'
+          label: 'Ativar/Desativar',
+          isProtected: { user }
         }),
         await CustomButtonBuilder.create({
           permission: 'Admin',
@@ -216,10 +226,11 @@ export class updateProduct {
           customId: 'Delete',
           label: 'Apagar Produto',
           emoji: '✖️',
-          style: ButtonStyle.Danger
+          style: ButtonStyle.Danger,
+          isProtected: { user }
         })
       ]
-      let componetUpdate: string = ''
+      const componetUpdate: string[] = []
       for (const value of footerBar) {
         const { customId } = value
 
@@ -234,9 +245,9 @@ export class updateProduct {
               .setStyle(ButtonStyle.Secondary)
           }
         }
-        componetUpdate += (customId + ' ')
+        if (typeof customId === 'string')componetUpdate.push(customId)
       }
-      console.log('Atualizando os componentes: ', componetUpdate)
+      core.info(`Atualizando componentes | ${componetUpdate.join(' | ')}`)
       return new ActionRowBuilder<ButtonBuilder>().addComponents(...footerBar)
     }
 
@@ -321,7 +332,7 @@ export class updateProduct {
     message: Message<boolean>
   }): Promise<void> {
     const { interaction, message } = options
-    const { guildId, channelId } = interaction
+    const { guildId, channelId, user } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
 
     const checkRes = await Check.product({ interaction, productData })
@@ -351,7 +362,8 @@ export class updateProduct {
         type: 'Product',
         customId: 'Config',
         style: ButtonStyle.Secondary,
-        emoji: '⚙️'
+        emoji: '⚙️',
+        isProtected: { user }
       })
     ]
 

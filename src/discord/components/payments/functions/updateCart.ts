@@ -284,14 +284,14 @@ export class updateCart {
         disabled: product.quantity <= 1,
         emoji: '➖',
         style: ButtonStyle.Primary,
-        isProtected: { enabled: true, user: discordUser }
+        isProtected: { user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Add',
         emoji: '➕',
         style: ButtonStyle.Primary,
-        isProtected: { enabled: true, user: discordUser }
+        isProtected: { user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -299,14 +299,14 @@ export class updateCart {
         disabled: properties?.cupom,
         emoji: '🎫',
         style: ButtonStyle.Primary,
-        isProtected: { enabled: true, user: discordUser }
+        isProtected: { user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Remove',
         emoji: '✖️',
         style: ButtonStyle.Danger,
-        isProtected: { enabled: true, user: discordUser }
+        isProtected: { user: discordUser }
       })
     ]
     const end = Date.now()
@@ -331,7 +331,7 @@ export class updateCart {
         emoji: '💬',
         style: ButtonStyle.Success,
         disabled: true,
-        isProtected: { enabled: true, user }
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -339,14 +339,14 @@ export class updateCart {
         label: 'Instantaneamente',
         emoji: '📲',
         style: ButtonStyle.Success,
-        isProtected: { enabled: true, user }
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         url: 'https://google.com/',
         emoji: '🔗',
         style: ButtonStyle.Link,
-        isProtected: { enabled: true, user }
+        isProtected: { user }
       })
     ]
 
@@ -356,7 +356,8 @@ export class updateCart {
         customId: 'Pix',
         label: 'PIX',
         emoji: '💠',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -364,7 +365,8 @@ export class updateCart {
         label: 'Cartão de Débito',
         emoji: '💳',
         style: ButtonStyle.Success,
-        disabled: true
+        disabled: true,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -372,7 +374,8 @@ export class updateCart {
         label: 'Cartão de Crédito',
         emoji: '💳',
         style: ButtonStyle.Success,
-        disabled: true
+        disabled: true,
+        isProtected: { user }
       })
     ]
 
@@ -388,15 +391,16 @@ export class updateCart {
         customId: 'Verify',
         label: 'Verificar Pagamento',
         emoji: '✔️',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
-
         type: 'Cart',
         customId: 'Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
-        style: ButtonStyle.Danger
+        style: ButtonStyle.Danger,
+        isProtected: { user }
       })
     ]
 
@@ -406,28 +410,32 @@ export class updateCart {
         customId: 'Before',
         label: 'Voltar',
         emoji: '⬅️',
-        style: ButtonStyle.Secondary
+        style: ButtonStyle.Secondary,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Next',
         label: 'Proximo',
         emoji: '➡️',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'WTF',
         label: 'Saiba Mais 🔔',
         emoji: '❔',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Primary,
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Cancelar',
         label: 'Cancelar',
         emoji: '✖️',
-        style: ButtonStyle.Danger
+        style: ButtonStyle.Danger,
+        isProtected: { user }
       })
     ]
 
