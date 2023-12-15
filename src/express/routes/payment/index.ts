@@ -24,7 +24,7 @@ class Payment {
 
       return res.status(200).json({
         code: 200,
-        status: response.status
+        status: response.data.status
       })
     } catch (err) {
       console.log(err)

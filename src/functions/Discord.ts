@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, codeBlock, type AnyComponentBuilder, type CacheType, type ColorResolvable, type CommandInteraction, type Guild, type PermissionResolvable, type TextChannel, StringSelectMenuInteraction, type ChatInputCommandInteraction, type MessageInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, StringSelectMenuInteraction, type User, codeBlock, type AnyComponentBuilder, type CacheType, type ChatInputCommandInteraction, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel, type Interaction } from 'discord.js'
 import { genButtonID } from './UuidGen'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
@@ -156,6 +156,7 @@ interface ButtonType {
   url?: string
   label?: string
   disabled?: boolean
+  isProtected?: { enabled: boolean, user: User }
   permission?: 'User' | 'Admin'
   type: 'Ticket' | 'Cart' | 'Product' | 'System' | 'Cupom' | 'SUEE' | 'Event'
 }
@@ -164,7 +165,8 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
   url
   permission
   type
-  constructor ({ customId, emoji, style, url, label, disabled, permission, type }: ButtonType) {
+  isProtected
+  constructor ({ customId, emoji, style, url, label, disabled, permission, type, isProtected }: ButtonType) {
     super()
     this.customId = customId
     this.data.emoji = { name: emoji }
@@ -172,12 +174,13 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
     this.url = url
     this.data.label = label
     this.data.disabled = disabled ?? false
-    this.permission = permission ?? 'User'
     this.type = type
+    this.isProtected = isProtected
+    this.permission = permission ?? 'User'
   }
 
   async init (): Promise<this> {
-    const { Id } = await genButtonID()
+    const { Id } = await genButtonID({ isProtected: this.isProtected })
     if (this.customId !== undefined) { this.setCustomId(`${Id}_${this.permission}_${this.type}_${this.customId}`) }
     if (this.url !== undefined && this.customId === undefined) { this.setURL(this.url) }
     return this
@@ -186,6 +189,27 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
   static async create (buttonType: ButtonType): Promise<CustomButtonBuilder> {
     const builder = new CustomButtonBuilder(buttonType)
     return await builder.init()
+  }
+
+  static async verify (options: {
+    id: string
+    interaction: Interaction
+  }): Promise<boolean> {
+    const { id, interaction } = options
+    const userDB = await db.tokens.get(id) as { enabled?: boolean, user?: User }
+
+    if (userDB.user?.id === interaction.user.id || interaction.memberPermissions?.has('Administrator') === true) {
+      return true
+    }
+    return false
+  }
+
+  static getInfos = (customId: string): string[] | null[] => {
+    const parts = customId.split('_')
+    if (parts.length === 4) {
+      return [parts[0], parts[1], parts[2], parts[3]]
+    }
+    return [null, null, null, null]
   }
 
   static getAction (customId: string): string {

@@ -1,8 +1,8 @@
-import { db } from '@/app'
+import { core, db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
-import { ActionRowBuilder, ButtonStyle, EmbedBuilder, TextChannel, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
+import { ActionRowBuilder, ButtonStyle, EmbedBuilder, TextChannel, type User, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
-import { type ProductCartData, type User, type cartData } from './interfaces'
+import { type ProductCartData, type cartData, type User as ctrlUser } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
 export class updateCart {
@@ -11,7 +11,6 @@ export class updateCart {
     data: cartData
     channel?: TextChannel // Somente para a criação de um novo carrinho
     message?: Message<boolean> | null
-    typeEdit?: 'update' | 'remover&update'
     paymentData?: PaymentResponse
     taxa?: number
   }): Promise<{
@@ -24,13 +23,15 @@ export class updateCart {
         components: Array<ActionRowBuilder<ButtonBuilder>>
       }
     }> {
-    const { interaction, data, message, typeEdit, channel } = options
+    core.info('<--------\\\\ updateCart //-------->'.green)
+    const startBuild = Date.now()
+    const { interaction, data, message, channel } = options
     const { typeEmbed, typeRedeem, products, user, properties } = data
-    const { guildId, user: { id: userId }, channelId } = interaction
+    const { guildId, user: discordUser, channelId } = interaction
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
     const paymentEmbeds: EmbedBuilder[] = []
-    const paymentComponents = await this.typeButtons({ data })
+    const paymentComponents = await this.typeButtons({ data, discordUser })
     const productEmbeds: EmbedBuilder[] = []
     const productComponents: Array<ActionRowBuilder<ButtonBuilder>> = []
 
@@ -40,24 +41,27 @@ export class updateCart {
 
     let setMessageId: string | undefined
 
-    paymentEmbeds.push(...(await this.generateInfoEmbed({ products, user, typeEmbed, typeRedeem, discord: { userId, guildId } })))
+    paymentEmbeds.push(...(await this.generateInfoEmbed({ products, user, typeEmbed, typeRedeem, discord: { userId: discordUser.id, guildId } })))
 
     for (const product of products) {
       productEmbeds.push(this.generateProductEmbed(product))
-      productComponents.push(await this.generateProductComponents({ product, properties }))
+      productComponents.push(await this.generateProductComponents({ product, properties, discordUser }))
     }
-
     if (typeEmbed === 1) paymentComponents[0].components[2].setURL(ctrlUrl)
-    if (message !== null && message !== undefined && channel?.id !== channelId) { // Caso venha de uma interação que já foi criada
-      if (message.id === mainMessageId || channelId === cartChannelId) {
-        if (typeEdit !== 'update') await message?.edit({ components: [] })
-        const msg = await message.edit({
-          embeds: paymentEmbeds,
-          components: paymentComponents
-        })
-        setMessageId = msg.id
-      }
-    } if (cartChannelId !== undefined && mainMessageId !== undefined) { // Se a interação não vier de dentro do carrinho OU da embed principal
+    const endBuild = Date.now()
+    const timeSpent = (endBuild - startBuild) / 1000 + 's'
+    core.info(`Build | Generate Components | ${timeSpent}`)
+
+    // <-- Interações com o Discord -->
+    const startInteraction = Date.now()
+    if (message?.id === mainMessageId && channelId === cartChannelId && channel?.id !== channelId) { // Caso venha de uma interação que já foi criada
+      // if (typeEdit !== 'update') await message?.edit({ components: [] })
+      const msg = await message?.edit({
+        embeds: paymentEmbeds,
+        components: paymentComponents
+      })
+      setMessageId = msg?.id
+    } else if (cartChannelId !== undefined && mainMessageId !== undefined) { // Se a interação não vier de dentro do carrinho OU da embed principal
       const channelCart = await interaction.guild?.channels.fetch(cartChannelId)
       if (channelCart instanceof TextChannel) {
         const msg = await channelCart.messages.fetch(mainMessageId)
@@ -118,6 +122,10 @@ export class updateCart {
         if (messageId !== undefined) await db.payments.set(`${guildId}.process.${channel?.id ?? channelId}.products.${position}.messageId`, messageId)
       }
     }
+    const endInteraction = Date.now()
+    const timeSpentDiscord = (endInteraction - startInteraction) / 1000 + 's'
+    core.info(`Build | Discord Interaction | ${timeSpentDiscord}`)
+    core.info('<--------\\\\ updateCart //-------->'.red)
 
     return {
       main: {
@@ -141,7 +149,7 @@ export class updateCart {
     products: ProductCartData[]
     typeEmbed: number
     typeRedeem?: number
-    user?: User
+    user?: ctrlUser
     discord: {
       guildId: string | null
       userId: string
@@ -260,11 +268,14 @@ export class updateCart {
 
   public static async generateProductComponents ({
     product,
-    properties
+    properties,
+    discordUser
   }: {
     product: ProductCartData
     properties: Record<string, boolean> | undefined
+    discordUser: User
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
+    const start = Date.now()
     const components = new ActionRowBuilder<ButtonBuilder>()
     const productComponents = [
       await CustomButtonBuilder.create({
@@ -272,36 +283,45 @@ export class updateCart {
         customId: 'Rem',
         disabled: product.quantity <= 1,
         emoji: '➖',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Primary,
+        isProtected: { enabled: true, user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Add',
         emoji: '➕',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Primary,
+        isProtected: { enabled: true, user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Cupom',
         disabled: properties?.cupom,
         emoji: '🎫',
-        style: ButtonStyle.Primary
+        style: ButtonStyle.Primary,
+        isProtected: { enabled: true, user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Remove',
         emoji: '✖️',
-        style: ButtonStyle.Danger
+        style: ButtonStyle.Danger,
+        isProtected: { enabled: true, user: discordUser }
       })
     ]
+    const end = Date.now()
+    const timeSpent = (end - start) / 1000 + 's'
+    core.info(`Build | Product Components | ${timeSpent}`)
     return components.setComponents(productComponents)
   }
 
   public static async typeButtons (options: {
     data: cartData
+    discordUser: User
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
-    const { data } = options
+    const { data, discordUser: user } = options
     const { typeEmbed: type } = data
+    const start = Date.now()
 
     const Secondary = [
       await CustomButtonBuilder.create({
@@ -310,20 +330,23 @@ export class updateCart {
         label: 'Mensagem via DM',
         emoji: '💬',
         style: ButtonStyle.Success,
-        disabled: true
+        disabled: true,
+        isProtected: { enabled: true, user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Direct',
         label: 'Instantaneamente',
         emoji: '📲',
-        style: ButtonStyle.Success
+        style: ButtonStyle.Success,
+        isProtected: { enabled: true, user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         url: 'https://google.com/',
         emoji: '🔗',
-        style: ButtonStyle.Link
+        style: ButtonStyle.Link,
+        isProtected: { enabled: true, user }
       })
     ]
 
@@ -469,6 +492,10 @@ export class updateCart {
         actions[customId]({ value, customId, typeEmbed, properties, typeRedeem })
       }
     }
+
+    const end = Date.now()
+    const timeSpent = (end - start) / 1000 + 's'
+    core.info(`Build | Type Buttons | ${timeSpent}`)
 
     return components
   }

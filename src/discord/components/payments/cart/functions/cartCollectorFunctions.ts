@@ -93,6 +93,13 @@ export class PaymentFunction {
             await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/delete`, {
               mpToken: token,
               paymentId
+            }).catch(async (err) => {
+              await subInteraction.followUp({
+                embeds: [new EmbedBuilder({
+                  title: '❌ | Ocorreu um erro ao pedir que o Mercado Pago removesse o pedido de pagamento.'
+                }).setColor('Red')]
+              })
+              throw new Error(err)
             })
           }
 
@@ -151,8 +158,7 @@ export class PaymentFunction {
         await updateCart.embedAndButtons({
           interaction,
           message,
-          data,
-          typeEdit: 'update'
+          data
         })
       })
   }
@@ -348,7 +354,7 @@ export class PaymentFunction {
       }
 
       if (pagamentoRes.data.status === 'approved') {
-        const components = await updateCart.typeButtons({ data: cartData })
+        const components = await updateCart.typeButtons({ data: cartData, discordUser: user })
         components[0].components[1].setDisabled(true)
 
         let voucherCode: string | undefined

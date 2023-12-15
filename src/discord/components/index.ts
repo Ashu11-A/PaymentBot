@@ -1,16 +1,9 @@
 // Isso ira pegar todos os eventos que um botão é precionado e ira destrinjar ele para os seus reais ações
 import { core } from '@/app'
-import { Discord } from '@/functions'
+import { CustomButtonBuilder, Discord } from '@/functions'
 import { Event } from '../base'
 import { ButtonController } from './controller'
-
-const getInfos = (customId: string): string[] | null[] => {
-  const parts = customId.split('_')
-  if (parts.length === 4) {
-    return [parts[0], parts[1], parts[2], parts[3]]
-  }
-  return [null, null, null, null]
-}
+import { EmbedBuilder } from 'discord.js'
 
 new Event({
   name: 'interactionCreate',
@@ -19,10 +12,22 @@ new Event({
     const start = Date.now() // Mostrar delay
     const { customId, user: { username } } = interaction
     const typeAction = interaction.isButton() ? 'Buttom' : interaction.isModalSubmit() ? 'Modal' : 'Select'
-    const [id, permission, type, action] = getInfos(customId)
-    console.log(id, permission, type, action)
+    const [id, permission, type, action] = CustomButtonBuilder.getInfos(customId)
 
-    if (action === null) { console.log('Nenhuma ação foi expecificada no botão'); return }
+    if (id === null || action === null) { console.log('Nenhuma ação foi expecificada no botão'); return }
+    // <-- Verifica a interação -->
+    if (!(await CustomButtonBuilder.verify({ id, interaction }))) {
+      await interaction.reply({
+        ephemeral,
+        embeds: [
+          new EmbedBuilder({
+            title: 'O botão ``' + action + '`` está protegido contra interações desconhecidas!'
+          }).setColor('Red')
+        ]
+      })
+      core.warn(`Usuário ${username} tentou clicar no botão ${action}, mas ele não tem permição para isso!`)
+      return
+    }
     if (permission !== 'User') if (await Discord.Permission(interaction, 'Administrator', 'noPermission')) return
     core.info(`${username} | Id: ${id} | Permission: ${permission} | Type: ${type} | typeAction: ${typeAction} | Action: ${action}`)
     const Controller = new ButtonController({ interaction, key: action })
@@ -55,6 +60,6 @@ new Event({
     }
     const end = Date.now()
     const timeSpent = (end - start) / 1000 + 's'
-    core.info(`${type} | ${action} | ${timeSpent}`)
+    core.info(`Button: ${action} | Type: ${type} | ${timeSpent}`)
   }
 })
