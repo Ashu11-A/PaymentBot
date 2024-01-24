@@ -202,9 +202,8 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
     interaction: Interaction
   }): Promise<boolean> {
     const { id, interaction } = options
-    const userDB = await db.tokens.get(id) as { user?: User }
-
-    if (userDB.user?.id === interaction.user.id || interaction.memberPermissions?.has('Administrator') === true) {
+    const userDB = await db.tokens.get(id) as { user?: User | null }
+    if (userDB?.user?.id === interaction.user.id || interaction.memberPermissions?.has('Administrator') === true) {
       return true
     }
     return false

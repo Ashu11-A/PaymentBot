@@ -12,7 +12,7 @@ import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { modelPresence, delPresence } from './utils/Presence'
 import { sendEmbed } from '@/discord/components/payments'
 import { Discord } from '@/functions/Discord'
-import { paymentConfig } from '@/discord/components/payments/functions/config'
+import { paymentConfig } from '@/discord/components/config/modals/mpModal'
 
 new Command({
   name: 'config',
@@ -296,7 +296,7 @@ new Command({
             })
           }
           if (config !== null) {
-            await paymentConfig.MPconfig({ interaction })
+            await paymentConfig.MpModalconfig({ interaction })
           }
 
           break

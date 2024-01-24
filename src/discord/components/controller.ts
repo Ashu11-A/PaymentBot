@@ -10,6 +10,7 @@ import { systemCollectorButtons } from './system/systemCollectorButtons'
 import ticketCollectorButtons from './tickets/collectorButtons'
 import { ticketCollectorSelect } from './tickets/collectorSelect'
 import { ticketCollectorModal } from './tickets/collectorModal'
+import configCollectorButtons from './config/configCollectorButtons'
 
 interface ControllerType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
@@ -63,5 +64,10 @@ export class ButtonController implements ControllerType {
     if (interaction.isButton()) { await ticketCollectorButtons({ interaction, key }); return }
     if (interaction.isModalSubmit()) { await ticketCollectorModal({ interaction, key }); return }
     if (interaction.isStringSelectMenu()) { await ticketCollectorSelect({ interaction, key }) }
+  }
+
+  async config (): Promise<void> {
+    const { interaction, key } = this
+    if (interaction.isModalSubmit()) { await configCollectorButtons({ interaction, key }) }
   }
 }

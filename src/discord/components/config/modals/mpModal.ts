@@ -6,7 +6,7 @@ export class paymentConfig {
   /**
     * Modal para configuraro MercadoPago
     */
-  public static async MPconfig (options: {
+  public static async MpModalconfig (options: {
     interaction: CommandInteraction
   }): Promise<void> {
     const { interaction } = options
@@ -14,7 +14,7 @@ export class paymentConfig {
 
     const data = await db.payments.get(`${guildId}.config`)
 
-    const modal = new ModalBuilder({ customId: 'mcConfig', title: 'Configure aspectos do Mercado Pago.' })
+    const modal = new ModalBuilder({ customId: '-1_Admin_Config_mcConfig', title: 'Configure aspectos do Mercado Pago.' })
     const token = new ActionRowBuilder<TextInputBuilder>({
       components: [
         new TextInputBuilder({

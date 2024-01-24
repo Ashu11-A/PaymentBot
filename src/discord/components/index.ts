@@ -66,9 +66,13 @@ new Event({
         await Controller.event()
         break
       }
+      case 'Config': {
+        await Controller.config()
+        break
+      }
     }
     const end = Date.now()
     const timeSpent = (end - start) / 1000 + 's'
-    core.info(`Button: ${action} | Type: ${type} | ${timeSpent}`)
+    core.info(`${type} | ${action} | ${timeSpent}`)
   }
 })
