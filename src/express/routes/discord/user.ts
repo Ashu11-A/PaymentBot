@@ -8,8 +8,6 @@ class User {
   public async post (req: Request, res: Response): Promise<Response<any, Record<string, any>> | undefined> {
     const { userId } = req.body
 
-    console.log(userId)
-
     if (userId === undefined || typeof userId !== 'string') {
       return res.status(400).json({
         status: 400,
