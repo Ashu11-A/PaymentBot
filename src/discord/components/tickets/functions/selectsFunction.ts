@@ -22,8 +22,8 @@ export class TicketSelects implements TicketType {
     const ticketConstructor = new TicketButtons({ interaction: this.interaction })
 
     if (Number(posição) >= 0 && Number(posição) < infos.length) {
-      const { title, description } = infos[Number(posição)]
-      await ticketConstructor.createTicket({ about: title + '\n' + description })
+      const { title/*,  description */ } = infos[Number(posição)]
+      await ticketConstructor.createTicket({ about: title })
     } else {
       console.log('Posição inválida no banco de dados.')
       await this.interaction.editReply({ content: '❌ | As informações do Banco de dados estão desatualizadas' })

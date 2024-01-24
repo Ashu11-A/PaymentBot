@@ -87,22 +87,19 @@ export class TicketButtons implements TicketType {
         ]
       })
       const embed = new EmbedBuilder({
-        title: 'De uma descrição detalhada do seu problema!',
         fields: [
-          { name: '📃・Detalhes do Ticket:', value: about },
+          { name: '📃・Tipo de Problema/Pedido:', value: about },
           {
-            name: '👤 | Tomador do ticket:',
-            value: `<@${user.id}>`
+            name: '😁・Solicitante:',
+            value: `<@${user.id}> | ID: ${user.id}`
           },
           {
-            name: '🕗 | Aberto em:',
-            value: new Date().toLocaleString('pt-BR', {
-              timeZone: 'America/Sao_Paulo'
-            })
+            name: '🕗・Aberto em:',
+            value: '```' + new Date().toLocaleString('pt-BR', { timeZone: 'America/Sao_Paulo' }) + '```'
           }
         ],
         footer: { text: `Equipe ${guild?.name}`, iconURL: (guild?.iconURL({ size: 64 }) ?? undefined) }
-      }).setColor('Green')
+      }).setColor('Purple')
 
       const botao = new ActionRowBuilder<ButtonBuilder>().addComponents(
         await CustomButtonBuilder.create({
