@@ -4,7 +4,7 @@ import { CustomButtonBuilder } from '@/functions'
 import {
   ActionRowBuilder,
   AttachmentBuilder,
-  type ButtonBuilder,
+  ButtonBuilder,
   ButtonStyle,
   EmbedBuilder,
   MessageCollector,
@@ -16,10 +16,12 @@ import {
   type Message,
   type ModalSubmitInteraction,
   type TextBasedChannel,
-  type EmbedData
+  type EmbedData,
+  ComponentType
 } from 'discord.js'
 import { checkProduct } from './checkConfig'
 import { type productData } from './interfaces'
+import { createRow } from '@magicyan/discord'
 
 interface UpdateProductType {
   interaction:
@@ -634,14 +636,41 @@ export class UpdateProduct {
     const { interaction, message } = this
     const { guildId, channelId } = interaction
 
-    await db.messages.delete(`${guildId}.payments.${channelId}`)
-    await message.delete()
-    await interaction.editReply({
-      embeds: [
-        new EmbedBuilder({
-          title: '📦 | Produto deletado com sucesso!'
-        }).setColor('Red')
-      ]
+    const messagePrimary = await this.interaction.editReply({
+      embeds: [new EmbedBuilder({
+        title: 'Tem certeza deseja deletar esse produto?'
+      })],
+      components: [createRow(
+        new ButtonBuilder({ customId: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
+        new ButtonBuilder({ customId: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
+      )]
+    })
+    const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })
+    collector.on('collect', async (subInteraction) => {
+      collector.stop()
+      const clearData = { components: [], embeds: [] }
+
+      if (subInteraction.customId === 'embed-cancel-button') {
+        await subInteraction.update({
+          ...clearData,
+          embeds: [
+            new EmbedBuilder({
+              description: 'Você cancelou a ação!'
+            }).setColor('Green')
+          ]
+        })
+      } else if (subInteraction.customId === 'embed-confirm-button') {
+        await db.messages.delete(`${guildId}.payments.${channelId}`)
+        await message.delete()
+        await interaction.editReply({
+          ...clearData,
+          embeds: [
+            new EmbedBuilder({
+              title: '📦 | Produto deletado com sucesso!'
+            }).setColor('Red')
+          ]
+        })
+      }
     })
   }
 }
