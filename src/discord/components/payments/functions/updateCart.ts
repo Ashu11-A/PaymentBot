@@ -270,14 +270,14 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Rem',
         disabled: product.quantity <= 1,
-        emoji: '➖',
+        emoji: { name: '➖' },
         style: ButtonStyle.Primary,
         isProtected: { user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Add',
-        emoji: '➕',
+        emoji: { name: '➕' },
         style: ButtonStyle.Primary,
         isProtected: { user: discordUser }
       }),
@@ -285,14 +285,14 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Cupom',
         disabled: properties?.cupom,
-        emoji: '🎫',
+        emoji: { name: '🎫' },
         style: ButtonStyle.Primary,
         isProtected: { user: discordUser }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Remove',
-        emoji: '✖️',
+        emoji: { name: '✖️' },
         style: ButtonStyle.Danger,
         isProtected: { user: discordUser }
       })
@@ -316,7 +316,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'DM',
         label: 'Mensagem via DM',
-        emoji: '💬',
+        emoji: { name: '💬' },
         style: ButtonStyle.Success,
         disabled: true,
         isProtected: { user }
@@ -325,14 +325,14 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Direct',
         label: 'Instantaneamente',
-        emoji: '📲',
+        emoji: { name: '📲' },
         style: ButtonStyle.Success,
         isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         url: 'https://google.com/',
-        emoji: '🔗',
+        emoji: { name: '🔗' },
         style: ButtonStyle.Link,
         isProtected: { user }
       })
@@ -343,7 +343,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Pix',
         label: 'PIX',
-        emoji: '💠',
+        emoji: { name: '💠' },
         style: ButtonStyle.Success,
         isProtected: { user }
       }),
@@ -351,7 +351,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'CardDebito',
         label: 'Cartão de Débito',
-        emoji: '💳',
+        emoji: { name: '💳' },
         style: ButtonStyle.Success,
         disabled: true,
         isProtected: { user }
@@ -360,7 +360,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'CardCredito',
         label: 'Cartão de Crédito',
-        emoji: '💳',
+        emoji: { name: '💳' },
         style: ButtonStyle.Success,
         disabled: true,
         isProtected: { user }
@@ -378,7 +378,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Verify',
         label: 'Verificar Pagamento',
-        emoji: '✔️',
+        emoji: { name: '✔️' },
         style: ButtonStyle.Success,
         isProtected: { user }
       }),
@@ -386,7 +386,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Cancelar',
         label: 'Cancelar',
-        emoji: '✖️',
+        emoji: { name: '✖️' },
         style: ButtonStyle.Danger,
         isProtected: { user }
       })
@@ -397,7 +397,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Before',
         label: 'Voltar',
-        emoji: '⬅️',
+        emoji: { name: '⬅️' },
         style: ButtonStyle.Secondary,
         isProtected: { user }
       }),
@@ -405,7 +405,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Next',
         label: 'Proximo',
-        emoji: '➡️',
+        emoji: { name: '➡️' },
         style: ButtonStyle.Success,
         isProtected: { user }
       }),
@@ -413,7 +413,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'WTF',
         label: 'Saiba Mais 🔔',
-        emoji: '❔',
+        emoji: { name: '❔' },
         style: ButtonStyle.Primary,
         isProtected: { user }
       }),
@@ -421,7 +421,7 @@ export class UpdateCart {
         type: 'Cart',
         customId: 'Cancelar',
         label: 'Cancelar',
-        emoji: '✖️',
+        emoji: { name: '✖️' },
         style: ButtonStyle.Danger,
         isProtected: { user }
       })

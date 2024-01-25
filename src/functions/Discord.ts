@@ -1,6 +1,6 @@
 import { core, db } from '@/app'
 import { Component } from '@/discord/base'
-import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, StringSelectMenuInteraction, type User, codeBlock, type AnyComponentBuilder, type CacheType, type ChatInputCommandInteraction, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel, type Interaction } from 'discord.js'
+import { ActionRowBuilder, ButtonBuilder, ButtonInteraction, ButtonStyle, EmbedBuilder, ModalSubmitInteraction, StringSelectMenuInteraction, type User, codeBlock, type AnyComponentBuilder, type CacheType, type ChatInputCommandInteraction, type ColorResolvable, type CommandInteraction, type Guild, type MessageInteraction, type PermissionResolvable, type TextChannel, type Interaction, type APIMessageComponentEmoji } from 'discord.js'
 import { genButtonID } from './UuidGen'
 
 export function createRow<Component extends AnyComponentBuilder = AnyComponentBuilder> (...components: Component[]): ActionRowBuilder<Component> {
@@ -118,7 +118,7 @@ export class Discord {
   public static async buttonRedirect (options: {
     guildId: string | null
     channelId: string | undefined
-    emoji?: string
+    emoji?: APIMessageComponentEmoji
     label: string
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
     const { guildId, channelId, emoji, label } = options
@@ -157,7 +157,7 @@ export class Discord {
 
 interface ButtonType {
   customId?: string
-  emoji?: string
+  emoji?: APIMessageComponentEmoji
   style?: ButtonStyle
   url?: string
   label?: string
@@ -175,7 +175,7 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
   constructor ({ customId, emoji, style, url, label, disabled, permission, type, isProtected }: ButtonType) {
     super()
     this.customId = customId
-    if (emoji !== undefined) this.data.emoji = { name: emoji }
+    if (emoji !== undefined) this.data.emoji = emoji
     this.data.style = style
     this.url = url
     this.data.label = label

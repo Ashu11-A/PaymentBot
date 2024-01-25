@@ -59,7 +59,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       label: 'Ticket',
       customId: 'Ticket',
-      emoji: '🎫',
+      emoji: { name: '🎫' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -67,7 +67,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'Welcomer',
       label: 'Boas Vindas',
-      emoji: '❤️',
+      emoji: { name: '❤️' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -75,7 +75,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'Logs',
       label: 'Logs',
-      emoji: '📰',
+      emoji: { name: '📰' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -83,7 +83,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'Payments',
       label: 'Pagamentos',
-      emoji: '💲',
+      emoji: { name: '💲' },
       isProtected: { user }
     })
   ]
@@ -94,7 +94,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'DeleteServers',
       label: 'Delete Servers',
-      emoji: '🗑️',
+      emoji: { name: '🗑️' },
       isProtected: { user }
     })
   ]
@@ -105,7 +105,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'TelegramNotif',
       label: 'Notificações',
-      emoji: '📤',
+      emoji: { name: '📤' },
       isProtected: { user }
     })
   ]
@@ -116,7 +116,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'Status',
       label: 'Status',
-      emoji: '⚙️',
+      emoji: { name: '⚙️' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -124,7 +124,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusMinecraft',
       label: 'Minecraft',
-      emoji: '🧱',
+      emoji: { name: '🧱' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -132,7 +132,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusString',
       label: 'Mensagens',
-      emoji: '📃',
+      emoji: { name: '📃' },
       isProtected: { user }
     })
   ]
@@ -142,7 +142,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusOnline',
       label: 'Online',
-      emoji: '🟢',
+      emoji: { name: '🟢' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -150,7 +150,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusAusente',
       label: 'Ausente',
-      emoji: '🟠',
+      emoji: { name: '🟠' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -158,7 +158,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusNoPerturbe',
       label: 'Não Perturbe',
-      emoji: '🔴',
+      emoji: { name: '🔴' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -166,7 +166,7 @@ export async function setSystem (interaction: CommandInteraction<CacheType> | Bu
       type: 'System',
       customId: 'StatusInvisível',
       label: 'Invisível',
-      emoji: '⚫',
+      emoji: { name: '⚫' },
       isProtected: { user }
     })
   ]

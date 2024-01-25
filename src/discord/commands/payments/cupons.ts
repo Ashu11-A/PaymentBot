@@ -181,7 +181,7 @@ export async function panelCupons (options: {
       permission: 'Admin',
       type: 'Cupom',
       customId: 'Add',
-      emoji: '➕',
+      emoji: { name: '➕' },
       label: 'Adicionar',
       style: ButtonStyle.Success,
       isProtected: { user }
@@ -190,7 +190,7 @@ export async function panelCupons (options: {
       permission: 'Admin',
       type: 'Cupom',
       customId: 'Rem',
-      emoji: '✖️',
+      emoji: { name: '✖️' },
       label: 'Remover',
       style: ButtonStyle.Danger,
       isProtected: { user }
@@ -199,7 +199,7 @@ export async function panelCupons (options: {
       permission: 'Admin',
       type: 'Cupom',
       customId: 'List',
-      emoji: '🗒️',
+      emoji: { name: '🗒️' },
       label: 'Listar',
       style: ButtonStyle.Secondary,
       isProtected: { user }

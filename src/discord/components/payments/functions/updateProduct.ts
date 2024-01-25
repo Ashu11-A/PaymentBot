@@ -126,7 +126,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'SetPrice',
           label: 'Preço',
-          emoji: '💰',
+          emoji: { name: '💰' },
           isProtected: { user }
         }),
         await CustomButtonBuilder.create({
@@ -134,7 +134,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'SetRole',
           label: 'Add Cargo',
-          emoji: '🛂',
+          emoji: { name: '🛂' },
           isProtected: { user }
         }),
         await CustomButtonBuilder.create({
@@ -142,7 +142,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'Export',
           label: 'Exportar',
-          emoji: '📤',
+          emoji: { name: '📤' },
           isProtected: { user }
         }),
         await CustomButtonBuilder.create({
@@ -150,7 +150,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'Import',
           label: 'Importar',
-          emoji: '📥',
+          emoji: { name: '📥' },
           isProtected: { user }
         })
       ]
@@ -180,7 +180,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'SetEstoque',
           label: 'Estoque',
-          emoji: '🗃️',
+          emoji: { name: '🗃️' },
           style: ButtonStyle.Secondary,
           isProtected: { user }
         }),
@@ -189,7 +189,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'AddEstoque',
           label: 'Add Estoque',
-          emoji: '➕',
+          emoji: { name: '➕' },
           style: ButtonStyle.Secondary,
           disabled: true,
           isProtected: { user }
@@ -199,7 +199,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'SetCtrlPanel',
           label: 'CrtlPanel',
-          emoji: '💻',
+          emoji: { name: '💻' },
           style: ButtonStyle.Secondary,
           isProtected: { user }
         }),
@@ -208,7 +208,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'AddCoins',
           label: 'Moedas',
-          emoji: '🪙',
+          emoji: { name: '🪙' },
           style: ButtonStyle.Secondary,
           disabled: true,
           isProtected: { user }
@@ -251,7 +251,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'Save',
           label: 'Salvar',
-          emoji: '✔️',
+          emoji: { name: '✔️' },
           style: ButtonStyle.Success,
           isProtected: { user }
         }),
@@ -267,7 +267,7 @@ export class UpdateProduct {
           type: 'Product',
           customId: 'Delete',
           label: 'Apagar Produto',
-          emoji: '✖️',
+          emoji: { name: '✖️' },
           style: ButtonStyle.Danger,
           isProtected: { user }
         })
@@ -408,14 +408,14 @@ export class UpdateProduct {
         customId: 'Buy',
         label: 'Adicionar ao Carrinho',
         style: ButtonStyle.Success,
-        emoji: '🛒'
+        emoji: { name: '🛒' }
       }),
       await CustomButtonBuilder.create({
         permission: 'Admin',
         type: 'Product',
         customId: 'Config',
         style: ButtonStyle.Secondary,
-        emoji: '⚙️',
+        emoji: { name: '⚙️' },
         isProtected: { user }
       })
     ]

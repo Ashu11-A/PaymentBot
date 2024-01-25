@@ -14,7 +14,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       type: 'SUEE',
       customId: `${type}-SetName`,
       label: 'Nome',
-      emoji: '📝',
+      emoji: { name: '📝' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -22,7 +22,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       type: 'SUEE',
       customId: `${type}-SetDesc`,
       label: 'Descrição',
-      emoji: '📑',
+      emoji: { name: '📑' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -30,7 +30,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       type: 'SUEE',
       customId: `${type}-SetMiniature`,
       label: 'Miniatura',
-      emoji: '🖼️',
+      emoji: { name: '🖼️' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -38,7 +38,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       type: 'SUEE',
       customId: `${type}-SetBanner`,
       label: 'Banner',
-      emoji: '🌄',
+      emoji: { name: '🌄' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -46,7 +46,7 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
       type: 'SUEE',
       customId: `${type}-SetColor`,
       label: 'Cor',
-      emoji: '🎨',
+      emoji: { name: '🎨' },
       isProtected: { user }
     })
   ]

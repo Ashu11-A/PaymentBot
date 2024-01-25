@@ -71,7 +71,7 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
           await Discord.buttonRedirect({
             guildId,
             channelId: sendChannel.id,
-            emoji: '🛒',
+            emoji: { name: '🛒' },
             label: 'Ir ao carrinho'
           })
         ]
@@ -140,7 +140,7 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
             await Discord.buttonRedirect({
               guildId,
               channelId: paymentChannel.id,
-              emoji: '🛒',
+              emoji: { name: '🛒' },
               label: 'Ir ao carrinho'
             })
           ]

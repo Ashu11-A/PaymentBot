@@ -61,7 +61,7 @@ export class Database implements DatabaseType {
               await Discord.buttonRedirect({
                 guildId,
                 channelId: data.id,
-                emoji: '🗨️',
+                emoji: { name: '🗨️' },
                 label: `Click aqui para ir ao ${data.name}`
               })
             ]

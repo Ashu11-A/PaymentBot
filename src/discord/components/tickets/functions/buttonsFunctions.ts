@@ -35,7 +35,7 @@ export class TicketButtons implements TicketType {
           await Discord.buttonRedirect({
             guildId,
             channelId: sendChannel.id,
-            emoji: '🎫',
+            emoji: { name: '🎫' },
             label: 'Ir ao Ticket'
           })
         ]
@@ -81,7 +81,7 @@ export class TicketButtons implements TicketType {
           await Discord.buttonRedirect({
             guildId,
             channelId: ch?.id,
-            emoji: '🎫',
+            emoji: { name: '🎫' },
             label: 'Ir ao Ticket'
           })
         ]
@@ -107,7 +107,7 @@ export class TicketButtons implements TicketType {
           permission: 'User',
           customId: 'delTicket',
           label: 'Fechar Ticket',
-          emoji: '✖️',
+          emoji: { name: '✖️' },
           style: ButtonStyle.Danger
         })
       )

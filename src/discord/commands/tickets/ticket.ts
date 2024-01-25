@@ -59,7 +59,7 @@ new Command({
                 await Discord.buttonRedirect({
                   guildId,
                   channelId: sendChannel.id,
-                  emoji: '🗨️',
+                  emoji: { name: '🗨️' },
                   label: 'Ir ao canal'
                 })
               ]

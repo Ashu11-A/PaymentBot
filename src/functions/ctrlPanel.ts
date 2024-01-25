@@ -94,7 +94,7 @@ export class ctrlPanel {
           row.addComponents(
             new ButtonBuilder({
               customId: 'ctrlpanel-advanced-search',
-              emoji: '🔎',
+              emoji: { name: '🔎' },
               label: 'Pesquisa Avançada',
               style: ButtonStyle.Primary
             })

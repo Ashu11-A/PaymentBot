@@ -16,7 +16,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'SetRole',
       label: 'Add Cargo',
-      emoji: '🛂',
+      emoji: { name: '🛂' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -24,7 +24,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'SetSelect',
       label: 'SelectMenu',
-      emoji: '🗄️',
+      emoji: { name: '🗄️' },
       isProtected: { user }
     }),
     await CustomButtonBuilder.create({
@@ -32,7 +32,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'AddSelect',
       label: 'Add Select',
-      emoji: '📝',
+      emoji: { name: '📝' },
       disabled: true,
       isProtected: { user }
     }),
@@ -41,7 +41,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'SetButton',
       label: 'Botão',
-      emoji: '🔘',
+      emoji: { name: '🔘' },
       isProtected: { user }
     })
   ]
@@ -52,7 +52,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'SendSave',
       label: 'Enviar',
-      emoji: '✔️',
+      emoji: { name: '✔️' },
       style: ButtonStyle.Success,
       isProtected: { user }
     }),
@@ -61,7 +61,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
       type: 'Ticket',
       customId: 'EmbedDelete',
       label: 'Apagar',
-      emoji: '✖️',
+      emoji: { name: '✖️' },
       style: ButtonStyle.Danger,
       isProtected: { user }
     })
@@ -97,7 +97,7 @@ export async function ticketButtonsConfig (interaction: StringSelectMenuInteract
         type: 'Ticket',
         permission: 'User',
         customId: 'Open',
-        emoji: '📩',
+        emoji: { name: '📩' },
         label: 'Abra seu ticket',
         style: ButtonStyle.Success
       })
@@ -188,7 +188,7 @@ export async function buttonsUsers (interaction: CommandInteraction<CacheType> |
       type: 'Ticket',
       customId: 'Open',
       label: 'Abra seu ticket',
-      emoji: '📩',
+      emoji: { name: '📩' },
       style: ButtonStyle.Success
     })
   )
