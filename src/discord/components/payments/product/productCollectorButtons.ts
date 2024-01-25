@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { createCart, updateProduct } from '@/discord/components/payments'
+import { createCart, UpdateProduct } from '@/discord/components/payments'
 import { Database } from '@/functions'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
@@ -10,11 +10,12 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
   if (!interaction.inGuild()) return
 
   const { guildId, message, channelId } = interaction
+  const productBuilder = new UpdateProduct({ interaction, message })
 
   const customIdHandlers: CustomIdHandlers = {
-    Save: async () => { await updateProduct.buttonsUsers({ interaction, message }) },
-    Config: async () => { await updateProduct.buttonsConfig({ interaction, message, switchBotton: true }) },
-    Status: async () => { await updateProduct.paymentStatus({ interaction, message }) },
+    Save: async () => { await productBuilder.buttonsUsers() },
+    Config: async () => { await productBuilder.buttonsConfig({ switchBotton: true }) },
+    Status: async () => { await productBuilder.paymentStatus() },
     Buy: async () => { await createCart(interaction) },
     SetEstoque: async () => {
       await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
@@ -23,7 +24,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         enabledType: 'swap',
         otherSystemNames: ['SetCtrlPanel']
       })
-      await updateProduct.embed({ interaction, message, button: key })
+      await productBuilder.embed({ button: key })
     },
     SetCtrlPanel: async () => {
       await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
@@ -32,13 +33,13 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         enabledType: 'swap',
         otherSystemNames: ['SetEstoque']
       })
-      await updateProduct.embed({ interaction, message, button: key })
+      await productBuilder.embed({ button: key })
     },
     Export: async () => {
-      await updateProduct.export({ interaction, message })
+      await productBuilder.export()
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${key}`, true)
     },
-    Import: async () => { await updateProduct.import({ interaction, message }) }
+    Import: async () => { await productBuilder.import() }
 
   }
 

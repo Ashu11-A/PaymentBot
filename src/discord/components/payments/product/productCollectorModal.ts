@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { updateProduct } from '@/discord/components/payments'
+import { UpdateProduct } from '@/discord/components/payments'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
@@ -26,7 +26,8 @@ export async function productCollectorModal (options: { interaction: ModalSubmit
   await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.${type}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
-      await updateProduct.embed({ interaction, message: msg, button: key })
+      const productBuilder = new UpdateProduct({ interaction, message: msg })
+      await productBuilder.embed({ button: key })
         .then(async () => {
           await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
         })

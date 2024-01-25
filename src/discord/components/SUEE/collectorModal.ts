@@ -1,7 +1,7 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
 import { db } from '@/app'
-import { updateProduct } from '@/discord/components/payments'
+import { UpdateProduct } from '@/discord/components/payments'
 import { ticketButtonsConfig } from '@/discord/components/tickets'
 import { validarCorHex } from '@/functions'
 import { type CacheType, type ModalSubmitInteraction } from 'discord.js'
@@ -31,13 +31,15 @@ export async function collectorEditModal (options: { interaction: ModalSubmitInt
         }
       }
 
+      const productBuilder = new UpdateProduct({ interaction, message })
+
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${modalType}`, messageModal)
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.properties.${button}`, true)
       console.log(type, button)
       if (type === 'ticket') {
         await ticketButtonsConfig(interaction, message)
       } else if (type === 'payments') {
-        await updateProduct.embed({ interaction, message, button: key })
+        await productBuilder.embed({ button: key })
       }
       await interaction.editReply({ content: '✅ | Elemento ' + '`' + key + '`' + ' foi alterado com sucesso!' })
     } catch (err) {

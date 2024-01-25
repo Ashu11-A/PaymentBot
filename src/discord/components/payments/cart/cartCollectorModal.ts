@@ -32,7 +32,7 @@ export default async function cartCollectorModal (options: {
           await db.payments.set(`${guildId}.process.${channelId}.typeRedeem`, 2)
           await db.payments.set(`${guildId}.process.${channelId}.properties.${key}`, true)
           await db.payments.delete(`${guildId}.process.${channelId}.properties.DM`)
-          await PaymentBuilder.NextOrBefore({ type: 'next', update: 'yes' })
+          await PaymentBuilder.NextOrBefore({ type: 'next', update: 'No' })
 
           const cartData = await db.payments.get(`${guildId}.process.${channelId}`)
           const cartBuilder = new UpdateCart({ interaction, cartData })

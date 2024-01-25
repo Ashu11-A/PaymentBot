@@ -1,6 +1,6 @@
 import { type TextChannel, type CommandInteraction, EmbedBuilder, ButtonBuilder, ActionRowBuilder, ButtonStyle, type Message, codeBlock, type CacheType } from 'discord.js'
 import { db } from '@/app'
-import { updateProduct } from './updateProduct'
+import { UpdateProduct } from './updateProduct'
 
 export async function sendEmbed (interaction: CommandInteraction<CacheType>, channel: TextChannel): Promise<void> {
   const { guildId, channelId, guild } = interaction
@@ -15,15 +15,14 @@ export async function sendEmbed (interaction: CommandInteraction<CacheType>, cha
 
   await channel.send({ embeds: [embed.addFields({ name: '💵 | Preço:', value: 'R$0,00' })] })
     .then(async (message: Message<true>) => {
+      const productBuilder = new UpdateProduct({ interaction, message })
+
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}`,
         {
           id: message.id,
           embed: embedJson
         })
-      await updateProduct.buttonsConfig({
-        interaction,
-        message
-      })
+      await productBuilder.buttonsConfig({})
       await interaction.editReply({
         content: '✅ | Item criado com sucesso!',
         components: [

@@ -36,7 +36,6 @@ export class UpdateCart {
     const startBuild = Date.now()
     const { interaction, cartData } = this
     const { message, channel } = options
-    if (interaction === undefined || cartData === undefined) return
     const { typeEmbed, products, properties } = cartData
     const { guildId, user: discordUser, channelId } = interaction
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
@@ -157,7 +156,6 @@ export class UpdateCart {
     }
   }): Promise<EmbedBuilder[]> {
     const { cartData } = this
-    if (cartData === undefined) return
     const { products, typeEmbed, typeRedeem, user } = cartData
     const { discord } = options
     const valorTotal = products.reduce((allValue, product) => allValue + (product.quantity * product.amount), 0) ?? 0
@@ -309,7 +307,6 @@ export class UpdateCart {
     discordUser: User
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
     const { cartData: data } = this
-    if (data === undefined) return
     const { discordUser: user } = options
     const { typeEmbed: type } = data
     const start = Date.now()
