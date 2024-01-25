@@ -1,5 +1,14 @@
 import { db } from '@/app'
-import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
+import {
+  EmbedBuilder,
+  type ButtonInteraction,
+  type CacheType,
+  AttachmentBuilder,
+  type APIEmbed,
+  type ActionRowBuilder,
+  type ButtonBuilder,
+  type JSONEncodable
+} from 'discord.js'
 import { UpdateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
@@ -11,28 +20,35 @@ export async function createPayment (options: {
   method: 'pix' | 'debit_card' | 'credit_card'
 }): Promise<void> {
   const { interaction, method } = options
-  if (!interaction.inGuild()) {
-    await interaction.editReply({
-      embeds: [new EmbedBuilder({
-        title: 'Houve um erro, parece que você não está numa Guilda!?'
-      }).setColor('Red')]
-    })
-    return
-  }
+  if (!interaction.inGuild()) return
   const { message, guildId, user, channelId } = interaction
   const tax = await db.payments.get(`${guildId}.config.taxes.${method}`)
-  const cartData = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
-  const amount: number = cartData.products.reduce((allValue, product) => allValue + (
-    typeof product.cupom?.porcent === 'number'
-      ? (product.amount - (product.amount * product.cupom.porcent / 100))
-      : (product.amount)
-  ) * product.quantity, 0) ?? 0
-  const amountTax = Math.round((amount + (amount * (Number(tax) / 100))) * 100) / 100 // Pode receber numeros quebrados por isso do "* 100) / 100"
+  const cartData = (await db.payments.get(
+    `${guildId}.process.${channelId}`
+  )) as cartData
+  const amount: number =
+    cartData.products.reduce(
+      (allValue, product) =>
+        allValue +
+        (typeof product.cupom?.porcent === 'number'
+          ? product.amount - (product.amount * product.cupom.porcent) / 100
+          : product.amount) *
+          product.quantity,
+      0
+    ) ?? 0
+  const amountTax =
+    Math.round((amount + amount * (Number(tax) / 100)) * 100) / 100 // Pode receber numeros quebrados por isso do "* 100) / 100"
   const { mcToken, ipn } = await db.payments.get(`${guildId}.config`)
   const PaymentBuilder = new PaymentFunction({ interaction })
 
   let embeds: Array<APIEmbed | JSONEncodable<APIEmbed>> = [] // Inicialize embeds como um array vazio
   let components: Array<ActionRowBuilder<ButtonBuilder>> = []
+  let err: boolean = false
+  const embedErr = new EmbedBuilder({
+    title: `👋 Olá,  ${user.username}`,
+    description:
+      'Pedimos desculpas, mas ocorreu um erro ao tentar processar seu pedido de pagamento. Chame um administrador para resolver esse problema!'
+  }).setColor('Red')
 
   const files: AttachmentBuilder[] = []
   const dataPix: infoPayment = {
@@ -46,30 +62,39 @@ export async function createPayment (options: {
   }
 
   if (method === 'pix') {
-    const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/pix`, dataPix).catch(async (err) => {
-      console.log(err)
-      const embed = new EmbedBuilder({
-        title: `👋 Olá,  ${user.username}`,
-        description: 'Ocorreu um inconveniente durante a execução da consulta no nosso sistema de backend. Recomendo que entre em contato com um administrador para solucionar essa questão.'
-      }).setColor('Red')
-      if (err.message !== undefined) {
-        embed.addFields([
-          { name: '❌ Error:', value: err.message }
-        ])
-      }
-      await interaction.editReply({ embeds: [embed] })
-    })
-    if (paymentCreate === undefined) return
-    if (paymentCreate.status === 200) {
+    try {
+      const paymentCreate = await axios
+        .post(
+          `http://${settings.Express.ip}:${settings.Express.Port}/payment/create/pix`,
+          dataPix
+        )
+        .catch(async (error) => {
+          console.log(error)
+          if (error.message !== undefined) {
+            embedErr.addFields([{ name: '❌ Error:', value: error.message }])
+          }
+          err = true
+          return undefined
+        })
+      if (paymentCreate === undefined) return
       const { unixTimestamp, paymentData } = paymentCreate.data
 
-      const buf = Buffer.from(paymentData.point_of_interaction.transaction_data.qr_code_base64, 'base64')
+      const buf = Buffer.from(
+        paymentData.point_of_interaction.transaction_data.qr_code_base64,
+        'base64'
+      )
       const id = paymentData.id
 
       await PaymentBuilder.NextOrBefore({ type: 'next', update: 'No' })
 
-      const cartBuilder = new UpdateCart({ interaction, cartData: { ...cartData, typeEmbed: cartData.typeEmbed += 1 } })
-      const UpdateCartData = await cartBuilder.embedAndButtons({ paymentData, taxa: (tax ?? 1) })
+      const cartBuilder = new UpdateCart({
+        interaction,
+        cartData: { ...cartData, typeEmbed: (cartData.typeEmbed += 1) }
+      })
+      const UpdateCartData = await cartBuilder.embedAndButtons({
+        paymentData,
+        taxa: tax ?? 1
+      })
       const newEmbeds = UpdateCartData?.main.embeds
       const newComponents = UpdateCartData?.main.components
       if (newEmbeds === undefined || newComponents === undefined) return
@@ -82,14 +107,17 @@ export async function createPayment (options: {
       const attachment = new AttachmentBuilder(buf, { name: `${id}.png` })
       const pixEmbed = new EmbedBuilder({
         title: '✅ QR Code gerado com sucesso!',
-        description: 'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
+        description:
+          'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
         fields: [
           {
             name: '**📆 Pague até:** ',
             value: `<t:${unixTimestamp}:f>`
           }
         ],
-        thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
+        thumbnail: {
+          url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif'
+        },
         image: { url: `attachment://${id}.png` },
         footer: { text: `ID: ${id}` }
       }).setColor('Green')
@@ -101,22 +129,22 @@ export async function createPayment (options: {
         const pixCodeEmbed = new EmbedBuilder({
           title: 'Pix copia e cola',
           description: pixCode,
-          footer: { text: 'No celular, pressione para copiar.', iconURL: (interaction?.guild?.iconURL({ size: 64 }) ?? undefined) }
+          footer: {
+            text: 'No celular, pressione para copiar.',
+            iconURL: interaction?.guild?.iconURL({ size: 64 }) ?? undefined
+          }
         }).setColor('Green')
         embeds.push(pixCodeEmbed.toJSON())
       }
 
       files.push(attachment)
 
-      components[0].components[0].setURL(paymentData.point_of_interaction.transaction_data.ticket_url)
-    } else {
-      await interaction.editReply({
-        embeds: [
-          new EmbedBuilder({
-            title: '❌ | Ocorreu um erro, tente novamente...'
-          }).setColor('Red')
-        ]
-      })
+      components[0].components[0].setURL(
+        paymentData.point_of_interaction.transaction_data.ticket_url
+      )
+    } catch (error) {
+      console.log(error)
+      err = true
     }
   } else if (method === 'debit_card' || method === 'credit_card') {
     const dataCart: infoPayment = {
@@ -130,7 +158,10 @@ export async function createPayment (options: {
       method,
       ipn
     }
-    const paymentCreate = await axios.post(`http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`, dataCart)
+    const paymentCreate = await axios.post(
+      `http://${settings.Express.ip}:${settings.Express.Port}/payment/create/card`,
+      dataCart
+    )
 
     if (paymentCreate.status === 200) {
       const { paymentData, unixTimestamp } = paymentCreate.data
@@ -138,8 +169,14 @@ export async function createPayment (options: {
 
       await PaymentBuilder.NextOrBefore({ type: 'next', update: 'No' })
 
-      const cartBuilder = new UpdateCart({ interaction, cartData: { ...cartData, typeEmbed: (cartData.typeEmbed += 1) } })
-      const UpdateCartData = await cartBuilder.embedAndButtons({ paymentData, taxa: (method === 'debit_card' ? (tax ?? 2) : (tax ?? 5)) })
+      const cartBuilder = new UpdateCart({
+        interaction,
+        cartData: { ...cartData, typeEmbed: (cartData.typeEmbed += 1) }
+      })
+      const UpdateCartData = await cartBuilder.embedAndButtons({
+        paymentData,
+        taxa: method === 'debit_card' ? tax ?? 2 : tax ?? 5
+      })
       const newEmbeds = UpdateCartData?.main.embeds
       const newComponents = UpdateCartData?.main.components
       if (newEmbeds === undefined || newComponents === undefined) return
@@ -149,8 +186,11 @@ export async function createPayment (options: {
 
       const cartEmbed = new EmbedBuilder({
         title: '✅ URL de pagamento gerado com sucesso!',
-        description: 'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
-        thumbnail: { url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif' },
+        description:
+          'Aguardando pagamento. Após a verificação, os seus créditos serão entregues.',
+        thumbnail: {
+          url: 'https://cdn.discordapp.com/attachments/864381672882831420/1028227669650845727/loading.gif'
+        },
         fields: [
           {
             name: '**📆 Pague até:** ',
@@ -164,6 +204,12 @@ export async function createPayment (options: {
     }
   }
   const clearData = { components: [], embeds: [], files: [] }
+  if (embeds.length === 0 || components.length === 0 || err) {
+    await interaction.editReply({
+      embeds: [embedErr]
+    })
+    return
+  }
   await message.edit({
     ...clearData,
     embeds,
