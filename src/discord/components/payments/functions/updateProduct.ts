@@ -313,8 +313,16 @@ export class UpdateProduct {
       Delete: 4
     }
 
-    if (message.components[1] !== undefined || (customId !== undefined && customId !== 'Config')) {
-      const rowNumber: number | undefined = customId === undefined ? undefined : buttonRowMap[customId]
+    if (
+      message.components[1] !== undefined ||
+      (customId !== undefined && customId !== 'Config')
+    ) {
+      const rowNumber: number | undefined =
+        customId === undefined
+          ? undefined
+          : customId.includes('-')
+            ? buttonRowMap[customId.split('-')[1]]
+            : buttonRowMap[customId]
 
       // Chama a função apropriada com base no número da fileira
       if (typeof rowNumber === 'number') {
@@ -344,6 +352,7 @@ export class UpdateProduct {
           await message.edit({ components })
         }
       } else {
+        console.log(`Erro: rowNumber: ${rowNumber}, customId: ${customId}`)
         await interaction.editReply({
           content: '❌ | Ocorreu um erro!'
         })
