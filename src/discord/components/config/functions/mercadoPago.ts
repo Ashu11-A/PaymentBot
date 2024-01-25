@@ -17,49 +17,34 @@ export async function mcConfig (options: {
   const taxaCardCredit = fields.getTextInputValue('taxaCardCredit')
 
   if (token !== undefined && token !== '') {
-    await Database.set({
-      interaction,
+    await new Database({ interaction, pathDB: 'config.mcToken', typeDB: 'payments' }).set({
       data: token,
-      pathDB: 'config.mcToken',
-      text: 'setado para autenticação',
-      typeDB: 'payments'
+      text: 'setado para autenticação'
     })
   }
 
   if (ipnURL !== undefined) {
-    await Database.set({
-      interaction,
-      data: ipnURL,
-      pathDB: 'config.ipn',
-      typeDB: 'payments'
+    await new Database({ interaction, pathDB: 'config.ipn', typeDB: 'payments' }).set({
+      data: ipnURL
     })
   }
 
   if (taxaPix !== undefined) {
-    await Database.set({
-      interaction,
+    await new Database({ interaction, pathDB: 'config.taxes.pix', typeDB: 'payments' }).set({
       data: taxaPix,
-      pathDB: 'config.taxes.pix',
-      text: 'setado para taxa do Pix',
-      typeDB: 'payments'
+      text: 'setado para taxa do Pix'
     })
   }
   if (taxaCardDebit !== undefined) {
-    await Database.set({
-      interaction,
+    await new Database({ interaction, pathDB: 'config.taxes.debit_card', typeDB: 'payments' }).set({
       data: taxaCardDebit,
-      pathDB: 'config.taxes.debit_card',
-      text: 'setado para taxa do Cartão de Debito',
-      typeDB: 'payments'
+      text: 'setado para taxa do Cartão de Debito'
     })
   }
   if (taxaCardCredit !== undefined) {
-    await Database.set({
-      interaction,
+    await new Database({ interaction, pathDB: 'config.taxes.credit_card', typeDB: 'payments' }).set({
       data: taxaCardCredit,
-      pathDB: 'config.taxes.credit_card',
-      text: 'setado para taxa do Cartão de Crédito',
-      typeDB: 'payments'
+      text: 'setado para taxa do Cartão de Crédito'
     })
   }
 }

@@ -17,24 +17,18 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
     Status: async () => { await updateProduct.paymentStatus({ interaction, message }) },
     Buy: async () => { await createCart(interaction) },
     SetEstoque: async () => {
-      await Database.setDelete({
-        interaction,
+      await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
         systemName: key,
-        pathDB: `payments.${channelId}.messages.${message.id}.properties`,
         displayName: 'Estoque',
-        typeDB: 'messages',
         enabledType: 'swap',
         otherSystemNames: ['SetCtrlPanel']
       })
       await updateProduct.embed({ interaction, message, button: key })
     },
     SetCtrlPanel: async () => {
-      await Database.setDelete({
-        interaction,
+      await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
         systemName: key,
-        pathDB: `payments.${channelId}.messages.${message.id}.properties`,
         displayName: 'CtrlPanel',
-        typeDB: 'messages',
         enabledType: 'swap',
         otherSystemNames: ['SetEstoque']
       })

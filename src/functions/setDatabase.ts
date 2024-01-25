@@ -3,19 +3,31 @@ import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { CategoryChannel, EmbedBuilder, TextChannel, type ButtonInteraction, type CacheType, type CommandInteraction, type ModalSubmitInteraction } from 'discord.js'
 import { Discord } from './Discord'
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class Database {
+export interface DatabaseType {
+  interaction: CommandInteraction<CacheType> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType>
+  typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
+  pathDB: string
+}
+export class Database implements DatabaseType {
+  public readonly interaction
+  public readonly typeDB
+  public readonly pathDB
+
+  constructor ({ interaction, typeDB, pathDB }: DatabaseType) {
+    this.interaction = interaction
+    this.typeDB = typeDB
+    this.pathDB = pathDB
+  }
+
   /**
    * Seta inforamções no database
    */
-  public static async set (options: {
-    interaction: CommandInteraction<CacheType> | ModalSubmitInteraction<'cached' | 'raw'>
+  public async set (options: {
     data: TextChannel | CategoryChannel | string | number
-    typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
-    pathDB: string
     text?: string
   }): Promise<void> {
-    const { interaction, data, text, typeDB, pathDB } = options
+    const { data, text } = options
+    const { interaction, pathDB, typeDB } = this
     const { user, guildId, channel } = interaction
     try {
       if (typeof data === 'string') {
@@ -69,16 +81,15 @@ export class Database {
   /**
    * Seta e remove um determinada informação
    */
-  public static async setDelete (options: {
-    interaction: ButtonInteraction<CacheType>
-    typeDB?: 'guilds' | 'payments' | 'messages' | 'staff' | 'system'
-    pathDB: string
+  public async setDelete (options: {
     systemName: string
     displayName?: string
     enabledType: 'switch' | 'swap' | string
     otherSystemNames?: string[]
   }): Promise<void> {
-    const { interaction, typeDB, pathDB, displayName, systemName, enabledType, otherSystemNames } = options
+    const { interaction, pathDB, typeDB } = this
+    if (!interaction.isButton()) return
+    const { displayName, systemName, enabledType, otherSystemNames } = options
     const dbInstance = db[typeDB ?? 'guilds']
     const { guildId, user } = interaction
 

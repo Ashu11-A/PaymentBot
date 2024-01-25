@@ -231,34 +231,26 @@ new Command({
           const saída = options.getChannel('saída') as TextChannel
 
           if (banKick !== null) {
-            await Database.set({
-              interaction,
+            await new Database({ interaction, pathDB: 'channel.banKick' }).set({
               data: banKick,
-              pathDB: 'channel.banKick',
               text: 'setado para o banimento ou a expulsão de usuários'
             })
           }
           if (entrada !== null) {
-            await Database.set({
-              interaction,
+            await new Database({ interaction, pathDB: 'channel.entrada' }).set({
               data: entrada,
-              pathDB: 'channel.entrada',
               text: 'setado para a entrada de novos usuários'
             })
           }
           if (logsEquipe !== null) {
-            await Database.set({
-              interaction,
+            await new Database({ interaction, pathDB: 'channel.staff_logs' }).set({
               data: logsEquipe,
-              pathDB: 'channel.staff_logs',
               text: 'setado para as logs de entrada e saída da equipe'
             })
           }
           if (logsGeral !== null) {
-            await Database.set({
-              interaction,
+            await new Database({ interaction, pathDB: 'channel.logs' }).set({
               data: logsGeral,
-              pathDB: 'channel.logs',
               text: 'setado para os logs'
             })
           }
@@ -267,10 +259,8 @@ new Command({
             await setSystem(interaction)
           }
           if (saída !== null) {
-            await Database.set({
-              interaction,
+            await new Database({ interaction, pathDB: 'channel.saída' }).set({
               data: saída,
-              pathDB: 'channel.saída',
               text: 'setado para a saída de usuários'
             })
           }
@@ -288,11 +278,8 @@ new Command({
           }
           if (carrinho !== null) {
             await interaction.deferReply({ ephemeral: true })
-            await Database.set({
-              interaction,
-              data: carrinho.id,
-              pathDB: 'config.category',
-              typeDB: 'payments'
+            await new Database({ interaction, pathDB: 'config.category', typeDB: 'payments' }).set({
+              data: carrinho.id
             })
           }
           if (config !== null) {
@@ -308,24 +295,18 @@ new Command({
           const ptero = options.getString('pterodactyl')
 
           if (site !== null) {
-            await Database.set({
-              interaction,
-              data: site,
-              pathDB: 'urls.site'
+            await new Database({ interaction, pathDB: 'urls.site' }).set({
+              data: site
             })
           }
           if (loja !== null) {
-            await Database.set({
-              interaction,
-              data: loja,
-              pathDB: 'urls.loja'
+            await new Database({ interaction, pathDB: 'urls.loja' }).set({
+              data: loja
             })
           }
           if (ptero !== null) {
-            await Database.set({
-              interaction,
-              data: ptero,
-              pathDB: 'urls.ptero'
+            await new Database({ interaction, pathDB: 'urls.ptero' }).set({
+              data: ptero
             })
           }
           break
@@ -336,19 +317,13 @@ new Command({
           const url = options.getString('url')
 
           if (url !== null) {
-            await Database.set({
-              interaction,
-              data: url,
-              pathDB: 'config.ctrlPanel.url',
-              typeDB: 'payments'
+            await new Database({ interaction, pathDB: 'config.ctrlPanel.url', typeDB: 'payments' }).set({
+              data: url
             })
           }
           if (token !== null) {
-            await Database.set({
-              interaction,
-              data: token,
-              pathDB: 'config.ctrlPanel.token',
-              typeDB: 'payments'
+            await new Database({ interaction, pathDB: 'config.ctrlPanel.token', typeDB: 'payments' }).set({
+              data: token
             })
           }
 
@@ -359,11 +334,8 @@ new Command({
           const token = options.getString('token')
 
           if (token !== null) {
-            await Database.set({
-              interaction,
-              data: token,
-              pathDB: 'config.telegram.token',
-              typeDB: 'guilds'
+            await new Database({ interaction, pathDB: 'config.telegram.token', typeDB: 'guilds' }).set({
+              data: token
             })
           }
 
@@ -394,33 +366,24 @@ new Command({
               const porta = options.getString('porta') as string
 
               if (canal !== null) {
-                await Database.set({
-                  interaction,
+                await new Database({ interaction, typeDB: 'guilds', pathDB: 'channel.minecraft' }).set({
                   data: canal,
-                  typeDB: 'guilds',
-                  pathDB: 'channel.minecraft',
                   text: 'setado para o status do servidor de minecraft'
                 })
               }
               if (desc !== null) {
-                await Database.set({
-                  interaction,
-                  data: desc,
-                  pathDB: 'minecraft.desc'
+                await new Database({ interaction, pathDB: 'minecraft.desc' }).set({
+                  data: desc
                 })
               }
               if (ip !== null) {
-                await Database.set({
-                  interaction,
-                  data: ip,
-                  pathDB: 'minecraft.ip'
+                await new Database({ interaction, pathDB: 'minecraft.ip' }).set({
+                  data: ip
                 })
               }
               if (porta !== null) {
-                await Database.set({
-                  interaction,
-                  data: porta,
-                  pathDB: 'minecraft.porta'
+                await new Database({ interaction, pathDB: 'minecraft.porta' }).set({
+                  data: porta
                 })
               }
             }

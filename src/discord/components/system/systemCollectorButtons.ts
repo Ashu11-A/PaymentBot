@@ -1,4 +1,4 @@
-import { Database } from '@/functions'
+import { Database, type DatabaseType } from '@/functions'
 import { type SystemCustomIdHandlers } from '@/settings/interfaces/Collector'
 import { type ButtonInteraction, type CacheType } from 'discord.js'
 
@@ -29,51 +29,32 @@ export async function systemCollectorButtons (options: {
 
   if (typeof customIdHandler === 'object') {
     const commonParams = {
-      interaction,
       systemName: key,
-      pathDB: 'status',
       displayName: customIdHandler.info
+    }
+    const commonDatabase: DatabaseType = {
+      interaction,
+      typeDB: 'system',
+      pathDB: 'status'
     }
 
     if (customIdHandler.type !== undefined) {
-      await Database.setDelete({
+      await new Database({ ...commonDatabase }).setDelete({
         ...commonParams,
         systemName: customIdHandler.type,
-        typeDB: 'system',
         enabledType: customIdHandler.info
       })
     } else if (customIdHandler.remove !== undefined) {
-      await Database.setDelete({
+      await new Database({ ...commonDatabase }).setDelete({
         ...commonParams,
-        typeDB: 'system',
         enabledType: 'swap',
         otherSystemNames: [customIdHandler.remove]
       })
     } else {
-      await Database.setDelete({
+      await new Database({ ...commonDatabase }).setDelete({
         ...commonParams,
-        typeDB: 'system',
         enabledType: 'switch'
       })
     }
   }
 }
-
-/*
-
-new Component({
-  customId: 'MessagePresence',
-  type: 'Modal',
-  async run (modalInteraction) {
-    await setPresence(modalInteraction)
-  }
-})
-
-new Component({
-  customId: 'messagesStatusArray',
-  type: 'StringSelect',
-  async run (selectInteraction) {
-    await delModalPresence(selectInteraction)
-  }
-})
-*/
