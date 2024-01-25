@@ -350,7 +350,6 @@ export class updateProduct {
 
     const row1Buttons = [
       await CustomButtonBuilder.create({
-
         type: 'Product',
         customId: 'Buy',
         label: 'Adicionar ao Carrinho',
