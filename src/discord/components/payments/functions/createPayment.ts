@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { EmbedBuilder, type ButtonInteraction, type CacheType, AttachmentBuilder, type APIEmbed, type ActionRowBuilder, type ButtonBuilder, type JSONEncodable } from 'discord.js'
-import { UpdateCart } from './UpdateCart'
+import { UpdateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
 import { PaymentFunction } from '../cart/functions/cartCollectorFunctions'
