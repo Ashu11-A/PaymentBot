@@ -175,7 +175,7 @@ export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
   constructor ({ customId, emoji, style, url, label, disabled, permission, type, isProtected }: ButtonType) {
     super()
     this.customId = customId
-    this.data.emoji = { name: emoji }
+    if (emoji !== undefined) this.data.emoji = { name: emoji }
     this.data.style = style
     this.url = url
     this.data.label = label
