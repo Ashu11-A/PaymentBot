@@ -244,6 +244,81 @@ export class UpdateProduct {
       )
     }
 
+    async function createFourRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
+      const PterodactylConfig = [
+        await CustomButtonBuilder.create({
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'SetPterodactyl',
+          label: 'Pterodactyl',
+          emoji: { name: '🦖' },
+          isProtected: { user },
+          style: ButtonStyle.Secondary
+        }),
+        await CustomButtonBuilder.create({
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'CPU',
+          label: 'CPU',
+          emoji: { name: 'cpu', id: '789745130507599882' },
+          isProtected: { user },
+          style: ButtonStyle.Secondary
+        }),
+        await CustomButtonBuilder.create({
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Ram',
+          label: 'Ram',
+          emoji: { name: 'Ram', id: '789745215690244107' },
+          isProtected: { user },
+          style: ButtonStyle.Secondary
+        }),
+        await CustomButtonBuilder.create({
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Disk',
+          label: 'Disco',
+          emoji: { name: '🗃️' },
+          isProtected: { user },
+          style: ButtonStyle.Secondary
+        }),
+        await CustomButtonBuilder.create({
+          permission: 'Admin',
+          type: 'Product',
+          customId: 'Port',
+          label: 'Portas',
+          emoji: { name: '🌐' },
+          isProtected: { user },
+          style: ButtonStyle.Secondary
+        })
+      ]
+
+      const componetUpdate: string[] = []
+      for (const value of PterodactylConfig) {
+        const { customId } = value
+        if (customId === undefined) continue
+
+        if (productData.properties?.[customId]) {
+          value.setStyle(ButtonStyle.Primary)
+        } else {
+          value.setStyle(ButtonStyle.Secondary)
+        }
+
+        if (
+          !productData?.properties?.SetPterodactyl &&
+          customId !== 'SetPterodactyl'
+        ) {
+          value.setDisabled(true)
+        }
+
+        componetUpdate.push(customId)
+      }
+
+      core.info(`Atualizando componentes | ${componetUpdate.join(' | ')}`)
+      return new ActionRowBuilder<ButtonBuilder>().addComponents(
+        ...PterodactylConfig
+      )
+    }
     async function createFooterRow (): Promise<ActionRowBuilder<ButtonBuilder>> {
       const footerBar = [
         await CustomButtonBuilder.create({
@@ -310,9 +385,14 @@ export class UpdateProduct {
       AddEstoque: 3,
       SetCtrlPanel: 3,
       AddCoins: 3,
-      Save: 4,
-      Status: 4,
-      Delete: 4
+      SetPterodactyl: 4,
+      Ram: 4,
+      Disk: 4,
+      CPU: 4,
+      Port: 4,
+      Save: 5,
+      Status: 5,
+      Delete: 5
     }
 
     if (
@@ -328,7 +408,10 @@ export class UpdateProduct {
 
       // Chama a função apropriada com base no número da fileira
       if (typeof rowNumber === 'number') {
-        let updatedRow: APIActionRowComponent<APIButtonComponent> | null = null
+        let updatedRow:
+        | APIActionRowComponent<APIButtonComponent>
+        | Array<{ table: number, row: APIActionRowComponent<APIButtonComponent> }>
+        | null = null
 
         switch (rowNumber) {
           case 1:
@@ -340,17 +423,31 @@ export class UpdateProduct {
             updatedRow = (await createSecondaryRow()).toJSON()
             break
           case 3:
-            updatedRow = (await createThirdRow()).toJSON()
+            updatedRow = [
+              { table: 3, row: (await createThirdRow()).toJSON() },
+              { table: 4, row: (await createFourRow()).toJSON() }
+            ]
             break
           case 4:
+            updatedRow = [
+              { table: 3, row: (await createThirdRow()).toJSON() },
+              { table: 4, row: (await createFourRow()).toJSON() }
+            ]
+            break
+          case 5:
             updatedRow = (await createFooterRow()).toJSON()
             break
         }
         if (updatedRow !== null) {
-          // Atualize apenas a fileira relevante
           const components: any[] = [...message.components]
-          components[rowNumber - 1] = updatedRow
-
+          if (Array.isArray(updatedRow)) {
+            for (const { table, row } of updatedRow) {
+              components[table - 1] = row
+            }
+          } else {
+            // Atualize apenas a fileira relevante
+            components[rowNumber - 1] = updatedRow
+          }
           await message.edit({ components })
         }
       } else {
@@ -363,8 +460,9 @@ export class UpdateProduct {
       const row1 = await createRowEdit(interaction, message, 'payments')
       const row2 = await createSecondaryRow()
       const row3 = await createThirdRow()
-      const row4 = await createFooterRow()
-      await message.edit({ components: [row1, row2, row3, row4] })
+      const row4 = await createFourRow()
+      const row5 = await createFooterRow()
+      await message.edit({ components: [row1, row2, row3, row4, row5] })
       if (switchBotton === true) {
         await interaction.editReply({
           embeds: [
@@ -637,15 +735,29 @@ export class UpdateProduct {
     const { guildId, channelId } = interaction
 
     const messagePrimary = await this.interaction.editReply({
-      embeds: [new EmbedBuilder({
-        title: 'Tem certeza deseja deletar esse produto?'
-      })],
-      components: [createRow(
-        new ButtonBuilder({ customId: 'embed-confirm-button', label: 'Confirmar', style: ButtonStyle.Success }),
-        new ButtonBuilder({ customId: 'embed-cancel-button', label: 'Cancelar', style: ButtonStyle.Danger })
-      )]
+      embeds: [
+        new EmbedBuilder({
+          title: 'Tem certeza deseja deletar esse produto?'
+        })
+      ],
+      components: [
+        createRow(
+          new ButtonBuilder({
+            customId: 'embed-confirm-button',
+            label: 'Confirmar',
+            style: ButtonStyle.Success
+          }),
+          new ButtonBuilder({
+            customId: 'embed-cancel-button',
+            label: 'Cancelar',
+            style: ButtonStyle.Danger
+          })
+        )
+      ]
     })
-    const collector = messagePrimary.createMessageComponentCollector({ componentType: ComponentType.Button })
+    const collector = messagePrimary.createMessageComponentCollector({
+      componentType: ComponentType.Button
+    })
     collector.on('collect', async (subInteraction) => {
       collector.stop()
       const clearData = { components: [], embeds: [] }
@@ -660,7 +772,9 @@ export class UpdateProduct {
           ]
         })
       } else if (subInteraction.customId === 'embed-confirm-button') {
-        await db.messages.delete(`${guildId}.payments.${channelId}.messages.${message.id}`)
+        await db.messages.delete(
+          `${guildId}.payments.${channelId}.messages.${message.id}`
+        )
         await message.delete()
         await interaction.editReply({
           ...clearData,

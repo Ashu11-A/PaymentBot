@@ -22,7 +22,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         systemName: key,
         displayName: 'Estoque',
         enabledType: 'swap',
-        otherSystemNames: ['SetCtrlPanel']
+        otherSystemNames: ['SetCtrlPanel', 'SetPterodactyl']
       })
       await productBuilder.embed({ button: key })
     },
@@ -31,7 +31,16 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         systemName: key,
         displayName: 'CtrlPanel',
         enabledType: 'swap',
-        otherSystemNames: ['SetEstoque']
+        otherSystemNames: ['SetEstoque', 'SetPterodactyl']
+      })
+      await productBuilder.embed({ button: key })
+    },
+    SetPterodactyl: async () => {
+      await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
+        systemName: key,
+        displayName: 'Pterodactyl',
+        enabledType: 'swap',
+        otherSystemNames: ['SetEstoque', 'SetCtrlPanel']
       })
       await productBuilder.embed({ button: key })
     },
