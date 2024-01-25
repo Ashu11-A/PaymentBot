@@ -4,7 +4,7 @@
   "version": "2.0.0",
   "main": "dist/app.js",
   "scripts": {
-    "start": "node .",
+    "start": "npm run build && node .",
     "nodemon": "nodemon",
     "dev": "ts-node -r tsconfig-paths/register --transpiler sucrase/ts-node-plugin src/app.ts",
     "build": "tsc && tscpaths -p tsconfig.json -s ./src -o ./dist",
