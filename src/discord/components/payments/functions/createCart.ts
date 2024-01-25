@@ -2,7 +2,7 @@ import { db } from '@/app'
 import { Discord, genv4 } from '@/functions'
 import { ChannelType, EmbedBuilder, PermissionsBitField, type ButtonInteraction, type CacheType, type Collection, type OverwriteResolvable, TextChannel } from 'discord.js'
 import { type cartData, type productData } from './interfaces'
-import { updateCart } from './updateCart'
+import { UpdateCart } from './UpdateCart'
 
 export async function createCart (interaction: ButtonInteraction<CacheType>): Promise<void> {
   if (!interaction.inGuild() || !interaction.inCachedGuild()) return
@@ -55,9 +55,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
         quantity: 1,
         coins
       })
-      await updateCart.embedAndButtons({
-        interaction,
-        data: await db.payments.get(`${guildId}.process.${sendChannel.id}`) as cartData,
+      const cartBuilder = new UpdateCart({ interaction, cartData: await db.payments.get(`${guildId}.process.${sendChannel.id}`) as cartData })
+      await cartBuilder.embedAndButtons({
         channel: sendChannel,
         message
       })
@@ -125,11 +124,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
         ]
       })
 
-      const { main: { embeds } } = await updateCart.embedAndButtons({
-        interaction,
-        channel: paymentChannel,
-        data: data.process[paymentChannel.id]
-      })
+      const cartBuilder = new UpdateCart({ interaction, cartData: data.process[paymentChannel.id] })
+      const { main: { embeds } } = await cartBuilder.embedAndButtons({ channel: paymentChannel })
 
       if (paymentChannel !== undefined && embeds !== undefined) {
         await interaction.editReply({

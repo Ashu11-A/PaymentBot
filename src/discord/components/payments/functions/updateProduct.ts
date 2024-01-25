@@ -2,7 +2,7 @@ import { core, db } from '@/app'
 import { createRowEdit } from '@/discord/components/SUEE/functions/createRowEdit'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, AttachmentBuilder, type ButtonBuilder, ButtonStyle, EmbedBuilder, MessageCollector, type APIActionRowComponent, type APIButtonComponent, type ButtonInteraction, type CacheType, type CommandInteraction, type Message, type ModalSubmitInteraction, type TextBasedChannel, type EmbedData } from 'discord.js'
-import { Check } from './checkConfig'
+import { checkProduct } from './checkConfig'
 import { type productData } from './interfaces'
 
 // eslint-disable-next-line @typescript-eslint/no-extraneous-class
@@ -335,7 +335,7 @@ export class updateProduct {
     const { guildId, channelId, user } = interaction
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}`) as productData
 
-    const checkRes = await Check.product({ interaction, productData })
+    const checkRes = await checkProduct({ interaction, productData })
     if (!checkRes[0]) {
       await interaction.editReply({
         embeds: [

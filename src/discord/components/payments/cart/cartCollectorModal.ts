@@ -1,5 +1,5 @@
 import { core, db } from '@/app'
-import { updateCart } from '@/discord/components/payments'
+import { UpdateCart } from '@/discord/components/payments'
 import { validarEmail } from '@/functions'
 import { ctrlPanel } from '@/functions/ctrlPanel'
 import { EmbedBuilder, type CacheType, type ModalSubmitInteraction } from 'discord.js'
@@ -27,17 +27,16 @@ export default async function cartCollectorModal (options: {
         await db.payments.set(`${guildId}.process.${channelId}.user`, userData)
 
         if (message !== null) {
+          const PaymentBuilder = new PaymentFunction({ interaction, key })
+
           await db.payments.set(`${guildId}.process.${channelId}.typeRedeem`, 2)
           await db.payments.set(`${guildId}.process.${channelId}.properties.${key}`, true)
           await db.payments.delete(`${guildId}.process.${channelId}.properties.DM`)
-          await PaymentFunction.NextOrBefore({ interaction, type: 'next' })
+          await PaymentBuilder.NextOrBefore({ type: 'next', update: 'yes' })
 
-          const data = await db.payments.get(`${guildId}.process.${channelId}`)
-          await updateCart.embedAndButtons({
-            interaction,
-            data,
-            message
-          })
+          const cartData = await db.payments.get(`${guildId}.process.${channelId}`)
+          const cartBuilder = new UpdateCart({ interaction, cartData })
+          await cartBuilder.embedAndButtons({ message })
         }
       }
     } else {
@@ -88,11 +87,8 @@ export default async function cartCollectorModal (options: {
 
       const data = await db.payments.get(`${guildId}.process.${channelId}`)
       const msg = await channel?.messages.fetch(String(message?.id))
-      await updateCart.embedAndButtons({
-        interaction,
-        data,
-        message: msg
-      })
+      const cartBuilder = new UpdateCart({ interaction, cartData: data })
+      await cartBuilder.embedAndButtons({ message: msg })
     }
     return
   }
@@ -104,13 +100,10 @@ export default async function cartCollectorModal (options: {
       await db.payments.set(`${guildId}.process.${msg.id}.properties.${key}`, true)
       await db.payments.get(`${guildId}.process.${msg.id}`)
         .then(async (data) => {
-          await updateCart.embedAndButtons({
-            interaction,
-            data,
-            message: msg
-          })
+          const cartBuilder = new UpdateCart({ interaction, cartData: data })
+          await cartBuilder.embedAndButtons({ message: msg })
           /* Modo debug
-          await updateCart.displayData({
+          await UpdateCart.displayData({
             interaction,
             data,
             type: 'editReply'

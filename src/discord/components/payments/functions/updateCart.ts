@@ -2,13 +2,22 @@ import { core, db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, ButtonStyle, EmbedBuilder, TextChannel, type User, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
-import { type ProductCartData, type cartData, type User as ctrlUser } from './interfaces'
+import { type ProductCartData, type cartData } from './interfaces'
 
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class updateCart {
-  public static async embedAndButtons (options: {
-    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: cartData
+interface UpdateCartType {
+  interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
+  cartData: cartData
+}
+export class UpdateCart {
+  private readonly cartData
+  private readonly interaction
+
+  constructor ({ cartData, interaction }: UpdateCartType) {
+    this.cartData = cartData
+    this.interaction = interaction
+  }
+
+  public async embedAndButtons (options: {
     channel?: TextChannel // Somente para a criação de um novo carrinho
     message?: Message<boolean> | null
     paymentData?: PaymentResponse
@@ -25,26 +34,28 @@ export class updateCart {
     }> {
     core.info('<--------\\\\ updateCart //-------->'.green)
     const startBuild = Date.now()
-    const { interaction, data, message, channel } = options
-    const { typeEmbed, typeRedeem, products, user, properties } = data
+    const { interaction, cartData } = this
+    const { message, channel } = options
+    if (interaction === undefined || cartData === undefined) return
+    const { typeEmbed, products, properties } = cartData
     const { guildId, user: discordUser, channelId } = interaction
     const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
 
     const paymentEmbeds: EmbedBuilder[] = []
-    const paymentComponents = await this.typeButtons({ data, discordUser })
+    const paymentComponents = await this.typeButtons({ discordUser })
     const productEmbeds: EmbedBuilder[] = []
     const productComponents: Array<ActionRowBuilder<ButtonBuilder>> = []
 
-    const cartData = await db.payments.get(`${guildId}.process.${channel?.id ?? channelId}`) as cartData | undefined
-    const mainMessageId = cartData?.messageId
-    const cartChannelId = cartData?.channelId ?? data.channelId
+    const cartDataUpdate = await db.payments.get(`${guildId}.process.${channel?.id ?? channelId}`) as cartData | undefined
+    const mainMessageId = cartDataUpdate?.messageId
+    const cartChannelId = cartDataUpdate?.channelId ?? cartData.channelId
 
     let setMessageId: string | undefined
 
-    paymentEmbeds.push(...(await this.generateInfoEmbed({ products, user, typeEmbed, typeRedeem, discord: { userId: discordUser.id, guildId } })))
+    paymentEmbeds.push(...(await this.generateInfoEmbed({ discord: { userId: discordUser.id, guildId } })))
 
     for (const product of products) {
-      productEmbeds.push(this.generateProductEmbed(product))
+      productEmbeds.push(this.generateProductEmbed({ product }))
       productComponents.push(await this.generateProductComponents({ product, properties, discordUser }))
     }
     if (typeEmbed === 1) paymentComponents[0].components[2].setURL(ctrlUrl)
@@ -139,23 +150,16 @@ export class updateCart {
     }
   }
 
-  public static async generateInfoEmbed ({
-    products,
-    typeEmbed,
-    typeRedeem,
-    user,
-    discord
-  }: {
-    products: ProductCartData[]
-    typeEmbed: number
-    typeRedeem?: number
-    user?: ctrlUser
+  public async generateInfoEmbed (options: {
     discord: {
       guildId: string | null
       userId: string
     }
-
   }): Promise<EmbedBuilder[]> {
+    const { cartData } = this
+    if (cartData === undefined) return
+    const { products, typeEmbed, typeRedeem, user } = cartData
+    const { discord } = options
     const valorTotal = products.reduce((allValue, product) => allValue + (product.quantity * product.amount), 0) ?? 0
     const coinsTotal: number = products.reduce((allCoins, product) => allCoins + (((product?.coins ?? 0) * product.quantity) ?? 0), 0) ?? 0
     const productTotal: number = products.reduce((allCount, product) => allCount + product.quantity, 0) ?? 0
@@ -227,7 +231,8 @@ export class updateCart {
     return embeds
   }
 
-  public static generateProductEmbed (product: ProductCartData): EmbedBuilder {
+  public generateProductEmbed (options: { product: ProductCartData }): EmbedBuilder {
+    const { product } = options
     const embed = new EmbedBuilder({
       title: product.name,
       fields: [
@@ -252,29 +257,14 @@ export class updateCart {
     }
 
     return embed
-
-    /*
-    if ((typeEmbed === 0) || (product.cupom !== undefined)) {
-      productEmbeds[productNow].addFields(
-        {
-          name: '🎫 Cupom:',
-          value: typeof product.cupom?.name === 'string' ? `${product.cupom?.name} (${product.cupom?.porcent ?? 0}%)` : 'Indefinido',
-          inline: true
-        }
-      )
-    }
-    */
   }
 
-  public static async generateProductComponents ({
-    product,
-    properties,
-    discordUser
-  }: {
+  public async generateProductComponents (options: {
     product: ProductCartData
     properties: Record<string, boolean> | undefined
     discordUser: User
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
+    const { discordUser, properties, product } = options
     const start = Date.now()
     const components = new ActionRowBuilder<ButtonBuilder>()
     const productComponents = [
@@ -315,11 +305,12 @@ export class updateCart {
     return components.setComponents(productComponents)
   }
 
-  public static async typeButtons (options: {
-    data: cartData
+  public async typeButtons (options: {
     discordUser: User
   }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
-    const { data, discordUser: user } = options
+    const { cartData: data } = this
+    if (data === undefined) return
+    const { discordUser: user } = options
     const { typeEmbed: type } = data
     const start = Date.now()
 
@@ -508,19 +499,19 @@ export class updateCart {
     return components
   }
 
-  public static async displayData (options: {
-    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-    data: cartData
+  public async displayData (options: {
     type?: 'editReply' | 'reply'
   }): Promise<void> {
-    const { interaction, type, data } = options
+    const { cartData, interaction } = this
+    if (cartData === undefined || interaction === undefined) return
+    const { type } = options
     const embed = new EmbedBuilder({
       title: '⚙️ | Setado com sucesso!',
       description: 'Seus dados estão aqui, de forma limpa e justa.\nApos o pagamento/exclusão eles serão deletados.',
       fields: [
         {
           name: '📑 Dados:',
-          value: codeBlock('json', JSON.stringify(data, null, 4))
+          value: codeBlock('json', JSON.stringify(cartData, null, 4))
         }
       ]
     }).setColor('Green')

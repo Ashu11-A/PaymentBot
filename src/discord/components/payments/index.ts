@@ -1,5 +1,5 @@
 export * from './functions/updateProduct'
 export * from './functions/createProduct'
-export * from './functions/updateCart'
+export * from './functions/UpdateCart'
 export * from './functions/createCart'
 export * from './functions/interfaces'

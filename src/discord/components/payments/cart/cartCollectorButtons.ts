@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
-import { Payment } from '../functions/createPayment'
+import { createPayment } from '../functions/createPayment'
 import { PaymentFunction } from './functions/cartCollectorFunctions'
 import { getModalData } from './functions/getModalData'
 import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
@@ -12,20 +12,21 @@ export default async function cartCollectorButtons (options: {
   const { interaction, key } = options
   if (!interaction.inGuild()) return
   const { guildId, channelId } = interaction
+  const PaymentBuilder = new PaymentFunction({ interaction, key })
 
   const customIdHandlers: CustomIdHandlers = {
-    Verify: async () => { await PaymentFunction.verifyPayment({ interaction }) },
-    DM: async () => { await PaymentFunction.DM({ interaction, key }) },
-    WTF: async () => { await PaymentFunction.WTF({ interaction, key }) },
-    Add: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Add' }) },
-    Rem: async () => { await PaymentFunction.AddOrRem({ interaction, type: 'Rem' }) },
-    Remove: async () => { await PaymentFunction.RemoveItem({ interaction }) },
-    Pix: async () => { await Payment.create({ interaction, method: 'pix' }) },
-    Cancelar: async () => { await PaymentFunction.Cancelar({ interaction }) },
-    Next: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'next' }) },
-    Before: async () => { await PaymentFunction.NextOrBefore({ interaction, type: 'before' }) },
-    CardDebito: async () => { await Payment.create({ interaction, method: 'debit_card' }) },
-    CardCredito: async () => { await Payment.create({ interaction, method: 'credit_card' }) }
+    Verify: async () => { await PaymentBuilder.verifyPayment() },
+    DM: async () => { await PaymentBuilder.DM() },
+    WTF: async () => { await PaymentBuilder.WTF() },
+    Add: async () => { await PaymentBuilder.AddOrRem({ type: 'Add' }) },
+    Rem: async () => { await PaymentBuilder.AddOrRem({ type: 'Rem' }) },
+    Remove: async () => { await PaymentBuilder.RemoveItem() },
+    Pix: async () => { await createPayment({ interaction, method: 'pix' }) },
+    Cancelar: async () => { await PaymentBuilder.Cancelar() },
+    Next: async () => { await PaymentBuilder.NextOrBefore({ type: 'next' }) },
+    Before: async () => { await PaymentBuilder.NextOrBefore({ type: 'before' }) },
+    CardDebito: async () => { await createPayment({ interaction, method: 'debit_card' }) },
+    CardCredito: async () => { await createPayment({ interaction, method: 'credit_card' }) }
   }
 
   const customIdHandler = customIdHandlers[key]
