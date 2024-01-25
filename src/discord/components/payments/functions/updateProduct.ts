@@ -629,4 +629,19 @@ export class UpdateProduct {
       embeds: [embed]
     })
   }
+
+  public async delete (): Promise<void> {
+    const { interaction, message } = this
+    const { guildId, channelId } = interaction
+
+    await db.messages.delete(`${guildId}.payments.${channelId}`)
+    await message.delete()
+    await interaction.editReply({
+      embeds: [
+        new EmbedBuilder({
+          title: '📦 | Produto deletado com sucesso!'
+        }).setColor('Red')
+      ]
+    })
+  }
 }

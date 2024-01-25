@@ -39,8 +39,8 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
       await productBuilder.export()
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${key}`, true)
     },
-    Import: async () => { await productBuilder.import() }
-
+    Import: async () => { await productBuilder.import() },
+    Delete: async () => { await productBuilder.delete() }
   }
 
   const customIdHandler = customIdHandlers[key]
