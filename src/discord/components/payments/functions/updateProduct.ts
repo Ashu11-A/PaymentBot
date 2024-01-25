@@ -660,7 +660,7 @@ export class UpdateProduct {
           ]
         })
       } else if (subInteraction.customId === 'embed-confirm-button') {
-        await db.messages.delete(`${guildId}.payments.${channelId}`)
+        await db.messages.delete(`${guildId}.payments.${channelId}.messages.${message.id}`)
         await message.delete()
         await interaction.editReply({
           ...clearData,
