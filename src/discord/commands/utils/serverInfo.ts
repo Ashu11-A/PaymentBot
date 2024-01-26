@@ -9,8 +9,7 @@ new Command({
   type: ApplicationCommandType.ChatInput,
   async run (interaction) {
     const { guildId, guild } = interaction
-    const site = await db.guilds.get(`${guildId}.urls.site`)
-    const loja = await db.guilds.get(`${guildId}.urls.loja`)
+    const { site, loja } = await db.guilds.get(`${guildId}.urls`)
     const iconURL = interaction?.guild?.iconURL({ size: 64 }) ?? undefined
     const embed = new EmbedBuilder({
       author: { iconURL, name: guild?.name ?? 'Error' },

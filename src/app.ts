@@ -26,7 +26,8 @@ const db = {
   system: new QuickDB({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'system' }),
   tokens: new QuickDB({ filePath: join(rootDir, 'database/tokens.sqlite'), table: 'tokens' }),
   ctrlPanel: new QuickDB({ filePath: join(rootDir, 'database/ctrlPanel.sqlite') }),
-  telegram: new QuickDB({ filePath: join(rootDir, 'database/telegram.sqlite') })
+  telegram: new QuickDB({ filePath: join(rootDir, 'database/telegram.sqlite') }),
+  pterodactyl: new QuickDB({ filePath: join(rootDir, 'database/guilds.sqlite'), table: 'pterodactyl' })
 }
 
 export { client, core, db }

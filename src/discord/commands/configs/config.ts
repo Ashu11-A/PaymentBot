@@ -27,19 +27,17 @@ new Command({
       options: [
         {
           name: 'ban-kick',
-          description: '[ 🚫 Bans ] Canal onde ficará os avisos de banimentos de usuários.',
+          description:
+            '[ 🚫 Bans ] Canal onde ficará os avisos de banimentos de usuários.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         },
         {
           name: 'entrada',
-          description: '[ 🛬 Entrada Users ] Canal onde ficará os avisos de entrada de novos usuários.',
+          description:
+            '[ 🛬 Entrada Users ] Canal onde ficará os avisos de entrada de novos usuários.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         },
         {
           name: 'logs-equipe',
@@ -50,30 +48,27 @@ new Command({
           name: 'logs-geral',
           description: '[ 📃 Logs ] Use para definir o canal de logs.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         },
         {
           name: 'panel',
-          description: '[ 🌠 Embed ] Painel que habilita/desabilita os comandos.',
+          description:
+            '[ 🌠 Embed ] Painel que habilita/desabilita os comandos.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         },
         {
           name: 'react-message',
-          description: '[ 👍 React ] Canais onde mensagens serão automaticamente adicionadas reações',
+          description:
+            '[ 👍 React ] Canais onde mensagens serão automaticamente adicionadas reações',
           type: ApplicationCommandOptionType.Boolean
         },
         {
           name: 'saída',
-          description: '[ 🛫 Saída Users ] Canal onde ficará os avisos de saídas dos usuários.',
+          description:
+            '[ 🛫 Saída Users ] Canal onde ficará os avisos de saídas dos usuários.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         }
       ]
     },
@@ -89,7 +84,8 @@ new Command({
           options: [
             {
               name: 'messages',
-              description: '[ 🌠 Modal ] Envia um Modal para definir as mensagens do status',
+              description:
+                '[ 🌠 Modal ] Envia um Modal para definir as mensagens do status',
               type: ApplicationCommandOptionType.String,
               choices: [
                 { name: 'Adicionar', value: 'true' },
@@ -100,7 +96,8 @@ new Command({
         },
         {
           name: 'minecraft',
-          description: '[ 🧱 Minecraft ] Definir informações do servidor de Minecraft',
+          description:
+            '[ 🧱 Minecraft ] Definir informações do servidor de Minecraft',
           type: ApplicationCommandOptionType.Subcommand,
           options: [
             {
@@ -111,7 +108,8 @@ new Command({
             },
             {
               name: 'desc',
-              description: '[ 📄 ] Descrição do servidor (exemplo: RankUP, Factions).',
+              description:
+                '[ 📄 ] Descrição do servidor (exemplo: RankUP, Factions).',
               type: ApplicationCommandOptionType.String,
               required: false
             },
@@ -138,27 +136,23 @@ new Command({
       options: [
         {
           name: 'add-produto',
-          description: '[ 📦 ] Cria um novo produto configurável no canal desejado.',
+          description:
+            '[ 📦 ] Cria um novo produto configurável no canal desejado.',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildText
-          ]
+          channelTypes: [ChannelType.GuildText]
         },
         {
           name: 'carrinho',
-          description: '[ 🗂 ] Escolha a categoria onde os carrinhos serão abertos',
+          description:
+            '[ 🗂 ] Escolha a categoria onde os carrinhos serão abertos',
           type: ApplicationCommandOptionType.Channel,
-          channelTypes: [
-            ChannelType.GuildCategory
-          ]
+          channelTypes: [ChannelType.GuildCategory]
         },
         {
           name: 'config',
           description: '[ ⚙️ ] Configurar sistemas de pagamentos desejado.',
           type: ApplicationCommandOptionType.String,
-          choices: [
-            { name: 'Mercado Pago', value: 'mp' }
-          ]
+          choices: [{ name: 'Mercado Pago', value: 'mp' }]
         }
       ]
     },
@@ -175,11 +169,6 @@ new Command({
         {
           name: 'loja',
           description: 'Se houver uma loja.',
-          type: ApplicationCommandOptionType.String
-        },
-        {
-          name: 'pterodactyl',
-          description: 'Painel Pterodactyl',
           type: ApplicationCommandOptionType.String
         }
       ]
@@ -202,6 +191,29 @@ new Command({
       ]
     },
     {
+      name: 'pterodactyl',
+      description: '[ 🛒 ] Configure aspectos do pterodactyl.',
+      type: ApplicationCommandOptionType.Subcommand,
+      options: [
+        {
+          name: 'url',
+          description: 'Para as integrações',
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'token-panel',
+          description: 'Token para fazer as requisições a API',
+          type: ApplicationCommandOptionType.String
+        },
+        {
+          name: 'token-admin',
+          description:
+            'Token de um usuário administrador para fazer as requisições a API',
+          type: ApplicationCommandOptionType.String
+        }
+      ]
+    },
+    {
       name: 'telegram',
       description: '[ ✈️ ] Configurar aspectos do Telegram',
       type: ApplicationCommandOptionType.Subcommand,
@@ -215,7 +227,13 @@ new Command({
     }
   ],
   async run (interaction) {
-    if (await Discord.Permission(interaction, 'Administrator', 'noPermissionBanKick')) return
+    if (
+      await Discord.Permission(
+        interaction,
+        'Administrator',
+        'noPermissionBanKick'
+      )
+    ) { return }
 
     if (!interaction.inCachedGuild()) return
     const { options } = interaction
@@ -243,7 +261,10 @@ new Command({
             })
           }
           if (logsEquipe !== null) {
-            await new Database({ interaction, pathDB: 'channel.staff_logs' }).set({
+            await new Database({
+              interaction,
+              pathDB: 'channel.staff_logs'
+            }).set({
               data: logsEquipe,
               text: 'setado para as logs de entrada e saída da equipe'
             })
@@ -255,7 +276,10 @@ new Command({
             })
           }
           if (panel !== null) {
-            await db.guilds.set(`${interaction.guild.id}.channel.system`, panel.id)
+            await db.guilds.set(
+              `${interaction.guild.id}.channel.system`,
+              panel.id
+            )
             await setSystem(interaction)
           }
           if (saída !== null) {
@@ -278,7 +302,11 @@ new Command({
           }
           if (carrinho !== null) {
             await interaction.deferReply({ ephemeral: true })
-            await new Database({ interaction, pathDB: 'config.category', typeDB: 'payments' }).set({
+            await new Database({
+              interaction,
+              pathDB: 'config.category',
+              typeDB: 'payments'
+            }).set({
               data: carrinho.id
             })
           }
@@ -292,7 +320,6 @@ new Command({
           await interaction.deferReply({ ephemeral: true })
           const site = options.getString('site')
           const loja = options.getString('loja')
-          const ptero = options.getString('pterodactyl')
 
           if (site !== null) {
             await new Database({ interaction, pathDB: 'urls.site' }).set({
@@ -304,11 +331,6 @@ new Command({
               data: loja
             })
           }
-          if (ptero !== null) {
-            await new Database({ interaction, pathDB: 'urls.ptero' }).set({
-              data: ptero
-            })
-          }
           break
         }
         case 'ctrlpanel': {
@@ -317,13 +339,58 @@ new Command({
           const url = options.getString('url')
 
           if (url !== null) {
-            await new Database({ interaction, pathDB: 'config.ctrlPanel.url', typeDB: 'payments' }).set({
+            await new Database({
+              interaction,
+              pathDB: 'config.ctrlPanel.url',
+              typeDB: 'payments'
+            }).set({
               data: url
             })
           }
           if (token !== null) {
-            await new Database({ interaction, pathDB: 'config.ctrlPanel.token', typeDB: 'payments' }).set({
+            await new Database({
+              interaction,
+              pathDB: 'config.ctrlPanel.token',
+              typeDB: 'payments'
+            }).set({
               data: token
+            })
+          }
+
+          break
+        }
+        case 'pterodactyl': {
+          await interaction.deferReply({ ephemeral: true })
+          const url = options.getString('url')
+          const tokenPanel = options.getString('token-panel')
+          const tokenADM = options.getString('token-admin')
+
+          if (url !== null) {
+            await new Database({
+              interaction,
+              pathDB: 'config.pterodactyl.url',
+              typeDB: 'payments'
+            }).set({
+              data: url
+            })
+          }
+          if (tokenPanel !== null) {
+            await new Database({
+              interaction,
+              pathDB: 'config.pterodactyl.tokenPanel',
+              typeDB: 'payments'
+            }).set({
+              data: tokenPanel
+            })
+          }
+
+          if (tokenADM !== null) {
+            await new Database({
+              interaction,
+              pathDB: 'config.pterodactyl.tokenADM',
+              typeDB: 'payments'
+            }).set({
+              data: tokenADM
             })
           }
 
@@ -334,7 +401,11 @@ new Command({
           const token = options.getString('token')
 
           if (token !== null) {
-            await new Database({ interaction, pathDB: 'config.telegram.token', typeDB: 'guilds' }).set({
+            await new Database({
+              interaction,
+              pathDB: 'config.telegram.token',
+              typeDB: 'guilds'
+            }).set({
               data: token
             })
           }
@@ -366,23 +437,35 @@ new Command({
               const porta = options.getString('porta') as string
 
               if (canal !== null) {
-                await new Database({ interaction, typeDB: 'guilds', pathDB: 'channel.minecraft' }).set({
+                await new Database({
+                  interaction,
+                  typeDB: 'guilds',
+                  pathDB: 'channel.minecraft'
+                }).set({
                   data: canal,
                   text: 'setado para o status do servidor de minecraft'
                 })
               }
               if (desc !== null) {
-                await new Database({ interaction, pathDB: 'minecraft.desc' }).set({
+                await new Database({
+                  interaction,
+                  pathDB: 'minecraft.desc'
+                }).set({
                   data: desc
                 })
               }
               if (ip !== null) {
-                await new Database({ interaction, pathDB: 'minecraft.ip' }).set({
-                  data: ip
-                })
+                await new Database({ interaction, pathDB: 'minecraft.ip' }).set(
+                  {
+                    data: ip
+                  }
+                )
               }
               if (porta !== null) {
-                await new Database({ interaction, pathDB: 'minecraft.porta' }).set({
+                await new Database({
+                  interaction,
+                  pathDB: 'minecraft.porta'
+                }).set({
                   data: porta
                 })
               }
