@@ -15,7 +15,11 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
   const paymentsConfig = await db.payments.get(`${guildId}.config`)
 
   // Verificar se o produto está configurado
-  if (productData?.properties?.SetCtrlPanel === undefined && productData?.coins === undefined) {
+  if (
+    productData?.properties?.SetCtrlPanel === undefined &&
+    productData?.properties?.SetEstoque === undefined &&
+    productData?.properties?.SetPterodactyl === undefined
+  ) {
     await interaction.editReply({
       embeds: [
         new EmbedBuilder({
@@ -26,7 +30,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
     return
   }
 
-  const { coins, price, role, id } = productData
+  const { coins, price, role, id, pterodactyl } = productData
+
 
   if (price === undefined) {
     await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
@@ -53,7 +58,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
         name: product,
         amount: price,
         quantity: 1,
-        coins
+        coins,
+        pterodactyl
       })
       const cartBuilder = new UpdateCart({ interaction, cartData: await db.payments.get(`${guildId}.process.${sendChannel.id}`) as cartData })
       await cartBuilder.embedAndButtons({
@@ -119,7 +125,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
             name: product,
             amount: price,
             quantity: 1,
-            coins
+            coins,
+            pterodactyl
           }
         ]
       })

@@ -7,11 +7,17 @@ export interface ProductCartData {
   amount: number
   quantity: number
   coins?: number
+  messageId?: string
   cupom?: {
     name: string
     porcent: number
   }
-  messageId?: string
+  pterodactyl?: {
+    cpu: string
+    ram: string
+    disk: string
+    port: string
+  }
 }
 
 export interface cartData {
@@ -52,6 +58,12 @@ export interface productData {
   price?: number
   coins?: number
   properties: Record<string, boolean>
+  pterodactyl?: {
+    cpu: string
+    ram: string
+    disk: string
+    port: string
+  }
 }
 
 export interface User {

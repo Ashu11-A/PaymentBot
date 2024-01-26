@@ -3,6 +3,7 @@ import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, ButtonStyle, EmbedBuilder, TextChannel, type User, codeBlock, type APIEmbed, type ButtonBuilder, type ButtonInteraction, type CacheType, type Message, type ModalSubmitInteraction } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
 import { type ProductCartData, type cartData } from './interfaces'
+import { settings } from '@/settings'
 
 interface UpdateCartType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
@@ -252,6 +253,18 @@ export class UpdateCart {
     if (product.coins !== undefined && product.coins > 0) {
       embed.addFields({ name: '🪙 | Créditos individuais:', value: String(product.coins), inline: product.quantity > 1 })
       if (product.quantity > 1) embed.addFields({ name: '💰 | Créditos total:', value: String(product.coins * product.quantity), inline: true })
+    }
+
+    if (product.pterodactyl !== undefined) {
+      const { cpu, disk, port, ram } = product.pterodactyl
+      const { Emojis } = settings as { Emojis: Record<string, string | undefined> }
+
+      embed.setDescription(`
+        ${cpu !== undefined ? `${Emojis?.cpu} | CPU: ${cpu}` : ''}
+        ${disk !== undefined ? `${Emojis?.disk} | Disco: ${disk}` : ''}
+        ${port !== undefined ? `${Emojis?.port} | Porta: ${port}` : ''}
+        ${ram !== undefined ? `${Emojis?.ram} | Ram:  ${ram}` : ''}
+      `)
     }
 
     return embed

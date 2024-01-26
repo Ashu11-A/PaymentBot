@@ -17,11 +17,13 @@ import {
   type ModalSubmitInteraction,
   type TextBasedChannel,
   type EmbedData,
-  ComponentType
+  ComponentType,
+  codeBlock
 } from 'discord.js'
 import { checkProduct } from './checkConfig'
 import { type productData } from './interfaces'
 import { createRow } from '@magicyan/discord'
+import { settings } from '@/settings'
 
 interface UpdateProductType {
   interaction:
@@ -66,6 +68,18 @@ export class UpdateProduct {
         name: '🪙 | Coins:',
         value: String(productData.coins)
       })
+    }
+    if (productData?.properties?.SetPterodactyl && productData.pterodactyl !== undefined) {
+      const { cpu, disk, port, ram } = productData.pterodactyl
+      const { Emojis } = settings as { Emojis: Record<string, string | undefined> }
+
+      updateEmbed.setDescription(`
+        ${updateEmbed.data.description}
+        ${cpu !== undefined ? `${Emojis?.cpu} | CPU: ${cpu}` : ''}
+        ${disk !== undefined ? `${Emojis?.disk} | Disco: ${disk}` : ''}
+        ${port !== undefined ? `${Emojis?.port} | Porta: ${port}` : ''}
+        ${ram !== undefined ? `${Emojis?.ram} | Ram:  ${ram}` : ''}
+      `)
     }
 
     if (productData?.role !== undefined && productData.role !== '') {
