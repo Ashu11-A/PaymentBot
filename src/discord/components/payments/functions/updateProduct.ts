@@ -17,8 +17,7 @@ import {
   type ModalSubmitInteraction,
   type TextBasedChannel,
   type EmbedData,
-  ComponentType,
-  codeBlock
+  ComponentType
 } from 'discord.js'
 import { checkProduct } from './checkConfig'
 import { type productData } from './interfaces'

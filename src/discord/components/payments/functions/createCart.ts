@@ -32,7 +32,6 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
 
   const { coins, price, role, id, pterodactyl } = productData
 
-
   if (price === undefined) {
     await interaction.editReply({ content: '🤔 | Desculpe... mas esse produto não tem um valor.' })
     return
