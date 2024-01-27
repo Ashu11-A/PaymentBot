@@ -71,14 +71,14 @@ export class UpdateProduct {
     if (productData?.properties?.SetPterodactyl && productData.pterodactyl !== undefined) {
       const { cpu, disk, port, ram } = productData.pterodactyl
       const { Emojis } = settings as { Emojis: Record<string, string | undefined> }
+      const strings: string[] = []
 
-      updateEmbed.setDescription(`
-        ${updateEmbed.data.description}
-        ${cpu !== undefined ? `${Emojis?.cpu} | CPU: ${cpu}` : ''}
-        ${disk !== undefined ? `${Emojis?.disk} | Disco: ${disk}` : ''}
-        ${port !== undefined ? `${Emojis?.port} | Porta: ${port}` : ''}
-        ${ram !== undefined ? `${Emojis?.ram} | Ram:  ${ram}` : ''}
-      `)
+      if (cpu !== undefined) strings.push(`${Emojis?.cpu ?? '🖥️'} | CPU: ${cpu}`)
+      if (disk !== undefined) strings.push(`${Emojis?.disk ?? '💿'} | Disco: ${disk}`)
+      if (port !== undefined) strings.push(`${Emojis?.port ?? '🌐'} | Porta: ${port}`)
+      if (ram !== undefined) strings.push(`${Emojis?.ram ?? '🎟'} | Ram:  ${ram}`)
+
+      updateEmbed.setDescription(`${updateEmbed.data.description}\n${strings.join('\n')}`)
     }
 
     if (productData?.role !== undefined && productData.role !== '') {
