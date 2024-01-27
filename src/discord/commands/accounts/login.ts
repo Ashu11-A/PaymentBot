@@ -6,7 +6,7 @@ new Command({
   nameLocalizations: {
     'en-GB': 'login'
   },
-  description: '[ 🦖 Pterodactyl] Login',
+  description: '[ 🧑 Perfil] Login',
   dmPermission,
   type: ApplicationCommandType.ChatInput,
   run (interaction) {

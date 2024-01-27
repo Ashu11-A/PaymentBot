@@ -7,7 +7,7 @@ export function corsMiddleware (req: Request, res: Response, next: NextFunction)
   const { active } = settings.Express.cors
   let { allow } = settings.Express.cors
 
-  if (active === true) {
+  if (active) {
     cors<Request>({
       origin (requestOrigin, callback) {
         if (allow === undefined) allow = ['']

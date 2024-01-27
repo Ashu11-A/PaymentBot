@@ -164,7 +164,7 @@ interface ButtonType {
   disabled?: boolean
   isProtected?: { user: User }
   permission?: 'User' | 'Admin'
-  type: 'Ticket' | 'Cart' | 'Product' | 'System' | 'Cupom' | 'SUEE' | 'Event'
+  type: 'Ticket' | 'Cart' | 'Product' | 'System' | 'Cupom' | 'SUEE' | 'Event' | 'Account'
 }
 export class CustomButtonBuilder extends ButtonBuilder implements ButtonType {
   customId

@@ -70,6 +70,10 @@ new Event({
         await Controller.config()
         break
       }
+      case 'Account': {
+        await Controller.account()
+        break
+      }
     }
     const end = Date.now()
     const timeSpent = (end - start) / 1000 + 's'
