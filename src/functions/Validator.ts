@@ -51,3 +51,12 @@ export function validarEmail (email: string): [boolean, string] {
     return [true, '']
   }
 }
+
+export function validarURL (url: string): [boolean, string] {
+  try {
+    const parsedURL = new URL(url)
+    return [true, `${parsedURL.protocol}//${parsedURL.host}`]
+  } catch {
+    return [false, '']
+  }
+}

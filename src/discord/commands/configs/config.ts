@@ -2,11 +2,12 @@ import {
   ApplicationCommandOptionType,
   ApplicationCommandType,
   ChannelType,
+  EmbedBuilder,
   type CategoryChannel,
   type TextChannel
 } from 'discord.js'
 import { Command } from '@/discord/base'
-import { Database } from '@/functions'
+import { Database, validarURL } from '@/functions'
 import { db } from '@/app'
 import { setSystem } from '@/discord/commands/configs/utils/setSystem'
 import { modelPresence, delPresence } from './utils/Presence'
@@ -366,13 +367,24 @@ new Command({
           const tokenADM = options.getString('token-admin')
 
           if (url !== null) {
-            await new Database({
-              interaction,
-              pathDB: 'config.pterodactyl.url',
-              typeDB: 'payments'
-            }).set({
-              data: url
-            })
+            const [isValid, formatedURL] = validarURL(url)
+            if (isValid) {
+              await new Database({
+                interaction,
+                pathDB: 'config.pterodactyl.url',
+                typeDB: 'payments'
+              }).set({
+                data: formatedURL
+              })
+            } else {
+              return await interaction.editReply({
+                embeds: [
+                  new EmbedBuilder({
+                    title: '❌ | URL informada não é valida!'
+                  }).setColor('Red')
+                ]
+              })
+            }
           }
           if (tokenPanel !== null) {
             await new Database({

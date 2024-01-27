@@ -1,4 +1,4 @@
-import { type AnySelectMenuInteraction, type ButtonInteraction, type CacheType, type ModalSubmitInteraction } from 'discord.js'
+import { EmbedBuilder, type AnySelectMenuInteraction, type ButtonInteraction, type CacheType, type ModalSubmitInteraction } from 'discord.js'
 import { collectorEditButtons } from './SUEE/collectorButtons'
 import { collectorEditModal } from './SUEE/collectorModal'
 import cartCollectorButtons from './payments/cart/cartCollectorButtons'
@@ -11,6 +11,7 @@ import ticketCollectorButtons from './tickets/collectorButtons'
 import { ticketCollectorSelect } from './tickets/collectorSelect'
 import { ticketCollectorModal } from './tickets/collectorModal'
 import configCollectorButtons from './config/configCollectorButtons'
+import { db } from '@/app'
 
 interface ControllerType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
@@ -27,9 +28,22 @@ export class ButtonController implements ControllerType {
 
   async product (): Promise<void> {
     const { interaction, key } = this
+    const { guildId, channelId, message } = interaction
 
-    if (interaction.isButton()) { await productCollectorButtons({ interaction, key }); return }
-    if (interaction.isModalSubmit()) await productCollectorModal({ interaction, key })
+    const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
+    if (productData !== undefined) {
+      if (interaction.isButton()) { await productCollectorButtons({ interaction, key }); return }
+      if (interaction.isModalSubmit()) await productCollectorModal({ interaction, key })
+    } else {
+      await interaction.reply({
+        ephemeral,
+        embeds: [
+          new EmbedBuilder({
+            title: 'Desculpe, mas as informações desse produto não estão no meu Database.'
+          }).setColor('Red')
+        ]
+      })
+    }
   }
 
   async SUEE (): Promise<void> {
