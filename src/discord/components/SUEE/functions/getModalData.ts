@@ -1,4 +1,5 @@
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ComponentType } from 'discord.js'
 
 const modalData: Record<string, collectorButtonsForModals> = {
   SetName: {
@@ -7,7 +8,9 @@ const modalData: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: Pegue seu embed!',
     style: 1,
     maxLength: 256,
-    type: 'embed.title'
+    db: 'embed.title',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   SetDesc: {
     title: '❓| Qual será a Descrição da Embed?',
@@ -15,7 +18,9 @@ const modalData: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: Basta abrir seu embed e aguardar um membro dê nossa equipe para lhe ajudar.',
     style: 2,
     maxLength: 4000,
-    type: 'embed.description'
+    db: 'embed.description',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   SetMiniature: {
     title: '❓| Qual será a Miniatura da Embed?',
@@ -23,7 +28,9 @@ const modalData: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: https://uma.imagemBem.ilustrativa/img.png',
     style: 1,
     maxLength: 4000,
-    type: 'embed.thumbnail.url'
+    db: 'embed.thumbnail.url',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   SetBanner: {
     title: '❓| Qual será o Banner da Embed?',
@@ -31,7 +38,9 @@ const modalData: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: https://um.bannerBem.legal/img.png',
     style: 1,
     maxLength: 4000,
-    type: 'embed.image.url'
+    db: 'embed.image.url',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   SetColor: {
     title: '❓| Qual será a Cor da Embed?',
@@ -39,7 +48,9 @@ const modalData: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: #13fc03',
     style: 1,
     maxLength: 7,
-    type: 'embed.color'
+    db: 'embed.color',
+    type: ComponentType.TextInput,
+    customId: 'content'
   }
 }
 

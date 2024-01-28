@@ -367,8 +367,8 @@ export class UpdateCart {
 
     if (product.pterodactyl !== undefined) {
       const { cpu, disk, port, ram } = product.pterodactyl
-      const { Emojis } = settings as {
-        Emojis: Record<string, string | undefined>
+      const { Emojis } = settings as unknown as {
+        Emojis: Record<string, string | undefined> | undefined
       }
 
       embed.setDescription(`

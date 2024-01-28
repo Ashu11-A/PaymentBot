@@ -1,4 +1,5 @@
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ComponentType } from 'discord.js'
 
 type ModalType = Record<string, collectorButtonsForModals>
 const productModal: ModalType = {
@@ -8,7 +9,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 14,50',
     style: 1,
     maxLength: 6,
-    type: 'price'
+    db: 'price',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   AddCoins: {
     title: '❓| Quantas moedas será dado na compra?',
@@ -16,7 +19,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 2000',
     style: 1,
     maxLength: 10,
-    type: 'coins'
+    db: 'coins',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   SetRole: {
     title: '❓| Qual será o id a ser adquirido na compra?',
@@ -24,7 +29,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 379089880887721995',
     style: 1,
     maxLength: 30,
-    type: 'role'
+    db: 'role',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   CPU: {
     title: '❓| CPU',
@@ -32,7 +39,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 250',
     style: 1,
     maxLength: 4,
-    type: 'pterodactyl.cpu'
+    db: 'pterodactyl.cpu',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   Ram: {
     title: '❓| Memoria Ram',
@@ -40,7 +49,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 1024M ou 1GB',
     style: 1,
     maxLength: 16,
-    type: 'pterodactyl.ram'
+    db: 'pterodactyl.ram',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   Disk: {
     title: '❓| Armazenamento',
@@ -48,7 +59,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 2048M ou 2GB',
     style: 1,
     maxLength: 30,
-    type: 'pterodactyl.disk'
+    db: 'pterodactyl.disk',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   Port: {
     title: '❓| Portas de conexão',
@@ -56,7 +69,9 @@ const productModal: ModalType = {
     placeholder: 'Ex: 3',
     style: 1,
     maxLength: 30,
-    type: 'pterodactyl.port'
+    db: 'pterodactyl.port',
+    type: ComponentType.TextInput,
+    customId: 'content'
   }
 }
 

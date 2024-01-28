@@ -1,13 +1,9 @@
-import { type Message } from 'discord.js'
+import { type TextInputComponentData, type Message } from 'discord.js'
 
-export interface collectorButtonsForModals {
+export interface collectorButtonsForModals extends TextInputComponentData {
+  title: string
   modal?: boolean
-  title?: string
-  label?: string
-  style?: number
-  type?: string
-  maxLength?: number
-  placeholder?: string
+  db?: string
 }
 
 export type CustomIdHandlers = Record<string, () => undefined | Promise<void> | Promise<Message<boolean>> >

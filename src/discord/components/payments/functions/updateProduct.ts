@@ -70,7 +70,7 @@ export class UpdateProduct {
     }
     if (productData?.properties?.SetPterodactyl && productData.pterodactyl !== undefined) {
       const { cpu, disk, port, ram } = productData.pterodactyl
-      const { Emojis } = settings as { Emojis: Record<string, string | undefined> }
+      const { Emojis } = settings as unknown as { Emojis: Record<string, string | undefined> | undefined }
       const strings: string[] = []
 
       if (cpu !== undefined) strings.push(`${Emojis?.cpu ?? '🖥️'} | CPU: ${cpu}`)

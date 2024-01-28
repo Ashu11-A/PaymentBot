@@ -1,4 +1,5 @@
 import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { ComponentType } from 'discord.js'
 
 const buttonsModals: Record<string, collectorButtonsForModals> = {
   SetRole: {
@@ -7,10 +8,17 @@ const buttonsModals: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: 379089880887721995',
     style: 1,
     maxLength: 30,
-    type: 'role'
+    db: 'role',
+    type: ComponentType.TextInput,
+    customId: 'content'
   },
   AddSelect: {
-    type: 'select'
+    db: 'select',
+    title: '',
+    type: ComponentType.TextInput,
+    customId: 'content',
+    style: 1,
+    label: ''
   },
   SendSave: {
     title: '❓| ID do channel',
@@ -18,7 +26,9 @@ const buttonsModals: Record<string, collectorButtonsForModals> = {
     placeholder: 'Ex: 379089880887721995',
     style: 1,
     maxLength: 30,
-    type: 'embedChannelID'
+    db: 'embedChannelID',
+    type: ComponentType.TextInput,
+    customId: 'content'
   }
 }
 
