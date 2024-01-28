@@ -25,13 +25,16 @@ new Command({
     await interaction.deferReply({ ephemeral })
 
     const { guildId, user } = interaction
+
     const { url: urlPtero, tokenPanel: tokenPtero } = (await db.payments.get(
       `${guildId}.config.pterodactyl`
     )) ?? { url: undefined, tokenPanel: undefined }
-
     const { url: urlCtrl, token: tokenCtrl } = (await db.payments.get(
       `${guildId}.config.ctrlPanel`
     )) ?? { url: undefined, token: undefined }
+
+    const pteroUserDB = (await db.pterodactyl.table('guilds').get(`${guildId}.users.${user.id}`)) ?? undefined
+    const ctrlUserDB = (await db.ctrlPanel.table('guilds').get(`${guildId}.users.${user.id}`)) ?? undefined
 
     const embed = new EmbedBuilder({
       title: `👋 Olá ${user.username}, bem vindo ao nosso sistema de registro.`,
@@ -48,7 +51,7 @@ new Command({
           type: 'Account',
           label: 'CtrlPanel',
           customId: 'CtrlPanel',
-          style: ButtonStyle.Secondary,
+          style: ctrlUserDB !== undefined ? ButtonStyle.Success : ButtonStyle.Secondary,
           emoji: { name: '🖥️' },
           isProtected: { user }
         })
@@ -62,7 +65,7 @@ new Command({
           type: 'Account',
           label: 'Pterodactyl',
           customId: 'Pterodactyl',
-          style: ButtonStyle.Secondary,
+          style: pteroUserDB !== undefined ? ButtonStyle.Success : ButtonStyle.Secondary,
           emoji: { name: '🦖' },
           isProtected: { user }
         })

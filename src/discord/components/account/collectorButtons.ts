@@ -10,7 +10,8 @@ export default async function accountCollectorButtons (options: {
   if (!interaction.inGuild()) return
 
   const customIdHandlers: CustomIdHandlers = {
-    Pterodactyl: async () => { await showModal({ interaction, key }) }
+    Pterodactyl: async () => { await showModal({ interaction, key }) },
+    CtrlPanel: async () => { await showModal({ interaction, key }) }
   }
 
   const customIdHandler = customIdHandlers[key]

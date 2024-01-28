@@ -1,6 +1,7 @@
 import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
-import { createAccount } from './pterodactyl/createAccount'
+import { createAccount as createPteroAccount } from './pterodactyl/createAccount'
+import { createAccount as createCtrlAccount } from './ctrlPanel/createAccount'
 
 export default async function accountCollectorModal (options: {
   interaction: ModalSubmitInteraction<CacheType>
@@ -10,7 +11,8 @@ export default async function accountCollectorModal (options: {
   if (!interaction.inGuild()) return
 
   const customIdHandlers: CustomIdHandlers = {
-    Pterodactyl: async () => { await createAccount({ interaction, key }) }
+    Pterodactyl: async () => { await createPteroAccount({ interaction, key }) },
+    CtrlPanel: async () => { await createCtrlAccount({ interaction, key }) }
   }
 
   const customIdHandler = customIdHandlers[key]
