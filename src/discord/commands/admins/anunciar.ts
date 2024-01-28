@@ -191,7 +191,8 @@ new Component({
       }
 
       if (sendChannel !== undefined) {
-        const content = (cargo !== null ? `<@&${cargo}>` : undefined)
+        let content: string | undefined
+        if (cargo !== undefined) content = (cargo === guildId ? '@everyone' : `<@&${cargo}>`)
 
         await sendChannel.send({
           content,
