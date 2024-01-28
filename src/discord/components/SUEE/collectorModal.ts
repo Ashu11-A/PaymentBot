@@ -16,7 +16,7 @@ export async function collectorEditModal (options: { interaction: ModalSubmitInt
   if (type !== null && message !== null && button !== null) {
     try {
       await interaction.deferReply({ ephemeral: true })
-      const { type: modalType } = getModalData(button)
+      const { db: dataDB } = getModalData(button)
       let messageModal = fields.getTextInputValue('content')
 
       if (messageModal.toLowerCase() === 'vazio') {
@@ -33,7 +33,7 @@ export async function collectorEditModal (options: { interaction: ModalSubmitInt
 
       const productBuilder = new UpdateProduct({ interaction, message })
 
-      await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${modalType}`, messageModal)
+      await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.${dataDB}`, messageModal)
       await db.messages.set(`${guildId}.${type}.${channelId}.messages.${message?.id}.properties.${button}`, true)
       console.log(type, button)
       if (type === 'ticket') {

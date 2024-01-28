@@ -35,8 +35,8 @@ export default async function cartCollectorButtons (options: {
     await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
-    const { title, label, placeholder, style, type, maxLength } = getModalData(key)
-    const textValue = await db.payments.get(`${guildId}.process.${channelId}.${type}`)
+    const { title, label, placeholder, style, type, maxLength, db: dataDB } = getModalData(key)
+    const textValue = await db.payments.get(`${guildId}.process.${channelId}.${dataDB}`)
     const modal = new ModalBuilder({ customId: interaction.customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
@@ -47,7 +47,8 @@ export default async function cartCollectorButtons (options: {
           value: textValue ?? undefined,
           style,
           required: true,
-          maxLength
+          maxLength,
+          type
         })
       ]
     })

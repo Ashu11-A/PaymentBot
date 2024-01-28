@@ -139,7 +139,7 @@ export class TicketButtons implements TicketType {
 
   public async sendSave (key: string): Promise<void> {
     const { guild, guildId, channelId } = this.interaction
-    const { label, maxLength, placeholder, style, title, type } = getModalData(key)
+    const { label, maxLength, placeholder, style, title, type, db: dataDB } = getModalData(key)
 
     if (this.interaction.isButton()) {
       try {
@@ -151,7 +151,7 @@ export class TicketButtons implements TicketType {
         if (typeof channelEmbedID === 'string' && messageID !== undefined) {
           await buttonsUsers(this.interaction, message.id, msg)
         } else {
-          const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${type}`)
+          const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${dataDB}`)
           const modal = new ModalBuilder({ customId, title })
           const content = new ActionRowBuilder<TextInputBuilder>({
             components: [
@@ -162,7 +162,8 @@ export class TicketButtons implements TicketType {
                 value: textValue ?? null,
                 style,
                 required: true,
-                maxLength
+                maxLength,
+                type
               })
             ]
           })

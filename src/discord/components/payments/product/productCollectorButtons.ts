@@ -58,8 +58,8 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
     await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
-    const { title, label, placeholder, style, type, maxLength } = getModalData(key)
-    const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${type}`)
+    const { title, label, placeholder, style, type, maxLength, db: dataDB } = getModalData(key)
+    const textValue = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message.id}.${dataDB}`)
     const modal = new ModalBuilder({ customId: interaction.customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
@@ -70,7 +70,8 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
           value: typeof textValue === 'number' ? String(textValue) : textValue ?? null,
           style,
           required: true,
-          maxLength
+          maxLength,
+          type
         })
       ]
     })

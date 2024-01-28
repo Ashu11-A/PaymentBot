@@ -10,7 +10,7 @@ export async function productCollectorModal (options: { interaction: ModalSubmit
   await interaction.deferReply({ ephemeral: true })
 
   const { guildId, channel, channelId, message, fields } = interaction
-  const { type } = getModalData(key)
+  const { db: dataDB } = getModalData(key)
   let messageModal: string | number = fields.getTextInputValue('content')
 
   if (messageModal.toLowerCase() === 'vazio') messageModal = ''
@@ -23,13 +23,13 @@ export async function productCollectorModal (options: { interaction: ModalSubmit
     }
   }
 
-  await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.${type}`, messageModal)
+  await db.messages.set(`${guildId}.payments.${channelId}.messages.${message?.id}.${dataDB}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
       const productBuilder = new UpdateProduct({ interaction, message: msg })
       await productBuilder.embed({ button: key })
         .then(async () => {
-          await interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
+          await interaction.editReply({ content: '✅ | Elemento ' + '`' + dataDB + '`' + ' foi alterado com sucesso!' })
         })
     })
     .catch(async (err: Error) => {

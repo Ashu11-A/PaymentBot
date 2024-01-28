@@ -75,9 +75,8 @@ export default async function ticketCollectorButtons (options: {
     if (key !== 'AddSelect' && key !== 'SendSave') await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
-    const { title, label, placeholder, style, type, maxLength } = getModalData(key)
-    const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${type}`)
-    console.log('yo: ' + customId)
+    const { title, label, placeholder, style, type, maxLength, db: dataDB } = getModalData(key)
+    const textValue = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message.id}.${dataDB}`)
     const modal = new ModalBuilder({ customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
@@ -88,7 +87,8 @@ export default async function ticketCollectorButtons (options: {
           value: textValue ?? null,
           style,
           required: true,
-          maxLength
+          maxLength,
+          type
         })
       ]
     })

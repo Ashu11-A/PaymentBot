@@ -14,8 +14,8 @@ export async function collectorEditButtons (options: { interaction: ButtonIntera
   console.log(type, button, key)
 
   if (type !== null && button !== null) {
-    const { title, label, placeholder, style, maxLength, type: modalType } = getModalData(button)
-    const textValue = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${messageId}.${modalType}`)
+    const { title, label, placeholder, style, maxLength, type: modalType, db: dataDB } = getModalData(button)
+    const textValue = await db.messages.get(`${guildId}.${type}.${channelId}.messages.${messageId}.${dataDB}`)
     const modal = new ModalBuilder({ customId, title })
     const content = new ActionRowBuilder<TextInputBuilder>({
       components: [
@@ -26,7 +26,8 @@ export async function collectorEditButtons (options: { interaction: ButtonIntera
           value: textValue ?? null,
           style,
           required: true,
-          maxLength
+          maxLength,
+          type: modalType
         })
       ]
     })

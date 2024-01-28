@@ -15,13 +15,12 @@ export async function showModal (options: {
   const { interaction, key } = options
   const { customId } = interaction
   const info = getModalData(key)
-  console.log(customId)
   const modal = new ModalBuilder({ customId, title: 'Pterodactyl Registro' })
 
   const contentData = new Array<ActionRowBuilder<TextInputBuilder>>()
 
   for (const [position, values] of info.entries()) {
-    const { label, maxLength, placeholder, style, customId } = values
+    const { label, maxLength, placeholder, style, customId, type } = values
     if (!(contentData[position] instanceof ActionRowBuilder)) {
       contentData[position] = new ActionRowBuilder<TextInputBuilder>()
     }
@@ -33,7 +32,7 @@ export async function showModal (options: {
         maxLength,
         required: true,
         customId,
-        type: ComponentType.TextInput
+        type
       })
     )
   }

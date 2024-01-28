@@ -14,7 +14,7 @@ export default async function cartCollectorModal (options: {
   if (!interaction.inGuild()) return
 
   const { guildId, user, channel, message, fields, channelId } = interaction
-  const { type } = getModalData(key)
+  const { db: dataDB } = getModalData(key)
   const messageModal = fields.getTextInputValue('content')
 
   if (key === 'Direct') {
@@ -94,7 +94,7 @@ export default async function cartCollectorModal (options: {
   }
 
   await interaction.deferReply({ ephemeral: true })
-  await db.payments.set(`${guildId}.process.${channelId}.${type}`, messageModal)
+  await db.payments.set(`${guildId}.process.${channelId}.${dataDB}`, messageModal)
   await channel?.messages.fetch(String(message?.id))
     .then(async (msg) => {
       await db.payments.set(`${guildId}.process.${msg.id}.properties.${key}`, true)

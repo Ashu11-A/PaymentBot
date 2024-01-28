@@ -16,7 +16,7 @@ export class TicketModals implements TicketType {
     const { guild, guildId, channelId } = this.interaction
     const interaction = this.interaction
     const { message, fields } = interaction
-    const { type } = getModalData(key)
+    const { db: dataDB } = getModalData(key)
     const messageModal = fields.getTextInputValue('content')
     let data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
     const channelVerify = guild?.channels.cache.get(data?.channelEmbedID) as TextChannel
@@ -24,7 +24,7 @@ export class TicketModals implements TicketType {
     try {
       if (data?.channelEmbedID === undefined) {
         await channelVerify?.messages.fetch(data?.messageID).catch(async (err) => { console.log(err) })
-        await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
+        await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${dataDB}`, messageModal)
 
         const channel = guild?.channels.cache.get(messageModal) as TextChannel
         data = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
@@ -88,14 +88,14 @@ export class TicketModals implements TicketType {
 
   public async setConfig (key: string): Promise<void> {
     const { fields, guildId, channelId, message, channel } = this.interaction
-    const { type } = getModalData(key)
+    const { db: dataDB } = getModalData(key)
     console.log(fields)
     let messageModal = fields.getTextInputValue('content')
     console.log('messageModal:', messageModal)
 
     if (messageModal.toLowerCase() === 'vazio') messageModal = ''
 
-    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${type}`, messageModal)
+    await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.${dataDB}`, messageModal)
     await channel?.messages.fetch(String(message?.id))
       .then(async (msg) => {
         const { embed } = await db.messages.get(`${guildId}.ticket.${channelId}.messages.${message?.id}`)
@@ -109,7 +109,7 @@ export class TicketModals implements TicketType {
             await db.messages.set(`${guildId}.ticket.${channelId}.messages.${message?.id}.properties.${key}`, true)
               .then(async () => {
                 await ticketButtonsConfig(this.interaction, msg)
-                await this.interaction.editReply({ content: '✅ | Elemento ' + '`' + type + '`' + ' foi alterado com sucesso!' })
+                await this.interaction.editReply({ content: '✅ | Elemento ' + '`' + dataDB + '`' + ' foi alterado com sucesso!' })
               })
           })
       })
