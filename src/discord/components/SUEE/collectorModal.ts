@@ -39,7 +39,7 @@ export async function collectorEditModal (options: { interaction: ModalSubmitInt
       if (type === 'ticket') {
         await ticketButtonsConfig(interaction, message)
       } else if (type === 'payments') {
-        await productBuilder.embed({ button: key })
+        await productBuilder.embed({ button })
       }
       await interaction.editReply({ content: '✅ | Elemento ' + '`' + key + '`' + ' foi alterado com sucesso!' })
     } catch (err) {

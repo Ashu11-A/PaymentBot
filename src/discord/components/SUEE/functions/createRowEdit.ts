@@ -3,6 +3,7 @@
 import { core, db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
 import { ActionRowBuilder, type ButtonBuilder, ButtonStyle, type ButtonInteraction, type CommandInteraction, type Message, type ModalSubmitInteraction, type StringSelectMenuInteraction, type CacheType } from 'discord.js'
+import { getTypeAndKey } from './getTypeAndKey'
 
 export async function createRowEdit (interaction: StringSelectMenuInteraction<CacheType> | CommandInteraction<CacheType> | ModalSubmitInteraction<CacheType> | ButtonInteraction<CacheType> | CommandInteraction<CacheType>, message: Message<boolean>, type: 'ticket' | 'payments'): Promise<ActionRowBuilder<ButtonBuilder>> {
   const { guildId, channelId, user } = interaction
@@ -54,8 +55,8 @@ export async function createRowEdit (interaction: StringSelectMenuInteraction<Ca
   for (const value of rowButtons) {
     const { customId } = value
     if (customId === undefined) continue
-
-    if (data?.properties !== undefined && data?.properties[customId] !== undefined) {
+    const [, button] = getTypeAndKey(customId)
+    if (data?.properties !== undefined && data?.properties[String(button)] !== undefined) {
       value.setStyle(ButtonStyle.Primary)
     } else {
       value.setStyle(ButtonStyle.Secondary)

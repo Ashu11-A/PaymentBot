@@ -8,10 +8,7 @@ import { getModalData } from './functions/getModalData'
 export async function collectorEditButtons (options: { interaction: ButtonInteraction<CacheType>, key: string }): Promise<void> {
   const { interaction, key } = options
   const { guildId, channelId, message: { id: messageId }, customId } = interaction
-
   const [type, button] = getTypeAndKey(key)
-
-  console.log(type, button, key)
 
   if (type !== null && button !== null) {
     const { title, label, placeholder, style, maxLength, type: modalType, db: dataDB } = getModalData(button)
