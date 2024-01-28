@@ -1,5 +1,5 @@
 import { db } from '@/app'
-import { UpdateProduct } from '@/discord/components/payments'
+import { UpdateProduct } from '@/discord/components/payments/product/functions/updateProduct'
 import { validarValor } from '@/functions'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'

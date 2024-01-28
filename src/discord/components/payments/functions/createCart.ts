@@ -81,7 +81,8 @@ export async function createCart (interaction: ButtonInteraction<CacheType>): Pr
           })
         ]
       })
-    } catch {
+    } catch (err) {
+      console.log(err)
       await interaction.editReply({
         embeds: [new EmbedBuilder({
           title: '❌ | Ocorreu um erro ao abrir o carrinho!'

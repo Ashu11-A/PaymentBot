@@ -1,5 +1,7 @@
 import { db } from '@/app'
-import { createCart, UpdateProduct } from '@/discord/components/payments'
+import { createCart } from '@/discord/components/payments'
+import { UpdateProduct } from '@/discord/components/payments/product/functions/updateProduct'
+import { ProductButtonCollector } from '@/discord/components/payments/product/functions/buttonsCollector'
 import { Database } from '@/functions'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
@@ -10,12 +12,13 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
   if (!interaction.inGuild()) return
 
   const { guildId, message, channelId } = interaction
-  const productBuilder = new UpdateProduct({ interaction, message })
+  const Product = new UpdateProduct({ interaction, message })
+  const ProductButton = new ProductButtonCollector({ interaction, message })
 
   const customIdHandlers: CustomIdHandlers = {
-    Save: async () => { await productBuilder.buttonsUsers() },
-    Config: async () => { await productBuilder.buttonsConfig({ switchBotton: true }) },
-    Status: async () => { await productBuilder.paymentStatus() },
+    Save: async () => { await ProductButton.buttonsUsers() },
+    Config: async () => { await Product.buttonsConfig({ switchBotton: true }) },
+    Status: async () => { await ProductButton.paymentStatus() },
     Buy: async () => { await createCart(interaction) },
     SetEstoque: async () => {
       await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
@@ -24,7 +27,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         enabledType: 'swap',
         otherSystemNames: ['SetCtrlPanel', 'SetPterodactyl']
       })
-      await productBuilder.embed({ button: key })
+      await Product.embed({ button: key })
     },
     SetCtrlPanel: async () => {
       await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
@@ -33,7 +36,7 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         enabledType: 'swap',
         otherSystemNames: ['SetEstoque', 'SetPterodactyl']
       })
-      await productBuilder.embed({ button: key })
+      await Product.embed({ button: key })
     },
     SetPterodactyl: async () => {
       await new Database({ interaction, pathDB: `payments.${channelId}.messages.${message.id}.properties`, typeDB: 'messages' }).setDelete({
@@ -42,20 +45,21 @@ export async function productCollectorButtons (options: { interaction: ButtonInt
         enabledType: 'swap',
         otherSystemNames: ['SetEstoque', 'SetCtrlPanel']
       })
-      await productBuilder.embed({ button: key })
+      await Product.embed({ button: key })
     },
     Export: async () => {
-      await productBuilder.export()
+      await ProductButton.export()
       await db.messages.set(`${guildId}.payments.${channelId}.messages.${message.id}.properties.${key}`, true)
     },
-    Import: async () => { await productBuilder.import() },
-    Delete: async () => { await productBuilder.delete() }
+    Import: async () => { await ProductButton.import() },
+    Delete: async () => { await ProductButton.delete() },
+    Egg: async () => { await ProductButton.NestSelect({}) }
   }
 
   const customIdHandler = customIdHandlers[key]
 
   if (typeof customIdHandler === 'function') {
-    await interaction.deferReply({ ephemeral })
+    if (key !== 'Egg') await interaction.deferReply({ ephemeral })
     await customIdHandler()
   } else {
     const { title, label, placeholder, style, type, maxLength, db: dataDB } = getModalData(key)

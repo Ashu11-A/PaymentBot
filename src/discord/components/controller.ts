@@ -14,6 +14,7 @@ import configCollectorButtons from './config/configCollectorButtons'
 import { db } from '@/app'
 import accountCollectorButtons from './account/collectorButtons'
 import accountCollectorModal from './account/collectorModal'
+import { productCollectorSelect } from './payments/product/productCollectorSelect'
 
 interface ControllerType {
   interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
@@ -33,9 +34,10 @@ export class ButtonController implements ControllerType {
     const { guildId, channelId, message } = interaction
 
     const productData = await db.messages.get(`${guildId}.payments.${channelId}.messages.${message?.id}`)
-    if (productData !== undefined) {
+    if (productData !== undefined || interaction.isStringSelectMenu()) {
       if (interaction.isButton()) { await productCollectorButtons({ interaction, key }); return }
-      if (interaction.isModalSubmit()) await productCollectorModal({ interaction, key })
+      if (interaction.isModalSubmit()) { await productCollectorModal({ interaction, key }); return }
+      if (interaction.isStringSelectMenu()) await productCollectorSelect({ interaction, key })
     } else {
       await interaction.reply({
         ephemeral,

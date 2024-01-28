@@ -13,6 +13,11 @@ export interface ProductCartData {
     porcent: number
   }
   pterodactyl?: {
+    egg: {
+      name: string
+      nestId: number
+      eggId: number
+    }
     cpu: string
     ram: string
     disk: string
@@ -59,6 +64,11 @@ export interface productData {
   coins?: number
   properties: Record<string, boolean>
   pterodactyl?: {
+    egg: {
+      name: string
+      nestId: number
+      eggId: number
+    }
     cpu: string
     ram: string
     disk: string

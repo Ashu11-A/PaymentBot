@@ -1,7 +1,7 @@
 // Sistema Unificado de Edição de Embeds (SUEE)
 
 import { db } from '@/app'
-import { UpdateProduct } from '@/discord/components/payments'
+import { UpdateProduct } from '@/discord/components/payments/product/functions/updateProduct'
 import { ticketButtonsConfig } from '@/discord/components/tickets'
 import { validarCorHex } from '@/functions'
 import { type CacheType, type ModalSubmitInteraction } from 'discord.js'
