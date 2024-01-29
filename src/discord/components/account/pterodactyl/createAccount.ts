@@ -1,9 +1,11 @@
 import { db } from '@/app'
 import { gen } from '@/functions'
-import axios from 'axios'
 import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'discord.js'
 import { sendDM } from '../functions/sendDM'
 import { validator } from '../functions/validator'
+import { Pterodactyl } from '@/classes/pterodactyl'
+import axios, { type AxiosError } from 'axios'
+import { type UserObject } from '@/classes/interfaces'
 
 export async function createAccount (options: {
   interaction: ModalSubmitInteraction<CacheType>
@@ -12,127 +14,106 @@ export async function createAccount (options: {
   const { interaction } = options
   if (!interaction.inGuild() || !interaction.inCachedGuild()) return
 
-  const { guildId, user, fields } = interaction
-  const email = fields.getTextInputValue('email')
-  const username = fields.getTextInputValue('username')
-  const firtName = fields.getTextInputValue('primeiro-nome')
-  const lastName = fields.getTextInputValue('ultimo-nome')
-
-  const { url: urlPtero, tokenPanel: tokenPtero } = (await db.payments.get(
-    `${guildId}.config.pterodactyl`
-  )) ?? { url: undefined, tokenPanel: undefined }
-
-  if (!await validator({ email, interaction, token: tokenPtero, url: urlPtero })) return
-
-  const dataPost = {
-    email,
-    username,
-    first_name: firtName,
-    last_name: lastName
-  }
-
-  await axios({
-    url: `${urlPtero}/api/application/users`,
-    method: 'POST',
-    maxRedirects: 5,
-    data: dataPost,
-    headers: {
-      Accept: 'Application/vnd.pterodactyl.v1+json',
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${tokenPtero}`
+  try {
+    const { guildId, user, fields } = interaction
+    const email = fields.getTextInputValue('email')
+    const username = fields.getTextInputValue('username')
+    const firtName = fields.getTextInputValue('primeiro-nome')
+    const lastName = fields.getTextInputValue('ultimo-nome')
+    const password = gen(12)
+    const dataPost = {
+      email,
+      username,
+      first_name: firtName,
+      last_name: lastName
     }
-  })
-    .then(async (res) => {
-      if (res.status === 201) {
-        const {
-          attributes: { id, uuid }
-        } = res.data
-        const password = gen(12)
 
-        await axios({
-          url: `${urlPtero}/api/application/users/${id}`,
-          method: 'PATCH',
-          maxRedirects: 5,
-          data: {
-            ...dataPost,
-            password
-          },
-          headers: {
-            Accept: 'Application/vnd.pterodactyl.v1+json',
-            'Content-Type': 'application/json',
-            Authorization: `Bearer ${tokenPtero}`
-          }
-        })
-          .then(async () => {
-            await db.pterodactyl.table('guilds').set(`${guildId}.users.${user.id}`, {
-              id,
-              uuid
+    console.log(email, username, firtName, lastName)
+    const { url: urlPtero, tokenPanel: tokenPtero } = (await db.payments.get(
+      `${guildId}.config.pterodactyl`
+    )) ?? { url: undefined, tokenPanel: undefined }
+    if (await validator({ email, interaction, token: tokenPtero, url: urlPtero })) return
+    const PterodactylBuilder = new Pterodactyl({ url: urlPtero, token: tokenPtero })
+
+    const embedError = new EmbedBuilder({
+      title: '❌ | Ocorreu um erro ao tentar criar o usuário no Pterodactyl.'
+    }).setColor('Red')
+
+    async function showError (err: any | AxiosError<any, any> | undefined): Promise<boolean> {
+      if (createRes === undefined || axios.isAxiosError(createRes)) {
+        const errorInfo: Array<Record<string, Error | string>> = []
+
+        if (err?.cause !== undefined) errorInfo.push({ Cause: err.cause })
+        if (err?.name !== undefined) errorInfo.push({ Erro: err.name })
+        if (err?.message !== undefined) errorInfo.push({ Message: err.message })
+        if (err?.response?.data?.errors[0]?.detail !== undefined) {
+          errorInfo.push({ Detail: err.response.data.errors[0].detail })
+        }
+
+        if (errorInfo.length > 0) {
+          const description = errorInfo
+            .map((erro) => {
+              const chave = Object.keys(erro)[0]
+              const valor = erro[chave]
+              return `${chave}: ${valor instanceof Error ? valor.message : valor}`
             })
-            await sendDM({ email, interaction, password, url: urlPtero })
+            .join('\n')
+          embedError.setDescription(description)
+          await interaction.reply({
+            ephemeral,
+            embeds: [embedError]
           })
-          .catch(async (err) => {
-            console.log(err)
-            await axios({
-              url: `${urlPtero}/api/application/users/${id}`,
-              method: 'DELETE',
-              maxRedirects: 5,
-              headers: {
-                Accept: 'Application/vnd.pterodactyl.v1+json',
-                'Content-Type': 'application/json',
-                Authorization: `Bearer ${tokenPtero}`
-              }
-            })
-              .then(async () => {
-                const embed = new EmbedBuilder({
-                  title:
-                    '❌ | Ocorreu um erro ao tentar definir a senha da sua conta, tente novamente!'
-                }).setColor('Red')
-                if (err?.response?.data?.errors[0]?.detail !== undefined) {
-                  embed.addFields({
-                    name: 'Erro:',
-                    value: err.response.data.errors[0].detail
-                  })
-                }
-                await interaction.reply({
-                  ephemeral,
-                  embeds: [embed]
-                })
-              })
-              .catch(async (err) => {
-                console.log(err)
-                await interaction.reply({
-                  ephemeral,
-                  embeds: [
-                    new EmbedBuilder({
-                      title:
-                        '❌ | Chame um Administrador, ao tentar definir a senha da sua conta, ocorreu um erro, mas ao tentar então deletar a conta para uma nova tentativa, não foi possivel deletar a conta.'
-                    })
-                  ]
-                })
-              })
-          })
-      } else {
+          return true
+        }
+      }
+      return false
+    }
+
+    const createRes = await PterodactylBuilder.user({ type: 'create', data: dataPost })
+    if (await showError(createRes)) return
+
+    const { attributes: { id, uuid } } = createRes as UserObject
+
+    const setPassword = await PterodactylBuilder.user({ type: 'update', userId: id, data: { ...dataPost, password } })
+    if (await showError(setPassword)) {
+      const deleteRes = await PterodactylBuilder.user({ type: 'delete', userId: id })
+      if (await showError(deleteRes)) {
         await interaction.reply({
           ephemeral,
           embeds: [
             new EmbedBuilder({
-              title: `❌ | Não foi possível criar a conta, erro: ${res.statusText} | ${res.status}`
-            }).setColor('Red')
+              title:
+                '❌ | Chame um Administrador, ao tentar definir a senha da sua conta, ocorreu um erro, mas ao tentar então deletar a conta para uma nova tentativa, não foi possivel deletar a conta.'
+            })
           ]
         })
       }
-    })
-    .catch(async (err) => {
-      await interaction.reply({
-        ephemeral,
-        embeds: [
-          new EmbedBuilder({
-            title: `❌ | ${err?.response?.data?.errors[0]?.detail ??
-              'Ocorreu um erro ao fazer a solicitação ao Painel!'
-              }`
-          }).setColor('Red')
-        ]
+      if (deleteRes === 204) {
+        await interaction.reply({
+          ephemeral,
+          embeds: [
+            new EmbedBuilder({
+              title: '❌ | Ocorreu um erro ao tentar definir a senha da sua conta, tente novamente!'
+            })
+          ]
+        })
+      }
+    } else {
+      await db.pterodactyl.table('guilds').set(`${guildId}.users.${user.id}`, {
+        id,
+        uuid
       })
-      console.log(err.response.data.errors[0].detail)
+      await sendDM({ email, interaction, password, url: urlPtero })
+    }
+  } catch (err) {
+    console.log(err)
+    await interaction.reply({
+      ephemeral,
+      embeds: [
+        new EmbedBuilder({
+          title: '❌ | Ocorreu um erro ao fazer a solicitação ao Painel!'
+        }).setColor('Red')
+      ]
     })
+  }
 }

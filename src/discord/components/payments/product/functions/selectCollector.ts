@@ -1,9 +1,9 @@
 import { db } from '@/app'
-import axios from 'axios'
-import { type StringSelectMenuInteraction, type CacheType, ActionRowBuilder, type SelectMenuComponentOptionData, StringSelectMenuBuilder, Message } from 'discord.js'
+import { type StringSelectMenuInteraction, type CacheType, ActionRowBuilder, type SelectMenuComponentOptionData, StringSelectMenuBuilder, Message, EmbedBuilder } from 'discord.js'
 import { ProductButtonCollector } from './buttonsCollector'
 import { TextChannel } from 'discord.js'
 import { UpdateProduct } from './updateProduct'
+import { Pterodactyl } from '@/classes/pterodactyl'
 
 interface ProductSeletcType {
   interaction: StringSelectMenuInteraction<CacheType>
@@ -32,51 +32,53 @@ export class ProductSeletc implements ProductSeletcType {
       `${guildId}.config.pterodactyl`
     )) ?? { url: undefined, tokenPanel: undefined }
 
-    await axios({
-      url: `${urlPtero}/api/application/nests/${nestId}/eggs`,
-      method: 'GET',
-      maxRedirects: 5,
-      headers: {
-        Accept: 'Application/vnd.pterodactyl.v1+json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenPtero}`
-      }
-    })
-      .then(async (EggsData) => {
-        const { data } = EggsData.data as { data: any[] }
-        const options: SelectMenuComponentOptionData[] = []
+    const PterodactylBuilder = new Pterodactyl({ url: urlPtero, token: tokenPtero })
 
-        options.push({
-          value: `back-${messageId}`,
-          description: 'Voltar',
-          label: '...'
-        })
+    const listEggs = await PterodactylBuilder.getEggs(nestId)
 
-        for (const [position, nest] of data.entries()) {
-          if (position >= 24) continue
-          const { name, id, uuid, description } = nest.attributes as { name: string, id: number, uuid: string, description: string }
-          console.log(name, id, uuid)
-          options.push({
-            value: `${id}-${name.replace('-', ' ')}-${nestId}-${messageId}`,
-            description: ((description?.length >= 50) ? (description.substring(0, 50) + '...') : description ?? uuid),
-            label: name
+    if (listEggs === undefined) {
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: '❌ | Ocorreu um erro ao solicitar ao Back-end do Petrodactyl a lista de Nests existentes.'
           })
-        }
-
-        const row = new ActionRowBuilder<StringSelectMenuBuilder>({
-          components: [
-            new StringSelectMenuBuilder({
-              custom_id: '-1_Admin_Product_EggSelect',
-              placeholder: 'Selecione o Egg',
-              minValues: 1,
-              maxValues: 1,
-              options
-            })
-          ]
-        })
-        await message.edit({ components: [row] })
-        await interaction.deleteReply()
+        ]
       })
+      return
+    }
+
+    const options: SelectMenuComponentOptionData[] = []
+
+    options.push({
+      value: `back-${messageId}`,
+      description: 'Voltar',
+      label: '...'
+    })
+
+    for (const [position, egg] of listEggs.entries()) {
+      if (position >= 24) continue
+      const { name, id, uuid, description } = egg.attributes
+      console.log(name, id, uuid)
+      options.push({
+        value: `${id}-${name.replace('-', ' ')}-${nestId}-${messageId}`,
+        description: ((description?.length >= 50) ? (description.substring(0, 50) + '...') : description ?? uuid),
+        label: name
+      })
+    }
+
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>({
+      components: [
+        new StringSelectMenuBuilder({
+          custom_id: '-1_Admin_Product_EggSelect',
+          placeholder: 'Selecione o Egg',
+          minValues: 1,
+          maxValues: 1,
+          options
+        })
+      ]
+    })
+    await message.edit({ components: [row] })
+    await interaction.deleteReply()
   }
 
   /**

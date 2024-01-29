@@ -1,11 +1,11 @@
 import { db } from '@/app'
 import { CustomButtonBuilder } from '@/functions'
 import { createRow } from '@magicyan/discord'
-import axios from 'axios'
 import { type ModalSubmitInteraction, type CacheType, type ButtonInteraction, type CommandInteraction, type Message, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageCollector, type SelectMenuComponentOptionData, StringSelectMenuBuilder, type TextBasedChannel, type StringSelectMenuInteraction } from 'discord.js'
 import { checkProduct } from '../../functions/checkConfig'
 import { type productData } from '../../functions/interfaces'
 import { UpdateProduct } from './updateProduct'
+import { Pterodactyl } from '@/classes/pterodactyl'
 
 interface ProductButtonType {
   interaction:
@@ -353,54 +353,55 @@ export class ProductButtonCollector {
           `${guildId}.config.pterodactyl`
     )) ?? { url: undefined, tokenPanel: undefined }
 
-    await axios({
-      url: `${urlPtero}/api/application/nests`,
-      method: 'GET',
-      maxRedirects: 5,
-      headers: {
-        Accept: 'Application/vnd.pterodactyl.v1+json',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${tokenPtero}`
-      }
-    }).then(async (nestsData) => {
-      const { data } = nestsData.data as { data: any[] }
-      const options: SelectMenuComponentOptionData[] = []
+    const PterodactylBuilder = new Pterodactyl({ url: urlPtero, token: tokenPtero })
 
-      for (const [position, nest] of data.entries()) {
-        if (position >= 25) continue
-        const { name, id, uuid, description } = nest.attributes as { name: string, id: number, uuid: string, description: string }
-        console.log(name, id, uuid)
-        options.push({
-          value: `${id}-${messageId ?? message.id}`,
-          description: ((description?.length >= 50) ? (description.substring(0, 50) + '...') : description ?? uuid),
-          label: name
-        })
-      }
-
-      const row = new ActionRowBuilder<StringSelectMenuBuilder>({
-        components: [
-          new StringSelectMenuBuilder({
-            custom_id: '-1_Admin_Product_NestSelect',
-            placeholder: 'Seleciona o Nest onde o Egg está',
-            minValues: 1,
-            maxValues: 1,
-            options
+    const listNest = await PterodactylBuilder.getNests()
+    if (listNest === undefined) {
+      await interaction.editReply({
+        embeds: [
+          new EmbedBuilder({
+            title: '❌ | Ocorreu um erro ao solicitar ao Back-end do Petrodactyl a lista de Nests existentes.'
           })
         ]
       })
+      return
+    }
+    const optionsMenu: SelectMenuComponentOptionData[] = []
 
-      if (type === undefined) {
-        await interaction.reply({
-          components: [row]
+    for (const [position, nest] of listNest.entries()) {
+      if (position >= 25) continue
+      const { name, id, uuid, description } = nest.attributes
+      console.log(name, id, uuid)
+      optionsMenu.push({
+        value: `${id}-${messageId ?? message.id}`,
+        description: ((description?.length >= 50) ? (description?.substring(0, 50) + '...') : description ?? uuid),
+        label: name
+      })
+    }
+
+    const row = new ActionRowBuilder<StringSelectMenuBuilder>({
+      components: [
+        new StringSelectMenuBuilder({
+          custom_id: '-1_Admin_Product_NestSelect',
+          placeholder: 'Seleciona o Nest onde o Egg está',
+          minValues: 1,
+          maxValues: 1,
+          options: optionsMenu
         })
-      } else if (type === 'edit') {
-        const clearData = { components: [] }
-        await message.edit({
-          ...clearData,
-          components: [row]
-        })
-        await interaction.deleteReply()
-      }
+      ]
     })
+
+    if (type === undefined) {
+      await interaction.reply({
+        components: [row]
+      })
+    } else if (type === 'edit') {
+      const clearData = { components: [] }
+      await message.edit({
+        ...clearData,
+        components: [row]
+      })
+      await interaction.deleteReply()
+    }
   }
 }

@@ -10,6 +10,7 @@ export async function validator (options: {
   const { email, interaction, token, url } = options
 
   if (url === undefined || token === undefined) {
+    console.log('❌ | URL ou Token do pterodactyl não está configurado, tente `/config pterodactyl`')
     await interaction.reply({
       embeds: [
         new EmbedBuilder({
@@ -22,6 +23,7 @@ export async function validator (options: {
 
   const [isValid, msg] = validarEmail(email)
   if (!isValid) {
+    console.log(msg)
     await interaction.reply({
       ephemeral,
       embeds: [new EmbedBuilder({ title: msg }).setColor('Red')]

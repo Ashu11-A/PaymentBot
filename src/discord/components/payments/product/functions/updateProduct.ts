@@ -64,6 +64,8 @@ export class UpdateProduct {
         value: String(productData.coins)
       })
     }
+    if (updateEmbed.data.description !== undefined) updateEmbed.setDescription(updateEmbed.data.description)
+
     if (productData?.properties?.SetPterodactyl && productData?.pterodactyl !== undefined) {
       const { egg, cpu, disk, port, ram } = productData.pterodactyl
       const { Emojis } = settings as unknown as { Emojis: Record<string, string | undefined> | undefined }
@@ -96,6 +98,7 @@ export class UpdateProduct {
       }
     }
 
+    console.log(updateEmbed)
     await message.edit({ embeds: [updateEmbed] }).then(async () => {
       await db.messages
         .set(
