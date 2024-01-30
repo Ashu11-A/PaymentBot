@@ -16,7 +16,7 @@ export async function showModal (options: {
   const { interaction, key } = options
   const { customId, guildId, user } = interaction
   const info = getModalData(key)
-  const modal = new ModalBuilder({ customId, title: 'Pterodactyl Registro' })
+  const modal = new ModalBuilder({ customId, title: `${key} Registro` })
 
   const userDB = (await db[key === 'Pterodactyl' ? 'pterodactyl' : 'ctrlPanel'].table('guilds').get(`${guildId}.users.${user.id}`)) ?? undefined
   if (userDB !== undefined) {

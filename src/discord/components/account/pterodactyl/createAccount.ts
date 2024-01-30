@@ -4,8 +4,8 @@ import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'disco
 import { sendDM } from '../functions/sendDM'
 import { validator } from '../functions/validator'
 import { Pterodactyl } from '@/classes/pterodactyl'
-import axios, { type AxiosError } from 'axios'
 import { type UserObject } from '@/classes/interfaces'
+import { showError } from '../functions/showError'
 
 export async function createAccount (options: {
   interaction: ModalSubmitInteraction<CacheType>
@@ -35,49 +35,15 @@ export async function createAccount (options: {
     if (await validator({ email, interaction, token: tokenPtero, url: urlPtero })) return
     const PterodactylBuilder = new Pterodactyl({ url: urlPtero, token: tokenPtero })
 
-    const embedError = new EmbedBuilder({
-      title: '❌ | Ocorreu um erro ao tentar criar o usuário no Pterodactyl.'
-    }).setColor('Red')
-
-    async function showError (err: any | AxiosError<any, any> | undefined): Promise<boolean> {
-      if (createRes === undefined || axios.isAxiosError(createRes)) {
-        const errorInfo: Array<Record<string, Error | string>> = []
-
-        if (err?.cause !== undefined) errorInfo.push({ Cause: err.cause })
-        if (err?.name !== undefined) errorInfo.push({ Erro: err.name })
-        if (err?.message !== undefined) errorInfo.push({ Message: err.message })
-        if (err?.response?.data?.errors[0]?.detail !== undefined) {
-          errorInfo.push({ Detail: err.response.data.errors[0].detail })
-        }
-
-        if (errorInfo.length > 0) {
-          const description = errorInfo
-            .map((erro) => {
-              const chave = Object.keys(erro)[0]
-              const valor = erro[chave]
-              return `${chave}: ${valor instanceof Error ? valor.message : valor}`
-            })
-            .join('\n')
-          embedError.setDescription(description)
-          await interaction.reply({
-            ephemeral,
-            embeds: [embedError]
-          })
-          return true
-        }
-      }
-      return false
-    }
-
     const createRes = await PterodactylBuilder.user({ type: 'create', data: dataPost })
-    if (await showError(createRes)) return
+    if (await showError({ interaction, res: createRes })) return
 
     const { attributes: { id, uuid } } = createRes as UserObject
 
     const setPassword = await PterodactylBuilder.user({ type: 'update', userId: id, data: { ...dataPost, password } })
-    if (await showError(setPassword)) {
+    if (await showError({ interaction, res: setPassword })) {
       const deleteRes = await PterodactylBuilder.user({ type: 'delete', userId: id })
-      if (await showError(deleteRes)) {
+      if (await showError({ interaction, res: deleteRes })) {
         await interaction.reply({
           ephemeral,
           embeds: [

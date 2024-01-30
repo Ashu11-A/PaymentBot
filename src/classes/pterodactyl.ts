@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
-import { type UserObject, type EggObject, type NestObject } from './interfaces'
+import { type UserObject, type EggObject, type NestObject } from './interfacesPtero'
 import { core } from '@/app'
 
 export class Pterodactyl {
@@ -14,7 +14,6 @@ export class Pterodactyl {
     this.url = options.url
     this.token = options.token
     this.tokenUser = options.tokenUser
-    this.showLog()
   }
 
   /**
@@ -24,7 +23,6 @@ export class Pterodactyl {
     const { token, url } = this
     return axios.create({
       baseURL: `${url}/api`,
-      method: 'POST',
       maxRedirects: 5,
       headers: {
         Accept: 'Application/vnd.pterodactyl.v1+json',
