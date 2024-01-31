@@ -4,7 +4,7 @@ import { type ModalSubmitInteraction, type CacheType, EmbedBuilder } from 'disco
 import { sendDM } from '../functions/sendDM'
 import { validator } from '../functions/validator'
 import { Pterodactyl } from '@/classes/pterodactyl'
-import { type UserObject } from '@/classes/interfaces'
+import { type UserObject } from '@/interfaces'
 import { showError } from '../functions/showError'
 
 export async function createAccount (options: {

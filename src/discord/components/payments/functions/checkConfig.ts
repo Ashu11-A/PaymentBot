@@ -3,7 +3,7 @@ import {
   type CacheType,
   type CommandInteraction
 } from 'discord.js'
-import { type productData } from './interfaces'
+import { type productData } from '@/interfaces'
 import { db } from '@/app'
 
 export async function checkProduct (options: {

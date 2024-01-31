@@ -16,15 +16,14 @@ import accountCollectorButtons from './account/collectorButtons'
 import accountCollectorModal from './account/collectorModal'
 import { productCollectorSelect } from './payments/product/productCollectorSelect'
 
-interface ControllerType {
-  interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
-  key: string
-}
-export class ButtonController implements ControllerType {
+export class ButtonController {
   public readonly interaction
   public readonly key
 
-  constructor ({ interaction, key }: ControllerType) {
+  constructor ({ interaction, key }: {
+    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType> | AnySelectMenuInteraction<CacheType>
+    key: string
+  }) {
     this.interaction = interaction
     this.key = key
   }

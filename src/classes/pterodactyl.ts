@@ -1,5 +1,5 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
-import { type UserObject, type EggObject, type NestObject } from './interfacesPtero'
+import { type UserObject, type EggObject, type NestObject } from '@/interfaces'
 import { core } from '@/app'
 
 export class Pterodactyl {

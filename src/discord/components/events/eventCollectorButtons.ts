@@ -1,4 +1,4 @@
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { type ButtonInteraction, type CacheType } from 'discord.js'
 
 export default async function eventCollectorButtons (options: {

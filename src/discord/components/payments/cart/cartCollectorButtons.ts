@@ -3,7 +3,7 @@ import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteractio
 import { createPayment } from '../functions/createPayment'
 import { PaymentFunction } from './functions/cartCollectorFunctions'
 import { getModalData } from './functions/getModalData'
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 
 export default async function cartCollectorButtons (options: {
   interaction: ButtonInteraction<CacheType>

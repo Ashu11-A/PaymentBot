@@ -5,7 +5,7 @@ import { sendDM } from '../functions/sendDM'
 import { validator } from '../functions/validator'
 import { CtrlPanel } from '@/classes/ctrlPanel'
 import { showError } from '../functions/showError'
-import { type UserData } from '@/classes/interfacesCtrl'
+import { type UserData } from '@/interfaces'
 
 export async function createAccount (options: {
   interaction: ModalSubmitInteraction<CacheType>

@@ -16,7 +16,7 @@ import {
   type EmbedData,
   type StringSelectMenuInteraction
 } from 'discord.js'
-import { type productData } from '../../functions/interfaces'
+import { type productData } from '@/interfaces'
 import { settings } from '@/settings'
 
 interface UpdateProductType {

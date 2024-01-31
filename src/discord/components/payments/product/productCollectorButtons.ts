@@ -5,7 +5,7 @@ import { ProductButtonCollector } from '@/discord/components/payments/product/fu
 import { Database } from '@/functions'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 
 export async function productCollectorButtons (options: { interaction: ButtonInteraction<CacheType>, key: string }): Promise<void> {
   const { interaction, key } = options

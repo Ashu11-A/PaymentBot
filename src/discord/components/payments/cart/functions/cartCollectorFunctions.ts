@@ -1,20 +1,20 @@
 import { core, db } from '@/app'
-import { UpdateCart, type cartData } from '@/discord/components/payments'
+import { UpdateCart } from '@/discord/components/payments'
+import { type cartData } from '@/interfaces'
 import { ctrlPanel } from '@/functions/ctrlPanel'
 import { settings } from '@/settings'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonInteraction, type CacheType, TextChannel, Message, type ModalSubmitInteraction } from 'discord.js'
 
-interface PaymentFunctionType {
-  interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
-  key?: string
-}
 export class PaymentFunction {
   private readonly interaction
   private readonly key
 
-  constructor ({ interaction, key }: PaymentFunctionType) {
+  constructor ({ interaction, key }: {
+    interaction: ButtonInteraction<CacheType> | ModalSubmitInteraction<CacheType>
+    key?: string
+  }) {
     this.interaction = interaction
     this.key = key
   }
@@ -218,9 +218,10 @@ export class PaymentFunction {
   public async NextOrBefore (options: {
     type: 'next' | 'before'
     update?: 'Yes' | 'No'
+    message?: string
   }): Promise<void> {
     const { interaction } = this
-    const { type, update } = options
+    const { type, update, message: messageWarn } = options
     const { guildId, user, message, channelId } = interaction
 
     let data = await db.payments.get(`${guildId}.process.${channelId}`) as cartData
@@ -267,7 +268,7 @@ export class PaymentFunction {
             embeds: [
               new EmbedBuilder({
                 title: 'Proxima Etapa',
-                description: `⏭️ | Olá ${user.username}, agora estamos na etapa de ***${typeString}***`
+                description: messageWarn ?? `⏭️ | Olá ${user.username}, agora estamos na etapa de ***${typeString}***`
               }).setColor('LightGrey')
             ]
           })
@@ -353,7 +354,7 @@ export class PaymentFunction {
 
       if (pagamentoRes.data.status === 'approved') {
         const cartBuilder = new UpdateCart({ interaction, cartData })
-        const components = await cartBuilder.typeButtons({ discordUser: user })
+        const components = await cartBuilder.typeButtons()
         components[0].components[1].setDisabled(true)
 
         let voucherCode: string | undefined

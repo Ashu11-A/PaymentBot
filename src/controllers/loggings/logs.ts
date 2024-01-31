@@ -4,7 +4,7 @@ import { settings } from '@/settings'
 import { loggings } from '@/controllers/loggings/params'
 import colors from 'colors'
 import { registerlog } from '@/controllers/loggings/registerlog'
-import { type ConsoleLog as ConsoleLogger } from '@/settings/interfaces/Controllers'
+import { type ConsoleLog as ConsoleLogger } from '@/interfaces'
 import { CheckColors } from '@/controllers/loggings/CheckColors'
 
 const cores: any = colors

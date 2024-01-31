@@ -1,4 +1,4 @@
-import { type collectorButtonsForModals } from '@/settings/interfaces/Collector'
+import { type collectorButtonsForModals } from '@/interfaces'
 import { ComponentType } from 'discord.js'
 
 const modalData: Record<string, collectorButtonsForModals> = {

@@ -1,4 +1,4 @@
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { type CacheType, type StringSelectMenuInteraction } from 'discord.js'
 import { TicketSelects } from './functions/selectsFunction'
 

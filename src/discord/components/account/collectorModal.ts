@@ -1,4 +1,4 @@
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { createAccount as createPteroAccount } from './pterodactyl/createAccount'
 import { createAccount as createCtrlAccount } from './ctrlPanel/createAccount'

@@ -2,7 +2,7 @@
 import { type Request, type Response } from 'express'
 import { core, db } from '@/app'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
-import { type infoPayment } from '@/discord/components/payments'
+import { type infoPayment } from '@/interfaces'
 
 class IPN {
   /**

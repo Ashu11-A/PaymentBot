@@ -1,4 +1,4 @@
-import { type infoPayment } from '@/discord/components/payments'
+import { type infoPayment } from '@/interfaces'
 import { type Request, type Response } from 'express'
 import { MercadoPagoConfig, Payment } from 'mercadopago'
 

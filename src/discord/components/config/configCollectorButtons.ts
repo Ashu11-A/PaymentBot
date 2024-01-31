@@ -1,4 +1,4 @@
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { type ModalSubmitInteraction, type CacheType } from 'discord.js'
 import { mcConfig } from './functions/mercadoPago'
 

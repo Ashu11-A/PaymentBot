@@ -13,7 +13,7 @@ import { UpdateCart } from './updateCart'
 import axios from 'axios'
 import { settings } from '@/settings'
 import { PaymentFunction } from '../cart/functions/cartCollectorFunctions'
-import { type cartData, type infoPayment } from './interfaces'
+import { type cartData, type infoPayment } from '@/interfaces'
 
 export async function createPayment (options: {
   interaction: ButtonInteraction<CacheType>

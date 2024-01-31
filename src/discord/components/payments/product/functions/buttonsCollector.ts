@@ -3,7 +3,7 @@ import { CustomButtonBuilder } from '@/functions'
 import { createRow } from '@magicyan/discord'
 import { type ModalSubmitInteraction, type CacheType, type ButtonInteraction, type CommandInteraction, type Message, ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, MessageCollector, type SelectMenuComponentOptionData, StringSelectMenuBuilder, type TextBasedChannel, type StringSelectMenuInteraction } from 'discord.js'
 import { checkProduct } from '../../functions/checkConfig'
-import { type productData } from '../../functions/interfaces'
+import { type productData } from '@/interfaces'
 import { UpdateProduct } from './updateProduct'
 import { Pterodactyl } from '@/classes/pterodactyl'
 

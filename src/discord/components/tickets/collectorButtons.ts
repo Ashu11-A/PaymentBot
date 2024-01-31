@@ -1,6 +1,6 @@
 import { db } from '@/app'
 import { TicketButtons } from '@/discord/components/tickets'
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { ActionRowBuilder, ModalBuilder, TextInputBuilder, type ButtonInteraction, type CacheType } from 'discord.js'
 import { getModalData } from './functions/getModalData'
 
@@ -46,7 +46,7 @@ export default async function ticketCollectorButtons (options: {
     SendSave: async () => { await Constructor.sendSave(key) },
     AddSelect: async () => {
       const modal = new ModalBuilder({ customId, title: 'Adicionar Opções no Select Menu' })
-      Object.entries(listItens).map(async ([, value]) => {
+      Object.entries(listItens).map(([, value]) => {
         const { label, placeholder, style, type, maxLength, valuee } = value
         const content = new ActionRowBuilder<TextInputBuilder>({
           components: [
@@ -61,7 +61,7 @@ export default async function ticketCollectorButtons (options: {
             })
           ]
         })
-        modal.addComponents(content)
+        return modal.addComponents(content)
       })
       await interaction.showModal(modal)
     },

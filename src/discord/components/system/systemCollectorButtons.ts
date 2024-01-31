@@ -1,5 +1,5 @@
 import { Database, type DatabaseType } from '@/functions'
-import { type SystemCustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type SystemCustomIdHandlers } from '@/interfaces'
 import { type ButtonInteraction, type CacheType } from 'discord.js'
 
 export async function systemCollectorButtons (options: {

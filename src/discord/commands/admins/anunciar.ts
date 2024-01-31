@@ -3,12 +3,7 @@ import { Discord } from '@/functions'
 import { brBuilder, createModalInput, createRow } from '@magicyan/discord'
 import { ApplicationCommandOptionType, ApplicationCommandType, AttachmentBuilder, ButtonBuilder, ButtonStyle, Collection, ComponentType, EmbedBuilder, ModalBuilder, TextInputStyle, codeBlock, type Attachment, type ColorResolvable, type TextChannel } from 'discord.js'
 
-interface MessageProps {
-  channelId: string
-  image: Attachment | null
-}
-
-const members = new Collection<string, MessageProps>()
+const members = new Collection<string, { channelId: string, image: Attachment | null }>()
 
 new Command({
   name: 'anunciar',

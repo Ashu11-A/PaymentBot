@@ -1,5 +1,5 @@
 import { TicketModals } from '@/discord/components/tickets'
-import { type CustomIdHandlers } from '@/settings/interfaces/Collector'
+import { type CustomIdHandlers } from '@/interfaces'
 import { type CacheType, type ModalSubmitInteraction } from 'discord.js'
 
 export async function ticketCollectorModal (options: {

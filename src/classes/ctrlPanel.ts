@@ -1,16 +1,14 @@
 import axios, { type AxiosError, type AxiosInstance } from 'axios'
-import { type UserData } from './interfacesCtrl'
-
-interface CtrlPanelType {
-  url: string
-  token: string
-}
+import { type UserData } from '@/interfaces'
 
 export class CtrlPanel {
   private readonly url
   private readonly token
 
-  constructor ({ url, token }: CtrlPanelType) {
+  constructor ({ url, token }: {
+    url: string
+    token: string
+  }) {
     this.url = url
     this.token = token
   }

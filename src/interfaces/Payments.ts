@@ -1,5 +1,4 @@
 import { type EmbedType, type EmbedFooterData, type EmbedAssetData, type APIEmbedProvider, type EmbedAuthorData, type APIEmbedField } from 'discord.js'
-import { type PreferenceItem, type PreferencePayer, type PreferencePaymentMethods } from 'mercadopago/models/preferences/create-payload.model'
 
 export interface ProductCartData {
   id: string
@@ -103,13 +102,4 @@ export interface infoPayment {
   mpToken?: string
   method?: 'debit_card' | 'credit_card'
   ipn?: string
-}
-
-export interface MercadoPago {
-  items: PreferenceItem[] | undefined
-  payer: PreferencePayer | undefined
-  payment_methods: PreferencePaymentMethods | undefined
-  notification_url: string | undefined
-  metadata: infoPayment
-  date_of_expiration: string | undefined
 }

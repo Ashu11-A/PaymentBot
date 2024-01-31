@@ -5,7 +5,6 @@ import {
   ButtonStyle,
   EmbedBuilder,
   TextChannel,
-  type User,
   codeBlock,
   type APIEmbed,
   type ButtonBuilder,
@@ -15,7 +14,7 @@ import {
   type ModalSubmitInteraction
 } from 'discord.js'
 import { type PaymentResponse } from 'mercadopago/dist/clients/payment/commonTypes'
-import { type ProductCartData, type cartData } from './interfaces'
+import { type ProductCartData, type cartData } from '@/interfaces'
 import { settings } from '@/settings'
 
 interface UpdateCartType {
@@ -51,13 +50,12 @@ export class UpdateCart {
     const { interaction, cartData } = this
     const { message, channel } = options
     const { typeEmbed, products, properties } = cartData
-    const { guildId, user: discordUser, channelId } = interaction
-    const ctrlUrl = await db.payments.get(`${guildId}.config.ctrlPanel.url`)
+    const { guildId, channelId } = interaction
 
     const paymentEmbeds: EmbedBuilder[] = []
     const productEmbeds: EmbedBuilder[] = []
 
-    const paymentComponents = await this.typeButtons({ discordUser })
+    const paymentComponents = await this.typeButtons()
     const productComponents: Array<ActionRowBuilder<ButtonBuilder>> = []
 
     const cartDataUpdate = (await db.payments.get(
@@ -69,9 +67,7 @@ export class UpdateCart {
     let setMessageId: string | undefined
 
     paymentEmbeds.push(
-      ...(await this.generateInfoEmbed({
-        discord: { userId: discordUser.id, guildId }
-      }))
+      ...(await this.generateInfoEmbed())
     )
 
     for (const product of products) {
@@ -79,20 +75,9 @@ export class UpdateCart {
       productComponents.push(
         await this.generateProductComponents({
           product,
-          properties,
-          discordUser
+          properties
         })
       )
-      if (typeEmbed === 1 && product?.pterodactyl === undefined) {
-        paymentComponents[0].components[2].setURL(ctrlUrl)
-      }
-    }
-
-    if (
-      paymentComponents[0].components[2].data?.style === 5 &&
-      paymentComponents[0].components[2].data?.url !== ctrlUrl
-    ) {
-      paymentComponents[0].components[2].data.disabled = true
     }
 
     const endBuild = Date.now()
@@ -215,15 +200,10 @@ export class UpdateCart {
     }
   }
 
-  public async generateInfoEmbed (options: {
-    discord: {
-      guildId: string | null
-      userId: string
-    }
-  }): Promise<EmbedBuilder[]> {
-    const { cartData } = this
+  public async generateInfoEmbed (): Promise<EmbedBuilder[]> {
+    const { cartData, interaction } = this
     const { products, typeEmbed, typeRedeem, user } = cartData
-    const { discord } = options
+    const { user: { id: userID }, guildId } = interaction
     const valorTotal =
       products.reduce(
         (allValue, product) => allValue + product.quantity * product.amount,
@@ -249,7 +229,7 @@ export class UpdateCart {
         'Selecione quantos produtos deseja no seu carrinho, e se quer aplicar algum cupom.'
     } else if (typeEmbed === 1) {
       title = 'Checkout & Envio.'
-      description = `<@${discord.userId}> Confira as informações sobre os produtos e escolha a forma que deseja receber seus créditos:`
+      description = `<@${userID}> Confira as informações sobre os produtos e escolha a forma que deseja receber seus créditos:`
     } else if (typeEmbed === 2) {
       title = 'Checkout & Tipo de pagamento.'
       description =
@@ -301,7 +281,7 @@ export class UpdateCart {
         pix,
         debit_card: debit,
         credit_card: credit
-      } = await db.payments.get(`${discord.guildId}.config.taxes`)
+      } = await db.payments.get(`${guildId}.config.taxes`)
       embeds.push(
         new EmbedBuilder({
           title: 'Taxas dos Métodos de pagamento:',
@@ -385,9 +365,9 @@ export class UpdateCart {
   public async generateProductComponents (options: {
     product: ProductCartData
     properties: Record<string, boolean> | undefined
-    discordUser: User
   }): Promise<ActionRowBuilder<ButtonBuilder>> {
-    const { discordUser, properties, product } = options
+    const { properties, product } = options
+    const { user } = this.interaction
     const start = Date.now()
     const components = new ActionRowBuilder<ButtonBuilder>()
     const productComponents = [
@@ -397,14 +377,14 @@ export class UpdateCart {
         disabled: product.quantity <= 1,
         emoji: { name: '➖' },
         style: ButtonStyle.Primary,
-        isProtected: { user: discordUser }
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Add',
         emoji: { name: '➕' },
         style: ButtonStyle.Primary,
-        isProtected: { user: discordUser }
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
@@ -412,14 +392,14 @@ export class UpdateCart {
         disabled: properties?.cupom,
         emoji: { name: '🎫' },
         style: ButtonStyle.Primary,
-        isProtected: { user: discordUser }
+        isProtected: { user }
       }),
       await CustomButtonBuilder.create({
         type: 'Cart',
         customId: 'Remove',
         emoji: { name: '✖️' },
         style: ButtonStyle.Danger,
-        isProtected: { user: discordUser }
+        isProtected: { user }
       })
     ]
     const end = Date.now()
@@ -428,11 +408,9 @@ export class UpdateCart {
     return components.setComponents(productComponents)
   }
 
-  public async typeButtons (options: {
-    discordUser: User
-  }): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
-    const { cartData: data } = this
-    const { discordUser: user } = options
+  public async typeButtons (): Promise<Array<ActionRowBuilder<ButtonBuilder>>> {
+    const { cartData: data, interaction } = this
+    const { user } = interaction
     const { typeEmbed: type } = data
     const start = Date.now()
 
@@ -445,23 +423,42 @@ export class UpdateCart {
         style: ButtonStyle.Success,
         disabled: true,
         isProtected: { user }
-      }),
-      await CustomButtonBuilder.create({
-        type: 'Cart',
-        customId: 'Direct',
-        label: 'Instantaneamente',
-        emoji: { name: '📲' },
-        style: ButtonStyle.Success,
-        isProtected: { user }
-      }),
-      await CustomButtonBuilder.create({
-        type: 'Cart',
-        url: 'https://google.com/',
-        emoji: { name: '🔗' },
-        style: ButtonStyle.Link,
-        isProtected: { user }
       })
     ]
+
+    const { pterodactyl: { url: urlPtero, tokenPanel }, ctrlPanel: { url: urlCtrl, token: tokenCtrl } } = await db.payments.get(`${this.interaction.guildId}.config`)
+    if (urlPtero !== undefined && tokenPanel !== undefined) {
+      Secondary.push(
+        await CustomButtonBuilder.create({
+          type: 'Cart',
+          customId: 'Pterodactyl',
+          label: 'Pterodactyl',
+          emoji: { name: '🦖' },
+          style: ButtonStyle.Success,
+          isProtected: { user }
+        })
+      )
+    }
+
+    if (urlCtrl !== undefined && tokenCtrl !== undefined) {
+      Secondary.push(
+        await CustomButtonBuilder.create({
+          type: 'Cart',
+          customId: 'CtrlPanel',
+          label: 'CtrlPanel',
+          emoji: { name: '🖥️' },
+          style: ButtonStyle.Success,
+          isProtected: { user }
+        }),
+        await CustomButtonBuilder.create({
+          type: 'Cart',
+          url: urlCtrl,
+          emoji: { name: '🔗' },
+          style: ButtonStyle.Link,
+          isProtected: { user }
+        })
+      )
+    }
 
     const Third = [
       await CustomButtonBuilder.create({

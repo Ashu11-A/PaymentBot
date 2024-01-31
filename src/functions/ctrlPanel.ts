@@ -1,5 +1,5 @@
 import { core, db } from '@/app'
-import { type Server, type User } from '@/discord/components/payments'
+import { type Server, type User } from '@/interfaces'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
 import { ActionRowBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, ButtonBuilder, type InteractionResponse, type ModalSubmitInteraction } from 'discord.js'

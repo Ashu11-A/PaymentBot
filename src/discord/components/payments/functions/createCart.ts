@@ -1,7 +1,7 @@
 import { db } from '@/app'
 import { Discord, genv4 } from '@/functions'
 import { ChannelType, EmbedBuilder, PermissionsBitField, type ButtonInteraction, type CacheType, type Collection, type OverwriteResolvable, TextChannel } from 'discord.js'
-import { type cartData, type productData } from './interfaces'
+import { type cartData, type productData } from '@/interfaces'
 import { UpdateCart } from './updateCart'
 
 export async function createCart (interaction: ButtonInteraction<CacheType>): Promise<void> {
