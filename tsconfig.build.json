@@ -11,17 +11,16 @@
     "moduleResolution": "Node",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./dist/*"]
+      "@/*": ["dist/*"]
     },
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": false,
     "sourceMap": false,
-    "outDir": "./dist",
-    "rootDir": "dist",
+    "outDir": "./build",
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
-    "esModuleInterop": false,
+    "esModuleInterop": true,
     "forceConsistentCasingInFileNames": true,
     "strict": true,
     "noImplicitAny": true,
@@ -29,5 +28,4 @@
     "skipLibCheck": true
   },
   "include": ["dist/**/*"],
-  "exclude": ["node_modules"]
 }
