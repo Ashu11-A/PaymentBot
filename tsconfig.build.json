@@ -11,14 +11,14 @@
     "moduleResolution": "Node",
     "baseUrl": "./",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["./dist/*"]
     },
     "resolveJsonModule": true,
     "allowJs": true,
     "declaration": false,
     "sourceMap": false,
     "outDir": "./dist",
-    "rootDir": "src",
+    "rootDir": "dist",
     "importHelpers": true,
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": false,
@@ -28,6 +28,6 @@
     "skipDefaultLibCheck": true,
     "skipLibCheck": true
   },
-  "include": ["src/**/*"],
+  "include": ["dist/**/*"],
   "exclude": ["node_modules"]
 }

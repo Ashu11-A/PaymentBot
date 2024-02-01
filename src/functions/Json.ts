@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 function json (local: string): any {
   let existingData: string

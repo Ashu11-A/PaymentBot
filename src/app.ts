@@ -3,7 +3,7 @@ import { log } from './settings'
 import Loggings from '@/controllers/Loggings'
 import { dirCR } from '@/functions'
 import { QuickDB } from 'quick.db'
-import { join } from 'path'
+import { join } from 'node:path'
 
 export * from 'colors'
 const core = new Loggings('All', 'blue')
