@@ -1,6 +1,6 @@
 import { Router } from 'express'
-import { readdirSync, statSync } from 'node:fs'
-import path from 'node:path'
+import { readdirSync, statSync } from 'fs'
+import path from 'path'
 import { Root as notFoundRouter } from '../routes/home'
 import { loggingMiddleware, corsMiddleware, fuckFavicon } from './middleware'
 

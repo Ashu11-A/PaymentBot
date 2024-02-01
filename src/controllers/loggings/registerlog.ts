@@ -1,5 +1,5 @@
-import fs from 'node:fs'
-import path, { resolve } from 'node:path'
+import fs from 'fs'
+import path, { resolve } from 'path'
 import { unlinkfolders } from '@/controllers/loggings/unlinkfolders'
 import { dirCR } from '@/functions'
 import { settings } from '@/settings'

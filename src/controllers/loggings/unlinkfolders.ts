@@ -1,5 +1,5 @@
-import fs, { statSync } from 'node:fs'
-import path, { join } from 'node:path'
+import fs, { statSync } from 'fs'
+import path, { join } from 'path'
 import { json } from '@/functions'
 import { settings } from '@/settings'
 import { Console } from '@/controllers/loggings/OnlyConsole'

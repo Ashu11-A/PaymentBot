@@ -2,7 +2,7 @@ import { log, processEnv } from '@/settings'
 import ck from 'chalk'
 import { ApplicationCommandType, type AutocompleteInteraction, type BitFieldResolvable, type ChatInputCommandInteraction, Client, type ClientOptions, type CommandInteraction, type GatewayIntentsString, IntentsBitField, type MessageContextMenuCommandInteraction, Partials, type UserContextMenuCommandInteraction, version } from 'discord.js'
 import { glob } from 'glob'
-import { join } from 'node:path'
+import { join } from 'path'
 import { Command, Component, Event } from '.'
 import { core } from '@/app'
 
