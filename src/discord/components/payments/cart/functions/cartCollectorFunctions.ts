@@ -6,6 +6,7 @@ import { settings } from '@/settings'
 import { createRow } from '@magicyan/discord'
 import axios from 'axios'
 import { ActionRowBuilder, ButtonBuilder, ButtonStyle, ComponentType, EmbedBuilder, codeBlock, type ButtonInteraction, type CacheType, TextChannel, Message, type ModalSubmitInteraction } from 'discord.js'
+import { GenAccount } from '@/discord/components/account/functions/generate'
 
 export class PaymentFunction {
   private readonly interaction
@@ -637,5 +638,21 @@ export class PaymentFunction {
         ]
       })
     }
+  }
+
+  /**
+   * Registrar usuário no carrinho
+   */
+  public async Registro (): Promise<void> {
+    const Account = new GenAccount({ interaction: this.interaction })
+    await Account.genRegister()
+  }
+
+  /**
+     * Login
+     */
+  public async Login (): Promise<void> {
+    const Account = new GenAccount({ interaction: this.interaction })
+    await Account.genLogin()
   }
 }

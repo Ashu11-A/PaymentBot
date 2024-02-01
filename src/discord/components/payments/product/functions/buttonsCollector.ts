@@ -6,6 +6,7 @@ import { checkProduct } from '../../functions/checkConfig'
 import { type productData } from '@/interfaces'
 import { UpdateProduct } from './updateProduct'
 import { Pterodactyl } from '@/classes/pterodactyl'
+import { generateRegister } from '@/discord/commands/accounts/register'
 
 interface ProductButtonType {
   interaction:

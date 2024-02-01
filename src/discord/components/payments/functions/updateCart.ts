@@ -426,39 +426,24 @@ export class UpdateCart {
       })
     ]
 
-    const { pterodactyl: { url: urlPtero, tokenPanel }, ctrlPanel: { url: urlCtrl, token: tokenCtrl } } = await db.payments.get(`${this.interaction.guildId}.config`)
-    if (urlPtero !== undefined && tokenPanel !== undefined) {
-      Secondary.push(
-        await CustomButtonBuilder.create({
-          type: 'Cart',
-          customId: 'Pterodactyl',
-          label: 'Pterodactyl',
-          emoji: { name: '🦖' },
-          style: ButtonStyle.Success,
-          isProtected: { user }
-        })
-      )
-    }
-
-    if (urlCtrl !== undefined && tokenCtrl !== undefined) {
-      Secondary.push(
-        await CustomButtonBuilder.create({
-          type: 'Cart',
-          customId: 'CtrlPanel',
-          label: 'CtrlPanel',
-          emoji: { name: '🖥️' },
-          style: ButtonStyle.Success,
-          isProtected: { user }
-        }),
-        await CustomButtonBuilder.create({
-          type: 'Cart',
-          url: urlCtrl,
-          emoji: { name: '🔗' },
-          style: ButtonStyle.Link,
-          isProtected: { user }
-        })
-      )
-    }
+    Secondary.push(
+      await CustomButtonBuilder.create({
+        type: 'Cart',
+        customId: 'Login',
+        label: 'Login',
+        emoji: { name: '🗝️' },
+        style: ButtonStyle.Success,
+        isProtected: { user }
+      }),
+      await CustomButtonBuilder.create({
+        type: 'Cart',
+        customId: 'Registro',
+        label: 'Registro',
+        emoji: { name: '🔐' },
+        style: ButtonStyle.Success,
+        isProtected: { user }
+      })
+    )
 
     const Third = [
       await CustomButtonBuilder.create({

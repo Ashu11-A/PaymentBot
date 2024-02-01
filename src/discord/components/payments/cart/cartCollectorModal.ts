@@ -36,6 +36,7 @@ export default async function cartCollectorModal (options: {
 
           const cartData = await db.payments.get(`${guildId}.process.${channelId}`)
           const cartBuilder = new UpdateCart({ interaction, cartData })
+          await interaction.deleteReply()
           await cartBuilder.embedAndButtons({ message })
         }
       }

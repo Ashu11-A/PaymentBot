@@ -26,7 +26,9 @@ export default async function cartCollectorButtons (options: {
     Next: async () => { await PaymentBuilder.NextOrBefore({ type: 'next' }) },
     Before: async () => { await PaymentBuilder.NextOrBefore({ type: 'before' }) },
     CardDebito: async () => { await createPayment({ interaction, method: 'debit_card' }) },
-    CardCredito: async () => { await createPayment({ interaction, method: 'credit_card' }) }
+    CardCredito: async () => { await createPayment({ interaction, method: 'credit_card' }) },
+    Registro: async () => { await PaymentBuilder.Registro() },
+    Login: async () => { await PaymentBuilder.Login() }
   }
 
   const customIdHandler = customIdHandlers[key]
