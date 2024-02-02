@@ -1,13 +1,17 @@
-import { Loggings } from "interfaces/Controllers";
+import { Loggings } from "@/controllers/loggings/Types";
 
 export const loggings: Loggings = {
 	Error: {
 		level: 0,
 		color: "red",
 	},
-	Core: {
+	OnlyConsole: {
 		level: 0,
-		color: "green",
+		color: "red",
+	},
+	OnlyLog: {
+		level: 0,
+		color: "red",
 	},
 	Warn: {
 		level: 1,

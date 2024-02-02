@@ -6,7 +6,6 @@ export * from 'colors'
 
 const client = new ExtendedClient()
 const core = new Loggings('All', 'blue')
-
 client.start()
 
 export { client, config, color, core }
