@@ -15,6 +15,10 @@ export function ReStringColors(message: string): string {
     const LoggingsTxT = message.replace(colorTagPattern, (_, text) => {
         return `"${text}"`
     });
+
+	/**
+	 * Remove argumentos do ANSI do chalk e colors
+	 */
     const regexColors = /\x1B[[(?);]{0,2}(;?\d)*./g;
 
     const messageWithoutColors = LoggingsTxT.replace(regexColors, '');
