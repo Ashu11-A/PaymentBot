@@ -1,0 +1,7 @@
+{
+    "extends": "./tsconfig.json",
+    "include": [
+      "rollup.config.ts", "compress.ts"
+    ]
+  }
+  

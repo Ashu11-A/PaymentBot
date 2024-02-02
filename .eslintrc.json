@@ -1,14 +1,22 @@
 {
     "env": {
+        "node": true,
+        "es2021": true,
         "browser": true,
-        "commonjs": true,
-        "es2021": true
+        "commonjs": true
     },
+    "parser": "@typescript-eslint/parser",
     "extends": "standard-with-typescript",
     "parserOptions": {
         "ecmaVersion": "latest",
-        "project": ["./tsconfig.json"]
+        "sourceType": "module",
+        "project": ["./tsconfig.json", "./tsconfig.eslint.json"]
     },
+    "plugins": [
+        "@typescript-eslint"
+    ],
     "rules": {
+        "no-new": "off",
+        "@typescript-eslint/naming-convention": "off"
     }
 }
