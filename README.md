@@ -14,8 +14,11 @@
 </div>
 <div align="left">
 
+<div align="center">
+  
+🟢 Projeto está desenvolvimento.
 
-
+</div>
 
 ## ⚠️ | Aviso
 
