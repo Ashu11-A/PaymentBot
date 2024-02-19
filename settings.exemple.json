@@ -1,0 +1,23 @@
+{
+  "Express": {
+    "ip": "0.0.0.0",
+    "Port": 6070,
+    "encryptionKey": " am_something_very_precious_and_i_have_to_have_32_characters",
+    "cors": {
+      "active": true,
+      "allow": [
+        "::1",
+        "::ffff:127.0.0.1",
+        "127.0.0.1",
+        "localhost"
+      ]
+    }
+  },
+  "Emojis": {
+    "egg": "<:square_discovery:1123998856212918423>",
+    "cpu": "<:square_boost:1123998887254958190>",
+    "disk": "<:square_verified:1123998716274155590>",
+    "port": "<:square_announcement:1123998919005831188>",
+    "ram": "<:square_partner:1123998765041336385>"
+  }
+}
